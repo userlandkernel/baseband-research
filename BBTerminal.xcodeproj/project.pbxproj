@@ -22,6 +22,11 @@
 		EAF894B921B6C580001F0D72 /* IOMobileFramebuffer.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EAF894B821B6C580001F0D72 /* IOMobileFramebuffer.tbd */; };
 		EAF894BB21B6C583001F0D72 /* IOSurface.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EAF894BA21B6C582001F0D72 /* IOSurface.tbd */; };
 		EAF894BE21B6C7E4001F0D72 /* IOUSBEnum.c in Sources */ = {isa = PBXBuildFile; fileRef = EAF894BC21B6C7E4001F0D72 /* IOUSBEnum.c */; };
+		EAF894C221B6CE08001F0D72 /* dbl-utils.c in Sources */ = {isa = PBXBuildFile; fileRef = EAF894C021B6CE08001F0D72 /* dbl-utils.c */; };
+		EAF894C521B6CE4D001F0D72 /* dbl-usb.c in Sources */ = {isa = PBXBuildFile; fileRef = EAF894C321B6CE4D001F0D72 /* dbl-usb.c */; };
+		EAF894C821B6CEB9001F0D72 /* dbl-sock.c in Sources */ = {isa = PBXBuildFile; fileRef = EAF894C621B6CEB9001F0D72 /* dbl-sock.c */; };
+		EAF894CB21B6CEFB001F0D72 /* dbl.c in Sources */ = {isa = PBXBuildFile; fileRef = EAF894C921B6CEFB001F0D72 /* dbl.c */; };
+		EAF894CE21B6CF70001F0D72 /* bootloader-interact.c in Sources */ = {isa = PBXBuildFile; fileRef = EAF894CC21B6CF70001F0D72 /* bootloader-interact.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,7 +43,6 @@
 		EA86302421B431B200A20AC8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EA86302921B431B200A20AC8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EA86302A21B431B200A20AC8 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		EA8FAFCE21B5C08300A30E8F /* IOKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = IOKit.tbd; path = BBTerminal/PrivateFrameworks/IOKit.tbd; sourceTree = "<group>"; };
 		EA8FAFD121B5C4E400A30E8F /* bbtty.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = bbtty.c; sourceTree = "<group>"; };
 		EA8FAFD221B5C4E400A30E8F /* bbtty.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bbtty.h; sourceTree = "<group>"; };
 		EAF894B021B6C558001F0D72 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
@@ -49,6 +53,16 @@
 		EAF894BA21B6C582001F0D72 /* IOSurface.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = IOSurface.tbd; path = BBTerminal/PrivateFrameworks/IOSurface/IOSurface.tbd; sourceTree = "<group>"; };
 		EAF894BC21B6C7E4001F0D72 /* IOUSBEnum.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = IOUSBEnum.c; sourceTree = "<group>"; };
 		EAF894BD21B6C7E4001F0D72 /* IOUSBEnum.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IOUSBEnum.h; sourceTree = "<group>"; };
+		EAF894C021B6CE08001F0D72 /* dbl-utils.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "dbl-utils.c"; sourceTree = "<group>"; };
+		EAF894C121B6CE08001F0D72 /* dbl-utils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dbl-utils.h"; sourceTree = "<group>"; };
+		EAF894C321B6CE4D001F0D72 /* dbl-usb.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "dbl-usb.c"; sourceTree = "<group>"; };
+		EAF894C421B6CE4D001F0D72 /* dbl-usb.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dbl-usb.h"; sourceTree = "<group>"; };
+		EAF894C621B6CEB9001F0D72 /* dbl-sock.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "dbl-sock.c"; sourceTree = "<group>"; };
+		EAF894C721B6CEB9001F0D72 /* dbl-sock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dbl-sock.h"; sourceTree = "<group>"; };
+		EAF894C921B6CEFB001F0D72 /* dbl.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dbl.c; sourceTree = "<group>"; };
+		EAF894CA21B6CEFB001F0D72 /* dbl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dbl.h; sourceTree = "<group>"; };
+		EAF894CC21B6CF70001F0D72 /* bootloader-interact.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "bootloader-interact.c"; sourceTree = "<group>"; };
+		EAF894CD21B6CF70001F0D72 /* bootloader-interact.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "bootloader-interact.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,6 +129,7 @@
 		EA86301721B431AC00A20AC8 /* BBTerminal */ = {
 			isa = PBXGroup;
 			children = (
+				EAF894BF21B6CDDA001F0D72 /* bootloader-interact */,
 				EA6E93C321B5E2830015CBEB /* usbenum */,
 				EA6E93BF21B5D4B20015CBEB /* bbtelnet */,
 				EA6E93BB21B5D1E40015CBEB /* bbdfu */,
@@ -140,7 +155,6 @@
 				EAF894B421B6C570001F0D72 /* libTelephonyIOKitDynamic.tbd */,
 				EAF894B221B6C56A001F0D72 /* libUSBTransport.tbd */,
 				EAF894B021B6C558001F0D72 /* CoreTelephony.framework */,
-				EA8FAFCE21B5C08300A30E8F /* IOKit.tbd */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -152,6 +166,23 @@
 				EA8FAFD121B5C4E400A30E8F /* bbtty.c */,
 			);
 			name = tty;
+			sourceTree = "<group>";
+		};
+		EAF894BF21B6CDDA001F0D72 /* bootloader-interact */ = {
+			isa = PBXGroup;
+			children = (
+				EAF894C121B6CE08001F0D72 /* dbl-utils.h */,
+				EAF894C021B6CE08001F0D72 /* dbl-utils.c */,
+				EAF894C421B6CE4D001F0D72 /* dbl-usb.h */,
+				EAF894C321B6CE4D001F0D72 /* dbl-usb.c */,
+				EAF894C721B6CEB9001F0D72 /* dbl-sock.h */,
+				EAF894C621B6CEB9001F0D72 /* dbl-sock.c */,
+				EAF894CA21B6CEFB001F0D72 /* dbl.h */,
+				EAF894C921B6CEFB001F0D72 /* dbl.c */,
+				EAF894CD21B6CF70001F0D72 /* bootloader-interact.h */,
+				EAF894CC21B6CF70001F0D72 /* bootloader-interact.c */,
+			);
+			name = "bootloader-interact";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -222,14 +253,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EAF894CB21B6CEFB001F0D72 /* dbl.c in Sources */,
 				EA86301D21B431AC00A20AC8 /* ViewController.m in Sources */,
 				EA6E93C221B5D4C80015CBEB /* bbtelnetserver.c in Sources */,
 				EA86301A21B431AC00A20AC8 /* AppDelegate.m in Sources */,
 				EAF894BE21B6C7E4001F0D72 /* IOUSBEnum.c in Sources */,
 				EA86302B21B431B200A20AC8 /* main.m in Sources */,
+				EAF894C821B6CEB9001F0D72 /* dbl-sock.c in Sources */,
+				EAF894C521B6CE4D001F0D72 /* dbl-usb.c in Sources */,
 				EA6E93BE21B5D2100015CBEB /* godfu.c in Sources */,
 				EA8FAFD321B5C4E400A30E8F /* bbtty.c in Sources */,
 				EA86302321B431AC00A20AC8 /* BBTerminal.xcdatamodeld in Sources */,
+				EAF894CE21B6CF70001F0D72 /* bootloader-interact.c in Sources */,
+				EAF894C221B6CE08001F0D72 /* dbl-utils.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -18,6 +18,7 @@
 #include "bbtty.h"
 #include "godfu.h"
 #include "bbtelnetserver.h"
+#include "IOUSBEnum.h"
 
 
 @interface ViewController ()
@@ -36,8 +37,12 @@
     start_bbtelnetserver();
     printf("Waiting for server to start on port 666...\n");
     sleep(1);
-    bbtty_start();
-    bb_enter_download_mode();
+    
+    bbtty_start(); //start serial logger
+    bb_enter_download_mode(); //enter DLOAD mode
+    enumerate_usb_devices(); //enumerate to find baseband device and verify it is in DLOAD.
+    
+    
     // Do any additional setup after loading the view, typically from a nib.
 }
 
