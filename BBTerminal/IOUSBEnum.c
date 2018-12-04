@@ -187,7 +187,7 @@ int enumerate_device(io_service_t service) {
     kern_return_t kr;
     IOCFPlugInInterface** plugin = NULL;
     IOUSBDeviceInterface** device = NULL;
-    
+    if(!service) return -1;
     kr = IOCreatePlugInInterfaceForService(service,
                                            kIOUSBDeviceUserClientTypeID, kIOCFPlugInInterfaceID,
                                            &plugin, &score);
@@ -200,7 +200,7 @@ int enumerate_device(io_service_t service) {
     
     kr = IOObjectRelease(service);
     if ((kr != kIOReturnSuccess) || !plugin) {
-        printf("Unable to create a plug-in\n");
+        printf("Unable to create a plug-in for: %s @ %#x\n", deviceName, service);
         return -1;
     }
     
@@ -223,7 +223,7 @@ int enumerate_device(io_service_t service) {
         kr = (*device)->GetDeviceReleaseNumber(device, &release);
         printf("Version: 0x%hx\n", release);
         kr = (*device)->GetLocationID(device, &location);
-        printf("Location: %#x\n", location);
+        printf("Location: %#x\n", (unsigned int)location);
         
         UInt8 config = 0;
         UInt8 numconfigs = 0;
@@ -253,16 +253,16 @@ int enumerate_usb_devices(void)
     
     //Create a master port for communication with the I/O Kit
     kr = IOMasterPort(MACH_PORT_NULL, &masterPort);
-    if (kr || !masterPort) {
+    if (kr != KERN_SUCCESS || !masterPort) {
         printf("Couldn’t create a master I/O Kit port\n");
         return -1;
     }
     
     //Set up matching dictionary for class IOUSBDevice and its subclasses
     //
-    //matchingDict = IOServiceMatching("AppleUSBHSICDevice");
-    matchingDict = IOServiceMatching(kIOUSBDeviceClassName);
-    if (!matchingDict) {
+    matchingDict = IOServiceMatching("AppleUSBHSICDevice");
+    //matchingDict = IOServiceMatching(kIOUSBDeviceClassName);
+    if (matchingDict == NULL) {
         printf("Couldn’t create a USB matching dictionary\n");
         mach_port_deallocate(mach_task_self(), masterPort);
         return -1;
@@ -270,7 +270,7 @@ int enumerate_usb_devices(void)
     
     io_iterator_t iter;
     kr = IOServiceGetMatchingServices(masterPort, matchingDict, &iter);
-    if(kr) {
+    if(kr != KERN_SUCCESS) {
         printf("Unable to find matching services\n");
         mach_port_deallocate(mach_task_self(), masterPort);
         return -1;
@@ -280,8 +280,8 @@ int enumerate_usb_devices(void)
     while((device = IOIteratorNext(iter))) {
         enumerate_device(device);
     }
-    
-    CFRelease(matchingDict);
+    if(matchingDict != NULL)
+       // CFRelease(matchingDict);
     
     //Finished with master port
     mach_port_deallocate(mach_task_self(), masterPort);

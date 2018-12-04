@@ -10,6 +10,6 @@
 #define godfu_h
 
 #include <stdio.h>
-void bb_enter_download_mode(void);
-void bb_reset(void);
+int bb_enter_download_mode(void);
+int bb_reset(void);
 #endif /* godfu_h */

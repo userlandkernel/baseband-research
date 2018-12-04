@@ -19,6 +19,8 @@
 #include "godfu.h"
 #include "bbtelnetserver.h"
 #include "IOUSBEnum.h"
+#include "dload-interact.h"
+#include "bootloader-interact.h"
 
 
 @interface ViewController ()
@@ -39,11 +41,12 @@
     sleep(1);
     
     bbtty_start(); //start serial logger
-    bb_enter_download_mode(); //enter DLOAD mode
-    enumerate_usb_devices(); //enumerate to find baseband device and verify it is in DLOAD.
+    if(bb_enter_download_mode()){ //enter DLOAD mode
+        enumerate_usb_devices(); //enumerate to find baseband device and verify it is in DLOAD.
+        bootloader_interact(NULL, NULL, NULL, 0, 0);
+        dload_interact(0, NULL);
+    }
     
-    
-    // Do any additional setup after loading the view, typically from a nib.
 }
 
 
