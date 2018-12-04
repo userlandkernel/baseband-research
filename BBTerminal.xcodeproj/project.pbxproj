@@ -7,27 +7,48 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		EA6E93BE21B5D2100015CBEB /* godfu.c in Sources */ = {isa = PBXBuildFile; fileRef = EA6E93BC21B5D2100015CBEB /* godfu.c */; };
+		EA6E93C221B5D4C80015CBEB /* bbtelnetserver.c in Sources */ = {isa = PBXBuildFile; fileRef = EA6E93C021B5D4C80015CBEB /* bbtelnetserver.c */; };
 		EA86301A21B431AC00A20AC8 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = EA86301921B431AC00A20AC8 /* AppDelegate.m */; };
 		EA86301D21B431AC00A20AC8 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EA86301C21B431AC00A20AC8 /* ViewController.m */; };
-		EA86302021B431AC00A20AC8 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EA86301E21B431AC00A20AC8 /* Main.storyboard */; };
 		EA86302321B431AC00A20AC8 /* BBTerminal.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = EA86302121B431AC00A20AC8 /* BBTerminal.xcdatamodeld */; };
 		EA86302521B431B200A20AC8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EA86302421B431B200A20AC8 /* Assets.xcassets */; };
-		EA86302821B431B200A20AC8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EA86302621B431B200A20AC8 /* LaunchScreen.storyboard */; };
 		EA86302B21B431B200A20AC8 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = EA86302A21B431B200A20AC8 /* main.m */; };
+		EA8FAFD321B5C4E400A30E8F /* bbtty.c in Sources */ = {isa = PBXBuildFile; fileRef = EA8FAFD121B5C4E400A30E8F /* bbtty.c */; };
+		EAF894B121B6C558001F0D72 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EAF894B021B6C558001F0D72 /* CoreTelephony.framework */; };
+		EAF894B321B6C56A001F0D72 /* libUSBTransport.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EAF894B221B6C56A001F0D72 /* libUSBTransport.tbd */; };
+		EAF894B521B6C570001F0D72 /* libTelephonyIOKitDynamic.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EAF894B421B6C570001F0D72 /* libTelephonyIOKitDynamic.tbd */; };
+		EAF894B721B6C579001F0D72 /* IOKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EAF894B621B6C579001F0D72 /* IOKit.tbd */; };
+		EAF894B921B6C580001F0D72 /* IOMobileFramebuffer.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EAF894B821B6C580001F0D72 /* IOMobileFramebuffer.tbd */; };
+		EAF894BB21B6C583001F0D72 /* IOSurface.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EAF894BA21B6C582001F0D72 /* IOSurface.tbd */; };
+		EAF894BE21B6C7E4001F0D72 /* IOUSBEnum.c in Sources */ = {isa = PBXBuildFile; fileRef = EAF894BC21B6C7E4001F0D72 /* IOUSBEnum.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		EA6E93BC21B5D2100015CBEB /* godfu.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = godfu.c; sourceTree = "<group>"; };
+		EA6E93BD21B5D2100015CBEB /* godfu.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = godfu.h; sourceTree = "<group>"; };
+		EA6E93C021B5D4C80015CBEB /* bbtelnetserver.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = bbtelnetserver.c; sourceTree = "<group>"; };
+		EA6E93C121B5D4C80015CBEB /* bbtelnetserver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bbtelnetserver.h; sourceTree = "<group>"; };
 		EA86301521B431AC00A20AC8 /* BBTerminal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BBTerminal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EA86301821B431AC00A20AC8 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		EA86301921B431AC00A20AC8 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		EA86301B21B431AC00A20AC8 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		EA86301C21B431AC00A20AC8 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
-		EA86301F21B431AC00A20AC8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		EA86302221B431AC00A20AC8 /* BBTerminal.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = BBTerminal.xcdatamodel; sourceTree = "<group>"; };
 		EA86302421B431B200A20AC8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		EA86302721B431B200A20AC8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		EA86302921B431B200A20AC8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EA86302A21B431B200A20AC8 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		EA8FAFCE21B5C08300A30E8F /* IOKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = IOKit.tbd; path = BBTerminal/PrivateFrameworks/IOKit.tbd; sourceTree = "<group>"; };
+		EA8FAFD121B5C4E400A30E8F /* bbtty.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = bbtty.c; sourceTree = "<group>"; };
+		EA8FAFD221B5C4E400A30E8F /* bbtty.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bbtty.h; sourceTree = "<group>"; };
+		EAF894B021B6C558001F0D72 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
+		EAF894B221B6C56A001F0D72 /* libUSBTransport.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libUSBTransport.tbd; path = usr/lib/libUSBTransport.tbd; sourceTree = SDKROOT; };
+		EAF894B421B6C570001F0D72 /* libTelephonyIOKitDynamic.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libTelephonyIOKitDynamic.tbd; path = usr/lib/libTelephonyIOKitDynamic.tbd; sourceTree = SDKROOT; };
+		EAF894B621B6C579001F0D72 /* IOKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = IOKit.tbd; path = BBTerminal/PrivateFrameworks/IOKit/IOKit.tbd; sourceTree = "<group>"; };
+		EAF894B821B6C580001F0D72 /* IOMobileFramebuffer.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = IOMobileFramebuffer.tbd; path = BBTerminal/PrivateFrameworks/IOSurface/IOMobileFramebuffer.tbd; sourceTree = "<group>"; };
+		EAF894BA21B6C582001F0D72 /* IOSurface.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = IOSurface.tbd; path = BBTerminal/PrivateFrameworks/IOSurface/IOSurface.tbd; sourceTree = "<group>"; };
+		EAF894BC21B6C7E4001F0D72 /* IOUSBEnum.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = IOUSBEnum.c; sourceTree = "<group>"; };
+		EAF894BD21B6C7E4001F0D72 /* IOUSBEnum.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IOUSBEnum.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -35,17 +56,51 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EAF894B521B6C570001F0D72 /* libTelephonyIOKitDynamic.tbd in Frameworks */,
+				EAF894B921B6C580001F0D72 /* IOMobileFramebuffer.tbd in Frameworks */,
+				EAF894BB21B6C583001F0D72 /* IOSurface.tbd in Frameworks */,
+				EAF894B321B6C56A001F0D72 /* libUSBTransport.tbd in Frameworks */,
+				EAF894B721B6C579001F0D72 /* IOKit.tbd in Frameworks */,
+				EAF894B121B6C558001F0D72 /* CoreTelephony.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		EA6E93BB21B5D1E40015CBEB /* bbdfu */ = {
+			isa = PBXGroup;
+			children = (
+				EA6E93BD21B5D2100015CBEB /* godfu.h */,
+				EA6E93BC21B5D2100015CBEB /* godfu.c */,
+			);
+			name = bbdfu;
+			sourceTree = "<group>";
+		};
+		EA6E93BF21B5D4B20015CBEB /* bbtelnet */ = {
+			isa = PBXGroup;
+			children = (
+				EA6E93C121B5D4C80015CBEB /* bbtelnetserver.h */,
+				EA6E93C021B5D4C80015CBEB /* bbtelnetserver.c */,
+			);
+			name = bbtelnet;
+			sourceTree = "<group>";
+		};
+		EA6E93C321B5E2830015CBEB /* usbenum */ = {
+			isa = PBXGroup;
+			children = (
+				EAF894BD21B6C7E4001F0D72 /* IOUSBEnum.h */,
+				EAF894BC21B6C7E4001F0D72 /* IOUSBEnum.c */,
+			);
+			name = usbenum;
+			sourceTree = "<group>";
+		};
 		EA86300C21B431AC00A20AC8 = {
 			isa = PBXGroup;
 			children = (
 				EA86301721B431AC00A20AC8 /* BBTerminal */,
 				EA86301621B431AC00A20AC8 /* Products */,
+				EA8FAFCD21B5C08300A30E8F /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -60,18 +115,43 @@
 		EA86301721B431AC00A20AC8 /* BBTerminal */ = {
 			isa = PBXGroup;
 			children = (
+				EA6E93C321B5E2830015CBEB /* usbenum */,
+				EA6E93BF21B5D4B20015CBEB /* bbtelnet */,
+				EA6E93BB21B5D1E40015CBEB /* bbdfu */,
+				EA8FAFD021B5C4CB00A30E8F /* tty */,
 				EA86301821B431AC00A20AC8 /* AppDelegate.h */,
 				EA86301921B431AC00A20AC8 /* AppDelegate.m */,
 				EA86301B21B431AC00A20AC8 /* ViewController.h */,
 				EA86301C21B431AC00A20AC8 /* ViewController.m */,
-				EA86301E21B431AC00A20AC8 /* Main.storyboard */,
 				EA86302421B431B200A20AC8 /* Assets.xcassets */,
-				EA86302621B431B200A20AC8 /* LaunchScreen.storyboard */,
 				EA86302921B431B200A20AC8 /* Info.plist */,
 				EA86302A21B431B200A20AC8 /* main.m */,
 				EA86302121B431AC00A20AC8 /* BBTerminal.xcdatamodeld */,
 			);
 			path = BBTerminal;
+			sourceTree = "<group>";
+		};
+		EA8FAFCD21B5C08300A30E8F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				EAF894BA21B6C582001F0D72 /* IOSurface.tbd */,
+				EAF894B821B6C580001F0D72 /* IOMobileFramebuffer.tbd */,
+				EAF894B621B6C579001F0D72 /* IOKit.tbd */,
+				EAF894B421B6C570001F0D72 /* libTelephonyIOKitDynamic.tbd */,
+				EAF894B221B6C56A001F0D72 /* libUSBTransport.tbd */,
+				EAF894B021B6C558001F0D72 /* CoreTelephony.framework */,
+				EA8FAFCE21B5C08300A30E8F /* IOKit.tbd */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		EA8FAFD021B5C4CB00A30E8F /* tty */ = {
+			isa = PBXGroup;
+			children = (
+				EA8FAFD221B5C4E400A30E8F /* bbtty.h */,
+				EA8FAFD121B5C4E400A30E8F /* bbtty.c */,
+			);
+			name = tty;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -131,9 +211,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EA86302821B431B200A20AC8 /* LaunchScreen.storyboard in Resources */,
 				EA86302521B431B200A20AC8 /* Assets.xcassets in Resources */,
-				EA86302021B431AC00A20AC8 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -145,32 +223,17 @@
 			buildActionMask = 2147483647;
 			files = (
 				EA86301D21B431AC00A20AC8 /* ViewController.m in Sources */,
+				EA6E93C221B5D4C80015CBEB /* bbtelnetserver.c in Sources */,
 				EA86301A21B431AC00A20AC8 /* AppDelegate.m in Sources */,
+				EAF894BE21B6C7E4001F0D72 /* IOUSBEnum.c in Sources */,
 				EA86302B21B431B200A20AC8 /* main.m in Sources */,
+				EA6E93BE21B5D2100015CBEB /* godfu.c in Sources */,
+				EA8FAFD321B5C4E400A30E8F /* bbtty.c in Sources */,
 				EA86302321B431AC00A20AC8 /* BBTerminal.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXVariantGroup section */
-		EA86301E21B431AC00A20AC8 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				EA86301F21B431AC00A20AC8 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		EA86302621B431B200A20AC8 /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				EA86302721B431B200A20AC8 /* Base */,
-			);
-			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		EA86302C21B431B200A20AC8 /* Debug */ = {
@@ -288,34 +351,54 @@
 		EA86302F21B431B200A20AC8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 32A58HRQW6;
 				INFOPLIST_FILE = BBTerminal/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = ml.jailed.BBTerminal;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/BBTerminal/PrivateFrameworks",
+					"$(PROJECT_DIR)/BBTerminal/PrivateFrameworks/IOKit",
+					"$(PROJECT_DIR)/BBTerminal/PrivateFrameworks/IOSurface",
+				);
+				OTHER_CFLAGS = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.appIe;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/$(PROJECT_NAME)/PrivateFrameworks";
 			};
 			name = Debug;
 		};
 		EA86303021B431B200A20AC8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 32A58HRQW6;
 				INFOPLIST_FILE = BBTerminal/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = ml.jailed.BBTerminal;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/BBTerminal/PrivateFrameworks",
+					"$(PROJECT_DIR)/BBTerminal/PrivateFrameworks/IOKit",
+					"$(PROJECT_DIR)/BBTerminal/PrivateFrameworks/IOSurface",
+				);
+				OTHER_CFLAGS = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.appIe;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/$(PROJECT_NAME)/PrivateFrameworks";
 			};
 			name = Release;
 		};
