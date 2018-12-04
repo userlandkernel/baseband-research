@@ -27,6 +27,9 @@
 		EAF894C821B6CEB9001F0D72 /* dbl-sock.c in Sources */ = {isa = PBXBuildFile; fileRef = EAF894C621B6CEB9001F0D72 /* dbl-sock.c */; };
 		EAF894CB21B6CEFB001F0D72 /* dbl.c in Sources */ = {isa = PBXBuildFile; fileRef = EAF894C921B6CEFB001F0D72 /* dbl.c */; };
 		EAF894CE21B6CF70001F0D72 /* bootloader-interact.c in Sources */ = {isa = PBXBuildFile; fileRef = EAF894CC21B6CF70001F0D72 /* bootloader-interact.c */; };
+		EAF894D221B6D153001F0D72 /* dload.c in Sources */ = {isa = PBXBuildFile; fileRef = EAF894D021B6D153001F0D72 /* dload.c */; };
+		EAF894D521B6D168001F0D72 /* dl-usb.c in Sources */ = {isa = PBXBuildFile; fileRef = EAF894D321B6D168001F0D72 /* dl-usb.c */; };
+		EAF894D821B6D19D001F0D72 /* dl-util.c in Sources */ = {isa = PBXBuildFile; fileRef = EAF894D621B6D19D001F0D72 /* dl-util.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -63,6 +66,12 @@
 		EAF894CA21B6CEFB001F0D72 /* dbl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dbl.h; sourceTree = "<group>"; };
 		EAF894CC21B6CF70001F0D72 /* bootloader-interact.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "bootloader-interact.c"; sourceTree = "<group>"; };
 		EAF894CD21B6CF70001F0D72 /* bootloader-interact.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "bootloader-interact.h"; sourceTree = "<group>"; };
+		EAF894D021B6D153001F0D72 /* dload.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dload.c; sourceTree = "<group>"; };
+		EAF894D121B6D153001F0D72 /* dload.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dload.h; sourceTree = "<group>"; };
+		EAF894D321B6D168001F0D72 /* dl-usb.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "dl-usb.c"; sourceTree = "<group>"; };
+		EAF894D421B6D168001F0D72 /* dl-usb.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dl-usb.h"; sourceTree = "<group>"; };
+		EAF894D621B6D19D001F0D72 /* dl-util.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "dl-util.c"; sourceTree = "<group>"; };
+		EAF894D721B6D19D001F0D72 /* dl-util.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dl-util.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -129,6 +138,7 @@
 		EA86301721B431AC00A20AC8 /* BBTerminal */ = {
 			isa = PBXGroup;
 			children = (
+				EAF894CF21B6D12C001F0D72 /* dload */,
 				EAF894BF21B6CDDA001F0D72 /* bootloader-interact */,
 				EA6E93C321B5E2830015CBEB /* usbenum */,
 				EA6E93BF21B5D4B20015CBEB /* bbtelnet */,
@@ -183,6 +193,19 @@
 				EAF894CC21B6CF70001F0D72 /* bootloader-interact.c */,
 			);
 			name = "bootloader-interact";
+			sourceTree = "<group>";
+		};
+		EAF894CF21B6D12C001F0D72 /* dload */ = {
+			isa = PBXGroup;
+			children = (
+				EAF894D121B6D153001F0D72 /* dload.h */,
+				EAF894D021B6D153001F0D72 /* dload.c */,
+				EAF894D421B6D168001F0D72 /* dl-usb.h */,
+				EAF894D321B6D168001F0D72 /* dl-usb.c */,
+				EAF894D721B6D19D001F0D72 /* dl-util.h */,
+				EAF894D621B6D19D001F0D72 /* dl-util.c */,
+			);
+			name = dload;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -253,10 +276,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EAF894D521B6D168001F0D72 /* dl-usb.c in Sources */,
 				EAF894CB21B6CEFB001F0D72 /* dbl.c in Sources */,
 				EA86301D21B431AC00A20AC8 /* ViewController.m in Sources */,
 				EA6E93C221B5D4C80015CBEB /* bbtelnetserver.c in Sources */,
 				EA86301A21B431AC00A20AC8 /* AppDelegate.m in Sources */,
+				EAF894D821B6D19D001F0D72 /* dl-util.c in Sources */,
 				EAF894BE21B6C7E4001F0D72 /* IOUSBEnum.c in Sources */,
 				EA86302B21B431B200A20AC8 /* main.m in Sources */,
 				EAF894C821B6CEB9001F0D72 /* dbl-sock.c in Sources */,
@@ -265,6 +290,7 @@
 				EA8FAFD321B5C4E400A30E8F /* bbtty.c in Sources */,
 				EA86302321B431AC00A20AC8 /* BBTerminal.xcdatamodeld in Sources */,
 				EAF894CE21B6CF70001F0D72 /* bootloader-interact.c in Sources */,
+				EAF894D221B6D153001F0D72 /* dload.c in Sources */,
 				EAF894C221B6CE08001F0D72 /* dbl-utils.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

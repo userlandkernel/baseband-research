@@ -19,7 +19,7 @@
 #include "dbl.h"
 
 void usage() {
-    printf("Usage: dbltool -b <bbticket> -o <osbl> -a <amss>\n");
+    printf("Usage: bootloader-interact -b <bbticket> -o <osbl> -a <amss>\n");
 }
 
 int bootloader_interact (const char* bbticket, const char* osbl, const char* amss, uint32_t VID, uint32_t PID) {
@@ -31,7 +31,7 @@ int bootloader_interact (const char* bbticket, const char* osbl, const char* ams
     USBDevice device;
     USBInterface iface;
     
-    printf("Starting DBLTool\n");
+    printf("Starting bootloader-interaction\n");
     if(!bbticket || !osbl || !amss) {
         usage();
     }
