@@ -61,6 +61,8 @@ QXDM is internal and proprietary software from Qualcomm.
 Officially it is not available in public.  
 QXDM requires a valid login-based license that is activated by providing a username, password and admin code.  
 Cracking QXDM is covered in this document: (soon).  
+The baseband will not store any crashlogs on the NAND, the full crashlogs including registers are stored in protected NVRAM.  
+
 
 
 ## Useful to know
