@@ -1,14 +1,23 @@
 # iPhone Baseband Hacking
 
 This repository is part of a project that is the result of many hours of research.  
+
 It primarily focusses on the Qualcomm baseband chips used in 32-bit iPhones and iPads.  
+
 The baseband is a chip on the iPhone motherboard with its own flash memory, ram and cpu.  
-The baseband therefore also runs an operating system completely seperated from iOS, its own bootloader, its own recovery modes.  
+
+The baseband therefore also runs an operating system completely seperated from iOS, its own bootloader, its own recovery modes. 
+
 The only references in iOS to it are via the IOKit-based kernel driver, communication center and the serial tty device.  
+
 A baseband chip is used for network operations such as Texting, Calling and LTE.  
+
 There are many ways to communicate with the chip each with its own purpose and functionality.  
-In this repository you can find utilities and documents explaining how to hack your baseband and providing an easy interface to it.  
+
+In this repository you can find utilities and documents explaining how to hack your baseband and providing an easy interface to it.
+
 Custom firmware However has not yet been created but in the future it can be done by porting the OKL4 kernel and creating an image accordingly fitting with the format used by Qualcomm.  
+
 However, it may require the code to be signed, a codesign defeat is in the works and there are several ways to achieve it.  
 
 
