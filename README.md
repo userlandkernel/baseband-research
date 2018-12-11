@@ -1,24 +1,18 @@
 # iPhone Baseband Hacking
 
 This repository is part of a project that is the result of many hours of research.  
-
+In this repository you can find utilities and documents explaining how to hack your baseband and providing an easy interface to it.  
 It primarily focusses on the Qualcomm baseband chips used in 32-bit iPhones and iPads.  
 
 The baseband is a chip on the iPhone motherboard with its own flash memory, ram and cpu.  
-
 The baseband therefore also runs an operating system completely seperated from iOS, its own bootloader, its own recovery modes. 
-
 The only references in iOS to it are via the IOKit-based kernel driver, communication center and the serial tty device.  
 
 A baseband chip is used for network operations such as Texting, Calling and LTE.  
-
 There are many ways to communicate with the chip each with its own purpose and functionality.  
 
-In this repository you can find utilities and documents explaining how to hack your baseband and providing an easy interface to it.
-
-Custom firmware However has not yet been created but in the future it can be done by porting the OKL4 kernel and creating an image accordingly fitting with the format used by Qualcomm.  
-
-However, it may require the code to be signed, a codesign defeat is in the works and there are several ways to achieve it.  
+Custom firmware has not yet been created but hopefully can be achieved in the future it by porting the OKL4 kernel and creating an image accordingly fitting with the format used by Qualcomm.  
+Baseband firmware is codesigned and therefore a defeat for the validation of the signatures is needed for loading custom firmware.
 
 
 ## Serial Logging
@@ -26,6 +20,13 @@ However, it may require the code to be signed, a codesign defeat is in the works
 Serial logging will not be the same accross iOS versions and devices.  
 Some devices are featured to send AT carrier commands, other only privide a very basic logging interface.  
 In the future more research can perhaps point out to better serial logging interfaces of the baseband.  
+
+## Hardening and Exploit mitigations
+
+It looks as if Qualcomm has not paid much attention to preventing exploitation through hardening.  
+ASLR is not implemented in the Qualcomm baseband firmware of the iPhone 5 and below.  
+Neither is there any proper memory protection through secure mappings or kernel patch protection.  
+The stack looks executable as well at first sight, making the baseband firmware an easy target to exploit.
 
 
 ## Radio based exploitation
