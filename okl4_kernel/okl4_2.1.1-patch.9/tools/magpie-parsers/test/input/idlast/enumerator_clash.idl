@@ -1,0 +1,4 @@
+interface test {
+    void red();
+    enum color { red, green, blue };
+};

@@ -1,0 +1,40 @@
+Traceback (most recent call last):
+  File "/home/nfd/src/magpie-tools/magpidl4.py", line 278, in main
+    result = target_inst.run()
+  File "/home/nfd/src/magpie/magpie/targets/shared/target.py", line 175, in run
+    self.generate_output()
+  File "/home/nfd/src/magpie/magpie/targets/shared/target.py", line 201, in generate_output
+    self.generator_go(generator_inst)
+  File "/home/nfd/src/magpie/magpie/targets/shared/target.py", line 220, in generator_go
+    self.output.go(base_template)
+  File "/home/nfd/src/magpie/magpie/output/generic.py", line 92, in go
+    self.fromtemplate(template_filename)
+  File "/home/nfd/src/magpie/magpie/output/generic.py", line 75, in fromtemplate
+    markup(template_filename, self.output, self.context.base_scope)
+  File "/home/nfd/src/magpie/magpie/output/wsogmm.py", line 130, in markup
+    run(template_filename, {}, template_globals)
+  File "/home/nfd/src/magpie/magpie/output/wsogmm.py", line 119, in run
+    execfile(cache_path, template_globals, template_locals)
+  File "/home/nfd/.magpie/templates/v4_generic/main_client.template.h", line 20, in ?
+    run(templates.get('interface_wrapper'))
+  File "/home/nfd/.magpie/templates/types/cpp_define_int_constants.template.c", line 4, in run
+    _run(template_filename, caller.f_locals, caller.f_globals)
+  File "/home/nfd/src/magpie/magpie/output/wsogmm.py", line 119, in run
+    execfile(cache_path, template_globals, template_locals)
+  File "/home/nfd/.magpie/templates/v4_generic/interface_wrapper.template.c", line 21, in ?
+    run(templates.get('client_function_wrapper'))
+  File "/home/nfd/.magpie/templates/v4_generic/null_remapping.template.c", line 4, in run
+    _run(template_filename, caller.f_locals, caller.f_globals)
+  File "/home/nfd/src/magpie/magpie/output/wsogmm.py", line 119, in run
+    execfile(cache_path, template_globals, template_locals)
+  File "/home/nfd/.magpie/templates/v4_generic/client_function_wrapper.template.c", line 27, in ?
+    run(templates.get('client_function_body'))
+  File "/home/nfd/.magpie/templates/v4_generic_biguuid/client_function_create_id.template.c", line 4, in run
+    _run(template_filename, caller.f_locals, caller.f_globals)
+  File "/home/nfd/src/magpie/magpie/output/wsogmm.py", line 119, in run
+    execfile(cache_path, template_globals, template_locals)
+  File "/home/nfd/.magpie/templates/v4nicta_generic/client_function_body_noabi.template.c", line 20, in ?
+    run(templates.get('marshal.template.c'), command = cmd)
+  File "/home/nfd/src/magpie/magpie/targets/base.py", line 10, in get
+    raise KeyError("%s not found" % (name))
+KeyError: 'marshal.template.c not found'

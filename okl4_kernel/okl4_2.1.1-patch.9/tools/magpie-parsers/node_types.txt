@@ -1,0 +1,40 @@
+type(alias(<type name>, name(<target decl name>))) - for named types
+type(alias(<type name>, type(<type declaration>))) - for anonymous types
+
+type <type name>
+ (meta type) = 'alias'
+ (indirection) = '' or '*' or '**' etc
+ target
+  type <type name> (optional, None if type is anonymous)
+
+
+% Declare a type instance with optional initialiser.
+
+type_instance(<name>, <target_name>, <expression> or null)
+
+type_instance <name>
+ (meta_type) = const OR (none)
+ (value) = <value> (optional, not present in IDL AST)
+ (c_static) = True OR False (optional, not present in IDL AST)
+ (c_inline) = True OR False (optional, not present in IDL AST)
+ target
+  type
+   <details>
+ expression (optional initialiser expression)
+  <details>
+
+%%%%%%%%%%
+% Exit the function, optionally returning an expression
+exit(<expression> or null)
+
+exit
+ expression (optional)
+  <details>
+
+%%%%%%%%%%
+% Assembly-language block - undefined right now.
+asm()
+
+asm_block
+ <no children or attributes>
+

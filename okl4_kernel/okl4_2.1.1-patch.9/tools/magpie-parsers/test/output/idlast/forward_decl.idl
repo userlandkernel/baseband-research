@@ -1,0 +1,12 @@
+ MagpieAST  (0, ?:?)
+  type foo  (1, test/input/idlast/forward_decl.idl:1)
+   (meta_type) = ['interface']
+   (incomplete) = [True]
+  type fooseq  (1, test/input/idlast/forward_decl.idl:2)
+   (meta_type) = ['alias']
+   type  (2, test/input/idlast/forward_decl.idl:2)
+    (meta_type) = ['sequence']
+    target  (3, test/input/idlast/forward_decl.idl:1)
+     type foo (backref)
+   target  (2, test/input/idlast/forward_decl.idl:2)
+    type None (backref)

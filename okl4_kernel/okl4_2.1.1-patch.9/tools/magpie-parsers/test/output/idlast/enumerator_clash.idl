@@ -1,0 +1,3 @@
+* Semantic error *
+test/input/idlast/enumerator_clash.idl:3:Name "red" defined twice in same scope
+test/input/idlast/enumerator_clash.idl:2:Name "red" was previously defined here.

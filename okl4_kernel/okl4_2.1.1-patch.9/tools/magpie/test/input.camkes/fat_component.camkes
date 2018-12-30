@@ -1,0 +1,24 @@
+component FAT {
+	provides FS fs;
+	dataport Buf buf[];
+	provides FSUtil util;
+	uses BlockDevice dev;
+	dataport Buf devbuf;
+
+	composition {
+		component FATFS fat;
+		component FSUtil util;
+
+		connection IguanaExportRPC fat (from fat.fs, to fs);
+		connection IguanaExportData fatd (from fat.buf, to buf);
+
+		connection IguanaExportRPC util (from util.util, to util);
+
+		connection IguanaExportRPC dev (from fat.dev, to dev);
+		connection IguanaExportData devd (from fat.devbuf, to devbuf);
+
+		connection IguanaRPC fsutil (from util.fs, to fat.fs);
+		connection IguanaSharedData fsutild (from util.buf, to fat.buf);
+	}
+
+}

@@ -1,0 +1,13 @@
+/* 
+ * magpidl4 should support void as a return type, as a pointer type, and as 
+ * a placeholder indicating that a funtion takes zero parameters.
+*/
+[uuid(37)]
+interface allvoid
+{
+	void afunc();
+	void bfunc(void);
+	void *cfunc(void);
+	void *dfunc(in void *a, out void *b);
+};
+

@@ -1,0 +1,6 @@
+typedef unsigned char uchar;
+
+typedef struct {
+        unsigned apple:sizeof(uchar);
+        unsigned pear:16;
+} Somestruct;

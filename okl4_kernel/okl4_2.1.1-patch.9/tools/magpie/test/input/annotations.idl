@@ -1,0 +1,33 @@
+[uuid(37)]
+interface uuidiface
+{
+};
+
+[singlethreaded()]
+interface singlethreadiface
+{
+};
+
+[singlethreaded()]
+[uuid(38)]
+interface twoannotation
+{
+};
+
+[componentthreads(1, 5, 10)]
+interface multiargs
+{
+};
+
+[uuid(27)]
+interface funcuuids
+{
+	[kernelmsg(idl4::pagefault)]
+	void pagefault([anno1]in int addr, [anno1, anno2] in int ip, [anno] in int priv, out fpage fp);
+	[mymodifier]
+	void test();
+	[mymodifier2()]
+	void test2();
+	[multione(), multitwo, multithree, multifour(37)]
+	void test3();
+};

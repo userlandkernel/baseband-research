@@ -1,0 +1,5 @@
+interface yarg
+{
+	string func1(in string arg1, in int arg2);
+};
+

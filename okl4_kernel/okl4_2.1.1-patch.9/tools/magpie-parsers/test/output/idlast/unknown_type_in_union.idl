@@ -1,0 +1,2 @@
+* Semantic error *
+test/input/idlast/unknown_type_in_union.idl:2:Unknown type "bogus"

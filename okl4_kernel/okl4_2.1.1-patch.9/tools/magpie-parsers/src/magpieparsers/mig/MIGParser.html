@@ -1,0 +1,406 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD>
+<TITLE>Grammar mig.g</TITLE>
+</HEAD>
+<BODY>
+<table summary="" border="1" cellpadding="5">
+<tr>
+<td>
+<font size="+2">Grammar MIGParser</font><br>
+<a href="http://www.ANTLR.org">ANTLR</a>-generated HTML file from mig.g
+<p>
+Terence Parr, <a href="http://www.magelang.com">MageLang Institute</a>
+<br>ANTLR Version 2.7.5 (20050403); 1989-2005
+</td>
+</tr>
+</table>
+<PRE>
+
+Definition of parser MIGParser, which is a subclass of LLkParser.
+
+
+<a name="statements">statements</a>
+	:	( <a href="MIGParser.html#statement">statement</a> )* 
+	;
+
+
+<a name="statement">statement</a>
+	:	<a href="MIGParser.html#subsystem">subsystem</a> SEMI 
+	|	<a href="MIGParser.html#wait_time">wait_time</a> SEMI 
+	|	<a href="MIGParser.html#msg_option">msg_option</a> SEMI 
+	|	<a href="MIGParser.html#user_type_limit">user_type_limit</a> SEMI 
+	|	<a href="MIGParser.html#on_stack_limit">on_stack_limit</a> SEMI 
+	|	<a href="MIGParser.html#error">error</a> SEMI 
+	|	<a href="MIGParser.html#server_prefix">server_prefix</a> SEMI 
+	|	<a href="MIGParser.html#user_prefix">user_prefix</a> SEMI 
+	|	<a href="MIGParser.html#server_demux">server_demux</a> SEMI 
+	|	<a href="MIGParser.html#type_decl">type_decl</a> SEMI 
+	|	<a href="MIGParser.html#routine_decl">routine_decl</a> SEMI 
+	|	&quot;skip&quot; SEMI 
+	|	<a href="MIGParser.html#import_decl">import_decl</a> SEMI 
+	|	<a href="MIGParser.html#rcs_decl">rcs_decl</a> SEMI 
+	|	SEMI 
+	;
+
+
+<a name="subsystem">subsystem</a>
+	:	&quot;subsystem&quot; <a href="MIGParser.html#subsystem_mods">subsystem_mods</a> <a href="MIGParser.html#subsystem_name">subsystem_name</a> <a href="MIGParser.html#subsystem_base">subsystem_base</a> 
+	;
+
+
+<a name="wait_time">wait_time</a>
+	:	&quot;waittime&quot; STRING 
+	;
+
+
+<a name="msg_option">msg_option</a>
+	:	&quot;msgoption&quot; STRING 
+	;
+
+
+<a name="user_type_limit">user_type_limit</a>
+	:	&quot;UserTypeLimit&quot; NUMBER 
+	;
+
+
+<a name="on_stack_limit">on_stack_limit</a>
+	:	&quot;OnStackLimit&quot; NUMBER 
+	;
+
+
+<a name="error">error</a>
+	:	&quot;error&quot; IDENT 
+	;
+
+
+<a name="server_prefix">server_prefix</a>
+	:	&quot;serverprefix&quot; IDENT 
+	;
+
+
+<a name="user_prefix">user_prefix</a>
+	:	&quot;userprefix&quot; IDENT 
+	;
+
+
+<a name="server_demux">server_demux</a>
+	:	&quot;serverdemux&quot; IDENT 
+	;
+
+
+<a name="type_decl">type_decl</a>
+	:	&quot;type&quot; <a href="MIGParser.html#named_type_spec">named_type_spec</a> 
+	;
+
+
+<a name="routine_decl">routine_decl</a>
+	:	<a href="MIGParser.html#routine">routine</a> 
+	|	<a href="MIGParser.html#simple_routine">simple_routine</a> 
+	;
+
+
+<a name="import_decl">import_decl</a>
+	:	<a href="MIGParser.html#import_indicant">import_indicant</a> 
+		(	QUOTEDSTRING 
+		|	ANGLEQUOTEDSTRING 
+		) 
+	;
+
+
+<a name="rcs_decl">rcs_decl</a>
+	:	RCSDECL 
+	;
+
+
+<a name="subsystem_mods">subsystem_mods</a>
+	:	( <a href="MIGParser.html#subsystem_mod">subsystem_mod</a> )* 
+	;
+
+
+<a name="subsystem_name">subsystem_name</a>
+	:	IDENT 
+	;
+
+
+<a name="subsystem_base">subsystem_base</a>
+	:	NUMBER 
+	;
+
+
+<a name="subsystem_mod">subsystem_mod</a>
+	:	&quot;kerneluser&quot; 
+	|	&quot;kernelserver&quot; 
+	;
+
+
+<a name="import_indicant">import_indicant</a>
+	:	&quot;import&quot; 
+	|	&quot;uimport&quot; 
+	|	&quot;simport&quot; 
+	|	&quot;dimport&quot; 
+	|	&quot;iimport&quot; 
+	;
+
+
+<a name="named_type_spec">named_type_spec</a>
+	:	IDENT EQUAL <a href="MIGParser.html#trans_type_spec">trans_type_spec</a> 
+	;
+
+
+<a name="trans_type_spec">trans_type_spec</a>
+	:	<a href="MIGParser.html#type_spec">type_spec</a> ( <a href="MIGParser.html#trans_type_spec_extended">trans_type_spec_extended</a> )* 
+	;
+
+
+<a name="type_spec">type_spec</a>
+	:	<a href="MIGParser.html#basic_type_spec">basic_type_spec</a> 
+	|	<a href="MIGParser.html#prev_type_spec">prev_type_spec</a> 
+	|	<a href="MIGParser.html#array_spec">array_spec</a> 
+	|	CARET <a href="MIGParser.html#type_spec">type_spec</a> 
+	|	<a href="MIGParser.html#struct_head">struct_head</a> 
+	|	<a href="MIGParser.html#c_string_spec">c_string_spec</a> 
+	|	<a href="MIGParser.html#native_type_spec">native_type_spec</a> 
+	;
+
+
+<a name="trans_type_spec_extended">trans_type_spec_extended</a>
+	:	&quot;intran&quot; COLON IDENT IDENT LPAREN IDENT RPAREN 
+	|	&quot;outtran&quot; COLON IDENT IDENT LPAREN IDENT RPAREN 
+	|	&quot;destructor&quot; COLON IDENT LPAREN IDENT RPAREN 
+	|	&quot;ctype&quot; COLON IDENT 
+	|	&quot;cusertype&quot; COLON IDENT 
+	|	&quot;cservertype&quot; COLON IDENT 
+	;
+
+
+<a name="basic_type_spec">basic_type_spec</a>
+	:	<a href="MIGParser.html#ipc_type">ipc_type</a> 
+	|	LPAREN <a href="MIGParser.html#ipc_type">ipc_type</a> COMMA <a href="MIGParser.html#int_exp">int_exp</a> 
+		(	<a href="MIGParser.html#ipc_flags">ipc_flags</a> 
+		|	
+		) 
+		RPAREN 
+	;
+
+
+<a name="prev_type_spec">prev_type_spec</a>
+	:	IDENT 
+	;
+
+
+<a name="array_spec">array_spec</a>
+	:	&quot;array&quot; LBRACK 
+		(	<a href="MIGParser.html#var_array_head">var_array_head</a> 
+		|	<a href="MIGParser.html#array_head">array_head</a> 
+		) 
+		<a href="MIGParser.html#type_spec">type_spec</a> 
+	;
+
+
+<a name="struct_head">struct_head</a>
+	:	&quot;struct&quot; LBRACK <a href="MIGParser.html#int_exp">int_exp</a> RBRACK OF <a href="MIGParser.html#type_spec">type_spec</a> 
+	;
+
+
+<a name="c_string_spec">c_string_spec</a>
+	:	&quot;c_string&quot; 
+		(	LBRACK <a href="MIGParser.html#int_exp">int_exp</a> RBRACK 
+		|	LBRACK STAR COLON <a href="MIGParser.html#int_exp">int_exp</a> RBRACK 
+		) 
+	;
+
+
+<a name="native_type_spec">native_type_spec</a>
+	:	&quot;PointerTo&quot; LPAREN <a href="MIGParser.html#type_phrase">type_phrase</a> RPAREN 
+	|	&quot;PointerToIfNot&quot; LPAREN <a href="MIGParser.html#type_phrase">type_phrase</a> COMMA <a href="MIGParser.html#type_phrase">type_phrase</a> RPAREN 
+	|	&quot;ValueOf&quot; LPAREN <a href="MIGParser.html#type_phrase">type_phrase</a> RPAREN 
+	;
+
+
+<a name="type_phrase">type_phrase</a>
+	:	( IDENT )+ 
+	;
+
+
+<a name="ipc_type">ipc_type</a>
+	:	<a href="MIGParser.html#prim_ipc_type">prim_ipc_type</a> 
+		(	BAR <a href="MIGParser.html#prim_ipc_type">prim_ipc_type</a> 
+		|	
+		) 
+	;
+
+
+<a name="int_exp">int_exp</a>
+	:	NUMBER 
+	|	NUMBER 
+		(	PLUS 
+		|	MINUS 
+		|	STAR 
+		|	DIV 
+		) 
+		<a href="MIGParser.html#int_exp">int_exp</a> 
+	|	LPAREN <a href="MIGParser.html#int_exp">int_exp</a> RPAREN 
+	;
+
+
+<a name="ipc_flags">ipc_flags</a>
+	:	( COMMA <a href="MIGParser.html#ipc_flag">ipc_flag</a> )+ 
+		(	LBRACK RBRACK 
+		|	
+		) 
+	;
+
+
+<a name="prim_ipc_type">prim_ipc_type</a>
+	:	NUMBER 
+	|	<a href="MIGParser.html#symbolic_type">symbolic_type</a> 
+	;
+
+
+<a name="symbolic_type">symbolic_type</a>
+	:	&quot;polymorphic&quot; 
+	|	&quot;MACH_MSG_TYPE_MOVE_RECEIVE&quot; 
+	|	&quot;MACH_MSG_TYPE_COPY_SEND&quot; 
+	|	&quot;MACH_MSG_TYPE_MAKE_SEND&quot; 
+	|	&quot;MACH_MSG_TYPE_MOVE_SEND&quot; 
+	|	&quot;MACH_MSG_TYPE_MAKE_SEND_ONCE&quot; 
+	|	&quot;MACH_MSG_TYPE_MOVE_SEND_ONCE&quot; 
+	|	&quot;MACH_MSG_TYPE_PORT_NAME&quot; 
+	|	&quot;MACH_MSG_TYPE_PORT_RECEIVE&quot; 
+	|	&quot;MACH_MSG_TYPE_PORT_SEND&quot; 
+	|	&quot;MACH_MSG_TYPE_PORT_SEND_ONCE&quot; 
+	|	&quot;MACH_MSG_TYPE_POLYMORPHIC&quot; 
+	|	&quot;MACH_MSG_TYPE_UNSTRUCTURED&quot; 
+	|	&quot;MACH_MSG_TYPE_BIT&quot; 
+	|	&quot;MACH_MSG_TYPE_BOOLEAN&quot; 
+	|	&quot;MACH_MSG_TYPE_INTEGER_8&quot; 
+	|	&quot;MACH_MSG_TYPE_INTEGER_16&quot; 
+	|	&quot;MACH_MSG_TYPE_INTEGER_32&quot; 
+	|	&quot;MACH_MSG_TYPE_INTEGER_64&quot; 
+	|	&quot;MACH_MSG_TYPE_REAL&quot; 
+	|	&quot;MACH_MSG_TYPE_REAL_32&quot; 
+	|	&quot;MACH_MSG_TYPE_REAL_64&quot; 
+	|	&quot;MACH_MSG_TYPE_CHAR&quot; 
+	|	&quot;MACH_MSG_TYPE_BYTE&quot; 
+	|	&quot;MACH_MSG_TYPE_STRING&quot; 
+	|	&quot;MACH_MSG_TYPE_STRING_C&quot; 
+	;
+
+
+<a name="var_array_head">var_array_head</a>
+	:	RBRACK OF 
+	|	STAR RBRACK OF 
+	|	STAR COLON <a href="MIGParser.html#int_exp">int_exp</a> RBRACK OF 
+	;
+
+
+<a name="array_head">array_head</a>
+	:	<a href="MIGParser.html#int_exp">int_exp</a> RBRACK OF 
+	;
+
+
+<a name="routine">routine</a>
+	:	&quot;routine&quot; <a href="MIGParser.html#identifier">identifier</a> <a href="MIGParser.html#arguments">arguments</a> 
+	;
+
+
+<a name="simple_routine">simple_routine</a>
+	:	&quot;simpleroutine&quot; <a href="MIGParser.html#identifier">identifier</a> <a href="MIGParser.html#arguments">arguments</a> 
+	;
+
+
+<a name="identifier">identifier</a>
+	:	IDENT 
+	;
+
+
+<a name="arguments">arguments</a>
+	:	LPAREN 
+		(	<a href="MIGParser.html#argument_list">argument_list</a> 
+		|	
+		) 
+		RPAREN 
+	;
+
+
+<a name="argument_list">argument_list</a>
+	:	<a href="MIGParser.html#argument">argument</a> 
+		(	SEMI <a href="MIGParser.html#argument_list">argument_list</a> 
+		|	
+		) 
+	|	<a href="MIGParser.html#trailer">trailer</a> 
+		(	SEMI <a href="MIGParser.html#argument_list">argument_list</a> 
+		|	
+		) 
+	;
+
+
+<a name="argument">argument</a>
+	:	(	<a href="MIGParser.html#direction">direction</a> 
+		|	
+		) 
+		<a href="MIGParser.html#identifier">identifier</a> <a href="MIGParser.html#argument_type">argument_type</a> 
+		(	<a href="MIGParser.html#ipc_flags">ipc_flags</a> 
+		|	
+		) 
+	;
+
+
+<a name="trailer">trailer</a>
+	:	<a href="MIGParser.html#tr_impl_keyword">tr_impl_keyword</a> IDENT <a href="MIGParser.html#argument_type">argument_type</a> 
+	;
+
+
+<a name="direction">direction</a>
+	:	&quot;in&quot; 
+	|	&quot;out&quot; 
+	|	&quot;inout&quot; 
+	|	&quot;requestport&quot; 
+	|	&quot;replyport&quot; 
+	|	&quot;sreplyport&quot; 
+	|	&quot;ureplyport&quot; 
+	|	&quot;waittime&quot; 
+	|	&quot;sendtime&quot; 
+	|	&quot;msgoption&quot; 
+	|	&quot;sectoken&quot; 
+	|	&quot;serversectoken&quot; 
+	|	&quot;usersectoken&quot; 
+	|	&quot;audittoken&quot; 
+	|	&quot;serveraudittoken&quot; 
+	|	&quot;useraudittoken&quot; 
+	|	&quot;msgseqno&quot; 
+	;
+
+
+<a name="argument_type">argument_type</a>
+	:	COLON 
+		(	<a href="MIGParser.html#identifier">identifier</a> 
+		|	<a href="MIGParser.html#named_type_spec">named_type_spec</a> 
+		|	<a href="MIGParser.html#native_type_spec">native_type_spec</a> 
+		) 
+	;
+
+
+<a name="tr_impl_keyword">tr_impl_keyword</a>
+	:	&quot;serverimpl&quot; 
+	|	&quot;userimpl&quot; 
+	;
+
+
+<a name="ipc_flag">ipc_flag</a>
+	:	&quot;samecount&quot; 
+	|	&quot;retcode&quot; 
+	|	&quot;physicalcopy&quot; 
+	|	&quot;servercopy&quot; 
+	|	&quot;overwrite&quot; 
+	|	&quot;dealloc&quot; 
+	|	&quot;notdealloc&quot; 
+	|	&quot;CountInOut&quot; 
+	|	&quot;auto&quot; 
+	|	&quot;const&quot; 
+	;
+
+</PRE>
+</BODY>
+</HTML>

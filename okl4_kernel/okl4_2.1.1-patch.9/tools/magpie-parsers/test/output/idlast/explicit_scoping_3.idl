@@ -1,0 +1,15 @@
+ MagpieAST  (0, ?:?)
+  type number  (1, test/input/idlast/explicit_scoping_3.idl:1)
+   (meta_type) = ['alias']
+   target  (2, <builtin>:?)
+    type long (backref)
+  type A  (1, test/input/idlast/explicit_scoping_3.idl:3)
+   (meta_type) = ['interface']
+   function op  (2, test/input/idlast/explicit_scoping_3.idl:4)
+    return_type  (3, test/input/idlast/explicit_scoping_3.idl:4)
+     target  (4, <builtin>:?)
+      type void (backref)
+    parameter value  (3, test/input/idlast/explicit_scoping_3.idl:4)
+     (direction) = ['in']
+     target  (4, test/input/idlast/explicit_scoping_3.idl:1)
+      type number (backref)

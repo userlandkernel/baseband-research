@@ -1,0 +1,131 @@
+<device name="imx31_serial">
+
+    <!--
+Copyright (c) 2007 Open Kernel Labs (Copyright Holder).
+All rights reserved.
+
+1. Redistribution and use of OKL4 (Software) in source and binary
+forms, with or without modification, are permitted provided that the
+following conditions are met:
+
+    (a) Redistributions of source code must retain this clause 1
+        (including paragraphs (a), (b) and (c)), clause 2 and clause 3
+        (Licence Terms) and the above copyright notice.
+
+    (b) Redistributions in binary form must reproduce the above
+        copyright notice and the Licence Terms in the documentation and/or
+        other materials provided with the distribution.
+
+    (c) Redistributions in any form must be accompanied by information on
+        how to obtain complete source code for:
+       (i) the Software; and
+       (ii) all accompanying software that uses (or is intended to
+       use) the Software whether directly or indirectly.  Such source
+       code must:
+       (iii) either be included in the distribution or be available
+       for no more than the cost of distribution plus a nominal fee;
+       and
+       (iv) be licensed by each relevant holder of copyright under
+       either the Licence Terms (with an appropriate copyright notice)
+       or the terms of a licence which is approved by the Open Source
+       Initative.  For an executable file, "complete source code"
+       means the source code for all modules it contains and includes
+       associated build and other files reasonably required to produce
+       the executable.
+
+2. THIS SOFTWARE IS PROVIDED ``AS IS'' AND, TO THE EXTENT PERMITTED BY
+LAW, ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE, OR NON-INFRINGEMENT, ARE DISCLAIMED.  WHERE ANY WARRANTY IS
+IMPLIED AND IS PREVENTED BY LAW FROM BEING DISCLAIMED THEN TO THE
+EXTENT PERMISSIBLE BY LAW: (A) THE WARRANTY IS READ DOWN IN FAVOUR OF
+THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+PARTICIPANT) AND (B) ANY LIMITATIONS PERMITTED BY LAW (INCLUDING AS TO
+THE EXTENT OF THE WARRANTY AND THE REMEDIES AVAILABLE IN THE EVENT OF
+BREACH) ARE DEEMED PART OF THIS LICENCE IN A FORM MOST FAVOURABLE TO
+THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+PARTICIPANT). IN THE LICENCE TERMS, "PARTICIPANT" INCLUDES EVERY
+PERSON WHO HAS CONTRIBUTED TO THE SOFTWARE OR WHO HAS BEEN INVOLVED IN
+THE DISTRIBUTION OR DISSEMINATION OF THE SOFTWARE.
+
+3. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR ANY OTHER PARTICIPANT BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+
+    <interface interface_type="stream" name="rx" />
+    <interface interface_type="stream" name="tx" />
+
+    <state name="disabled" />
+    <state name="enabled" />
+
+    <resource name="uart_space" rtype="mem_space_t" />
+
+    <block name="uart" space="uart_space" space_type="mem" register_size="16">
+
+        <register  name="urxd" offset="0x00" type="ro">
+            <field name="data" bits="0:7" />
+            <field name="perr" bits="10"  />
+            <field name="brk"  bits="11"  />
+            <field name="ferr" bits="12"  />
+            <field name="orun" bits="13"  />
+            <field name="err"  bits="14"  />
+            <field name="rdy"  bits="15"  />
+        </register>
+
+        <register  name="utxd" offset="0x40" type="rw">
+            <field name="data" bits="0:7" />
+        </register>
+
+        <register  name="ucr1"   offset="0x80" type="rw">
+            <field name="trdyen" bits="13" />   <!-- controls TRDY -->
+            <field name="rrdyen" bits="9"  />   <!-- controls RRDY -->
+            <field name="uarten" bits="0"  />   <!-- enables uart -->
+        </register>
+
+        <register name="ucr2"    offset="0x84" type="rw">
+            <field name="pren"   bits="8"  />
+            <field name="stpb"   bits="6"  />
+            <field name="ws"     bits="5"  />
+            <field name="txen"   bits="2"  />
+            <field name="rxen"   bits="1"  />
+            <field name="_srst"  bits="0"  />
+        </register>
+
+        <!-- ucr3, ucr4 and ufcr are not used now
+        <register name="ucr3" offset="0x88" type="rw">
+        </register>
+
+        <register name="ucr4" offset="0x8c" type="rw">
+        </register>
+
+        <register name="ufcr" offset="0x90" type="rw">
+        </register>
+        -->
+
+        <register  name="usr1" offset="0x94" type="rw">
+            <field name="trdy" bits="13"  />
+            <field name="rrdy" bits="9"  />
+        </register>
+
+        <register  name="usr2" offset="0x98" type="rw">
+            <field name="txfe" bits="14"  />
+        </register>
+
+        <register  name="uts1" offset="0xb4" type="rw">
+            <field name="txempty" bits="6"  />
+            <field name="rxempty" bits="5"  />
+            <field name="txfull"  bits="4"  />
+            <field name="rxfull"  bits="3"  />
+        </register>
+
+    </block>
+
+</device>
+

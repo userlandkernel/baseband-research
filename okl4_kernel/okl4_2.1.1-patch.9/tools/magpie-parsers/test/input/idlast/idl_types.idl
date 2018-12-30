@@ -1,0 +1,19 @@
+struct somestruct {
+	int h;
+	int i;
+};
+
+[uuid(22)]
+interface test
+{
+
+	struct randomstruct {
+		int h;
+		int i;
+	};
+
+	int func1(in randomstruct randin);
+	int func2(in string stringin);
+	int func3(in wstring stringin);
+};
+

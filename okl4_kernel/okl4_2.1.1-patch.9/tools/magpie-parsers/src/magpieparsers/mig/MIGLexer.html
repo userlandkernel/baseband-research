@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD>
+<TITLE>Grammar mig.g</TITLE>
+</HEAD>
+<BODY>
+<table summary="" border="1" cellpadding="5">
+<tr>
+<td>
+<font size="+2">Grammar MIGLexer</font><br>
+<a href="http://www.ANTLR.org">ANTLR</a>-generated HTML file from mig.g
+<p>
+Terence Parr, <a href="http://www.magelang.com">MageLang Institute</a>
+<br>ANTLR Version 2.7.5 (20050403); 1989-2005
+</td>
+</tr>
+</table>
+<PRE>
+
+Definition of lexer MIGLexer, which is a subclass of CharScanner.
+
+/** Lexer nextToken rule:
+ *  The lexer nextToken rule is synthesized from all of the user-defined
+ *  lexer rules.  It logically consists of one big alternative block with
+ *  each user-defined rule being an alternative.
+ */
+<a href="MIGLexer.html#mCOLON">mCOLON</a> 
+|	<a href="MIGLexer.html#mSEMI">mSEMI</a> 
+|	<a href="MIGLexer.html#mCOMMA">mCOMMA</a> 
+|	<a href="MIGLexer.html#mPLUS">mPLUS</a> 
+|	<a href="MIGLexer.html#mMINUS">mMINUS</a> 
+|	<a href="MIGLexer.html#mSTAR">mSTAR</a> 
+|	<a href="MIGLexer.html#mDIV">mDIV</a> 
+|	<a href="MIGLexer.html#mLPAREN">mLPAREN</a> 
+|	<a href="MIGLexer.html#mRPAREN">mRPAREN</a> 
+|	<a href="MIGLexer.html#mEQUAL">mEQUAL</a> 
+|	<a href="MIGLexer.html#mCARET">mCARET</a> 
+|	<a href="MIGLexer.html#mTILDE">mTILDE</a> 
+|	<a href="MIGLexer.html#mLANGLE">mLANGLE</a> 
+|	<a href="MIGLexer.html#mRANGLE">mRANGLE</a> 
+|	<a href="MIGLexer.html#mLBRACK">mLBRACK</a> 
+|	<a href="MIGLexer.html#mRBRACK">mRBRACK</a> 
+|	<a href="MIGLexer.html#mBAR">mBAR</a> 
+|	<a href="MIGLexer.html#mOF">mOF</a> 
+|	<a href="MIGLexer.html#mIDENT">mIDENT</a> 
+|	<a href="MIGLexer.html#mNUMBER">mNUMBER</a> 
+|	<a href="MIGLexer.html#mQUOTEDSTRING">mQUOTEDSTRING</a> 
+|	<a href="MIGLexer.html#mANGLEQUOTEDSTRING">mANGLEQUOTEDSTRING</a> 
+|	<a href="MIGLexer.html#mWS">mWS</a> 
+|	<a href="MIGLexer.html#mCOMMENT">mCOMMENT</a> 
+<a name="mCOLON">mCOLON</a>
+	:	&#039;:&#039; 
+	;
+
+<a name="mSEMI">mSEMI</a>
+	:	&#039;;&#039; 
+	;
+
+<a name="mCOMMA">mCOMMA</a>
+	:	&#039;,&#039; 
+	;
+
+<a name="mPLUS">mPLUS</a>
+	:	&#039;+&#039; 
+	;
+
+<a name="mMINUS">mMINUS</a>
+	:	&#039;-&#039; 
+	;
+
+<a name="mSTAR">mSTAR</a>
+	:	&#039;*&#039; 
+	;
+
+<a name="mDIV">mDIV</a>
+	:	&#039;/&#039; 
+	;
+
+<a name="mLPAREN">mLPAREN</a>
+	:	&#039;(&#039; 
+	;
+
+<a name="mRPAREN">mRPAREN</a>
+	:	&#039;)&#039; 
+	;
+
+<a name="mEQUAL">mEQUAL</a>
+	:	&#039;=&#039; 
+	;
+
+<a name="mCARET">mCARET</a>
+	:	&#039;^&#039; 
+	;
+
+<a name="mTILDE">mTILDE</a>
+	:	&#039;~&#039; 
+	;
+
+<a name="mLANGLE">mLANGLE</a>
+	:	&#039;&lt;&#039; 
+	;
+
+<a name="mRANGLE">mRANGLE</a>
+	:	&#039;&gt;&#039; 
+	;
+
+<a name="mLBRACK">mLBRACK</a>
+	:	&#039;[&#039; 
+	;
+
+<a name="mRBRACK">mRBRACK</a>
+	:	&#039;]&#039; 
+	;
+
+<a name="mBAR">mBAR</a>
+	:	&#039;|&#039; 
+	;
+
+<a name="mOF">mOF</a>
+	:	&quot;of&quot; 
+	;
+
+<a name="mIDENT">mIDENT</a>
+	:	(	<a href="MIGLexer.html#mLETTER">mLETTER</a> 
+		|	&#039;_&#039; 
+		) 
+		(	<a href="MIGLexer.html#mLETTER">mLETTER</a> 
+		|	<a href="MIGLexer.html#mDIGIT">mDIGIT</a> 
+		|	&#039;_&#039; 
+		)* 
+	;
+
+protected <a name="mLETTER">mLETTER</a>
+	:	( 			'A'..'Z' ) 
+	|	( 			'a'..'z' ) 
+	;
+
+protected <a name="mDIGIT">mDIGIT</a>
+	:			'0'..'9' 
+	;
+
+<a name="mNUMBER">mNUMBER</a>
+	:	( <a href="MIGLexer.html#mDIGIT">mDIGIT</a> )+ 
+	;
+
+<a name="mQUOTEDSTRING">mQUOTEDSTRING</a>
+	:	( &#039;&quot;&#039; 
+			(	<a href="MIGLexer.html#mLETTER">mLETTER</a> 
+			|	&#039;-&#039; 
+			|	<a href="MIGLexer.html#mDIGIT">mDIGIT</a> 
+			|	&#039;.&#039; 
+			|	&#039;_&#039; 
+			|	&#039;/&#039; 
+			)+ 
+			&#039;&quot;&#039; ) 
+	;
+
+<a name="mANGLEQUOTEDSTRING">mANGLEQUOTEDSTRING</a>
+	:	( &#039;&lt;&#039; 
+			(	<a href="MIGLexer.html#mLETTER">mLETTER</a> 
+			|	&#039;-&#039; 
+			|	<a href="MIGLexer.html#mDIGIT">mDIGIT</a> 
+			|	&#039;.&#039; 
+			|	&#039;_&#039; 
+			|	&#039;/&#039; 
+			)+ 
+			&#039;&gt;&#039; ) 
+	;
+
+<a name="mWS">mWS</a>
+	:	(	&#039; &#039; 
+		|	&#039;\r&#039; &#039;\n&#039; 
+		|	&#039;\n&#039; 
+		|	&#039;\t&#039; 
+		) 
+		
+	;
+
+<a name="mCOMMENT">mCOMMENT</a>
+	:	&quot;/*&quot; ( . )* &quot;*/&quot; 
+	;

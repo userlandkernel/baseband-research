@@ -1,0 +1,122 @@
+ MagpieAST  (0, ?:?)
+  type_instance X  (1, test/input/idlast/expressions.idl:1)
+   (meta_type) = ['const']
+   target  (2, <builtin>:?)
+    type short (backref)
+   expression multiply  (2, ?:?)
+    (value) = [0]
+    expression add  (3, ?:?)
+     (value) = [7]
+     expression  (4, ?:?)
+      (value) = [3]
+      type octet (backref)
+     expression  (4, ?:?)
+      (value) = [4]
+      type octet (backref)
+     type octet (backref)
+    expression divide  (3, ?:?)
+     (value) = [0]
+     expression subtract  (4, ?:?)
+      (value) = [-1]
+      expression  (5, ?:?)
+       (value) = [5]
+       type octet (backref)
+      expression  (5, ?:?)
+       (value) = [6]
+       type octet (backref)
+      type short (backref)
+     expression subtract  (4, ?:?)
+      (value) = [-18]
+      expression  (5, ?:?)
+       (value) = [2]
+       type octet (backref)
+      expression  (5, ?:?)
+       (value) = [20]
+       type octet (backref)
+      type short (backref)
+     type short (backref)
+    type short (backref)
+  type_instance Y  (1, test/input/idlast/expressions.idl:2)
+   (meta_type) = ['const']
+   target  (2, <builtin>:?)
+    type short (backref)
+   expression subtract  (2, ?:?)
+    (value) = [0]
+    expression bitwise_and  (3, ?:?)
+     (value) = [48]
+     expression  (4, ?:?)
+      (value) = [240]
+      type octet (backref)
+     expression  (4, ?:?)
+      (value) = [51]
+      type octet (backref)
+     type octet (backref)
+    expression  (3, ?:?)
+     (value) = [48]
+     type octet (backref)
+    type short (backref)
+  type_instance bitwise_or  (1, test/input/idlast/expressions.idl:3)
+   (meta_type) = ['const']
+   target  (2, <builtin>:?)
+    type short (backref)
+   expression bitwise_or  (2, ?:?)
+    (value) = [3]
+    expression  (3, ?:?)
+     (value) = [1]
+     type octet (backref)
+    expression  (3, ?:?)
+     (value) = [2]
+     type octet (backref)
+    type octet (backref)
+  type_instance bitwise_xor  (1, test/input/idlast/expressions.idl:4)
+   (meta_type) = ['const']
+   target  (2, <builtin>:?)
+    type short (backref)
+   expression bitwise_xor  (2, ?:?)
+    (value) = [3]
+    expression  (3, ?:?)
+     (value) = [1]
+     type octet (backref)
+    expression  (3, ?:?)
+     (value) = [2]
+     type octet (backref)
+    type octet (backref)
+  type_instance left_shift  (1, test/input/idlast/expressions.idl:5)
+   (meta_type) = ['const']
+   target  (2, <builtin>:?)
+    type short (backref)
+   expression lsl  (2, ?:?)
+    (value) = [6]
+    expression  (3, ?:?)
+     (value) = [3]
+     type octet (backref)
+    expression  (3, ?:?)
+     (value) = [1]
+     type octet (backref)
+    type octet (backref)
+  type_instance right_shift  (1, test/input/idlast/expressions.idl:6)
+   (meta_type) = ['const']
+   target  (2, <builtin>:?)
+    type short (backref)
+   expression lsr  (2, ?:?)
+    (value) = [1]
+    expression  (3, ?:?)
+     (value) = [3]
+     type octet (backref)
+    expression  (3, ?:?)
+     (value) = [1]
+     type octet (backref)
+    type octet (backref)
+  type_instance modulus  (1, test/input/idlast/expressions.idl:7)
+   (meta_type) = ['const']
+   target  (2, <builtin>:?)
+    type short (backref)
+   expression modulus  (2, ?:?)
+    (value) = [1]
+    expression  (3, ?:?)
+     (value) = [5]
+     type octet (backref)
+    expression  (3, ?:?)
+     (value) = [2]
+     type octet (backref)
+    type octet (backref)

@@ -1,0 +1,14 @@
+ MagpieAST  (0, ?:?)
+  module A  (1, test/input/idlast/scoped_type_return.idl:1)
+   type foo  (2, test/input/idlast/scoped_type_return.idl:2)
+    (meta_type) = ['interface']
+    function op  (3, test/input/idlast/scoped_type_return.idl:3)
+     return_type  (4, test/input/idlast/scoped_type_return.idl:3)
+      target  (5, <builtin>:?)
+       type void (backref)
+  type B  (1, test/input/idlast/scoped_type_return.idl:7)
+   (meta_type) = ['interface']
+   function op  (2, test/input/idlast/scoped_type_return.idl:8)
+    return_type  (3, test/input/idlast/scoped_type_return.idl:8)
+     target  (4, test/input/idlast/scoped_type_return.idl:2)
+      type foo (backref)

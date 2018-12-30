@@ -1,0 +1,290 @@
+/*
+ * Copyright (c) 2002-2003, University of New South Wales
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+/*
+ * Copyright (c) 2007 Open Kernel Labs, Inc. (Copyright Holder).
+ * All rights reserved.
+ *
+ * 1. Redistribution and use of OKL4 (Software) in source and binary
+ * forms, with or without modification, are permitted provided that the
+ * following conditions are met:
+ *
+ *     (a) Redistributions of source code must retain this clause 1
+ *         (including paragraphs (a), (b) and (c)), clause 2 and clause 3
+ *         (Licence Terms) and the above copyright notice.
+ *
+ *     (b) Redistributions in binary form must reproduce the above
+ *         copyright notice and the Licence Terms in the documentation and/or
+ *         other materials provided with the distribution.
+ *
+ *     (c) Redistributions in any form must be accompanied by information on
+ *         how to obtain complete source code for:
+ *        (i) the Software; and
+ *        (ii) all accompanying software that uses (or is intended to
+ *        use) the Software whether directly or indirectly.  Such source
+ *        code must:
+ *        (iii) either be included in the distribution or be available
+ *        for no more than the cost of distribution plus a nominal fee;
+ *        and
+ *        (iv) be licensed by each relevant holder of copyright under
+ *        either the Licence Terms (with an appropriate copyright notice)
+ *        or the terms of a licence which is approved by the Open Source
+ *        Initative.  For an executable file, "complete source code"
+ *        means the source code for all modules it contains and includes
+ *        associated build and other files reasonably required to produce
+ *        the executable.
+ *
+ * 2. THIS SOFTWARE IS PROVIDED ``AS IS'' AND, TO THE EXTENT PERMITTED BY
+ * LAW, ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE, OR NON-INFRINGEMENT, ARE DISCLAIMED.  WHERE ANY WARRANTY IS
+ * IMPLIED AND IS PREVENTED BY LAW FROM BEING DISCLAIMED THEN TO THE
+ * EXTENT PERMISSIBLE BY LAW: (A) THE WARRANTY IS READ DOWN IN FAVOUR OF
+ * THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+ * PARTICIPANT) AND (B) ANY LIMITATIONS PERMITTED BY LAW (INCLUDING AS TO
+ * THE EXTENT OF THE WARRANTY AND THE REMEDIES AVAILABLE IN THE EVENT OF
+ * BREACH) ARE DEEMED PART OF THIS LICENCE IN A FORM MOST FAVOURABLE TO
+ * THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+ * PARTICIPANT). IN THE LICENCE TERMS, "PARTICIPANT" INCLUDES EVERY
+ * PERSON WHO HAS CONTRIBUTED TO THE SOFTWARE OR WHO HAS BEEN INVOLVED IN
+ * THE DISTRIBUTION OR DISSEMINATION OF THE SOFTWARE.
+ *
+ * 3. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR ANY OTHER PARTICIPANT BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+/*                
+ * Author:        Carl van Schaik
+ * Description:   Kernel entry points for various traps 
+ */                
+
+#include <l4.h>
+#include <arch/asm.h>
+#include <arch/context.h>
+#include <tcb_layout.h>
+#include <asmsyms.h>
+
+//#define DEBUG_TRAPS
+#define L4_TRAP_KDEBUG (-102)
+                
+
+#define _mips64_debug       \
+1:      .set    noat;       \
+        li      AT, 2;      \
+        break;              \
+        .set    at;         \
+        b 1b;
+
+        .set noat
+        .set noreorder
+BEGIN_PROC(__mips_tlb_refill) /* MIPS32 or we could be from user space 0x0 */
+
+        j       _mips_xtlb_miss
+        move    k1, sp
+
+END_PROC(__mips_tlb_refill)
+
+        .set noat
+        .set noreorder
+BEGIN_PROC(__mips_xtlb_refill)
+
+        j       _mips_xtlb_miss
+        move    k1, sp
+
+END_PROC(__mips_xtlb_refill)
+
+        .set noat
+        .set noreorder
+BEGIN_PROC(__mips64_cache_error)
+
+#ifdef  CONFIG_DEBUG
+        ADR     sp, 0xffffffff80008000
+        ADR     a0, CACHE_STR
+        jal     printf
+        nop
+#endif
+
+        _mips64_debug
+
+END_PROC(__mips64_cache_error)
+
+        .set noat
+        .set noreorder
+BEGIN_PROC(__mips64_extra_vector)
+        .set push
+        .set mips3
+        eret
+        .set pop
+END_PROC(__mips64_extra_vector)
+
+        .set reorder
+        .globl  initial_to_user
+initial_to_user:
+BEGIN_PROC(_mips_restore_user)
+        /* check if the current thread has been preempted */
+        lui     a1, %hi(KERNEL_BASE)
+        LDR     a1, %lo(K_CURRENT_TCB)(a1)
+
+        LDR     a0, OFS_TCB_PREEMPTION_CONTINUATION (a1)
+        bne     zero, a0, 1f
+        RESTORE_ALL
+        .set mips3
+        eret
+        .set pop
+1:
+        /* if we need to recover from preemption, activate the continuation */
+        ori     sp, sp, STACK_TOP
+        jr      a0
+END_PROC(_mips_restore_user)
+
+
+        .set reorder
+BEGIN_PROC(_mips_interrupt)
+        SAVE_ALL_INT
+        /* context frame pointer in a0 */
+
+        mfc0    t1, CP0_CAUSE
+        mfc0    t0, CP0_STATUS
+
+        LA      ra, _mips_restore_user
+
+        /* get pending interrupts - using mask in CP0_STATUS */
+        and     t1, t1, t0
+        /* isolate and shift pending interrupts to 0 */
+#ifdef CONFIG_IS_64BIT
+        dsll    t1, t1, 16+32
+        dsrl    a0, t1, 16+32+8
+#else
+        sll     t1, t1, 16
+        srl     a0, t1, 16+8
+#endif
+
+        j       handle_interrupt
+        /* returns to _mips_restore_user */
+END_PROC(_mips_interrupt)
+
+
+        .set reorder
+BEGIN_PROC(_mips_exception)
+        SAVE_ALL_INT
+
+        LA      ra, _mips_restore_user
+        j       mips_exception
+END_PROC(_mips_exception)
+
+
+        .set reorder
+BEGIN_PROC(_mips_xtlb_miss)
+        .set push
+        SAVE_ALL_XTLB
+
+        nop
+
+#ifdef DEBUG_TRAPS
+        mfc0    a3, CP0_STATUS
+        dmfc0   a2, CP0_BADVADDR
+        dmfc0   a1, CP0_EPC
+        dla     a0, XTLB_STR
+        jal     printf
+#endif
+
+        MFC0    a0, CP0_BADVADDR
+        move    a1, sp
+        jal     handle_xtlb_miss
+
+        RESTORE_XTLB
+        .set mips3
+        eret
+        .set pop
+END_PROC(_mips_xtlb_miss)
+
+        .set reorder
+BEGIN_PROC(_mips_xtlb_fall_through)
+        RESTORE_XTLB
+END_PROC(_mips_xtlb_fall_through)
+
+BEGIN_PROC(_mips_stlb_miss)
+        SAVE_ALL_INT
+
+#ifdef DEBUG_TRAPS
+        LDR     a3, PT_STATUS(sp)
+        LDR     a2, PT_BADVADDR(sp)
+        dmfc0   a1, CP0_EPC
+        dla     a0, STLB_STR
+        jal     printf
+#endif
+
+        move    a1, a0
+        LDR     a0, PT_BADVADDR(a1)
+        LA      ra, _mips_restore_user
+        j       handle_stlb_miss
+END_PROC(_mips_stlb_miss)
+
+        .set reorder
+BEGIN_PROC(_mips64_tlb_mod)
+        SAVE_ALL_INT
+
+#ifdef DEBUG_TRAPS
+        LDR     a2, PT_BADVADDR(sp)
+        dmfc0   a1, CP0_EPC
+        dla     a0, MTLB_STR
+        jal     printf
+        nop
+#endif
+
+        move    a1, a0
+        LDR     a0, PT_BADVADDR(a1)
+        ADR     t0, handle_tlb_mod
+        LA      ra, _mips_restore_user
+        jr      t0
+END_PROC(_mips64_tlb_mod)
+
+#ifndef CONFIG_SMP
+        .data
+#else
+        .section .base
+#endif
+        .align 3
+XTLB_REFILL_STACK:
+        .space 1024
+XTLB_REFILL_STACK_end:
+
+        .data
+
+#ifdef DEBUG_TRAPS
+XTLB_STR:
+        .string ":XTLB Refill: EPC=0x%16lx VA=0x%16lx STATUS=0x%16lx\n"
+STLB_STR:
+        .string ":STLB Refill: EPC=0x%16lx VA=0x%16lx STATUS=0x%16lx\n"
+MTLB_STR:
+        .string ":TLB Mod: EPC=0x%16lx VA=0x%16lx\n"
+#endif
+
+CACHE_STR:
+        .string ":Cache error occured:\n"

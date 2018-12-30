@@ -1,0 +1,3 @@
+interface test {
+	void op(in bogus arg);
+};

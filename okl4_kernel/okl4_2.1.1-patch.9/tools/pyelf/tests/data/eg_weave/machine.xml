@@ -1,0 +1,10 @@
+	<machine>
+		<word_size size="0x20" />
+		<virtual_memory name="virtual">
+			<region base="0x1000" size="0xcffff000" />
+		</virtual_memory>
+		<physical_memory name="physical">
+			<region base="0xa0000000" size="0x3800000" />
+		</physical_memory>
+		<page_size size="0x1000" />
+	</machine>

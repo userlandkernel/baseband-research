@@ -1,0 +1,11 @@
+   interface A {
+     typedef string<128> string_t;
+   };
+
+   interface B {
+     typedef string<256> string_t;
+   };
+
+   interface C : A, B {
+     attribute string_t title;
+   };

@@ -1,0 +1,8 @@
+   interface test {
+     struct point {
+       float x;
+       float y;
+     };
+
+     void op(in point arg);
+   };

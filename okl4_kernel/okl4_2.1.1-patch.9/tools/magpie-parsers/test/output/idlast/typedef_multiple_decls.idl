@@ -1,0 +1,9 @@
+ MagpieAST  (0, ?:?)
+  type a  (1, test/input/idlast/typedef_multiple_decls.idl:1)
+   (meta_type) = ['alias']
+   target  (2, <builtin>:?)
+    type short (backref)
+  type b  (1, test/input/idlast/typedef_multiple_decls.idl:1)
+   (meta_type) = ['alias']
+   target  (2, <builtin>:?)
+    type short (backref)

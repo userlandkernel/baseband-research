@@ -1,0 +1,12 @@
+Non, Inc. is pleased to announce release 1.0 of the ANTLR ANSI C and GCC source to source translation framework.  Included are:
+
+ANSI-C parser which builds trees
+GCC parser which builds trees
+GCC tree parser (for you to subclass to do transformations)
+GCC tree emitter
+
+Note that ANSI-C is a strict subset of GCC, so you can use the GCC tree parser and emitter on its trees.  The GCC parser is only for GCC's extensions to C, it does not include any C++.
+
+All of these tools assume preprocessed source as input and output.  It has been tested on a number of open-source code bases including the linux kernel, Python, zlib, gcc, rcs, and GNU diff.
+
+Grab it and learn about the power of ANTLR's tree processing capabilities.  This tool is implemented in Java.  No C++ version is planned, but if you want it, go for it!  All the hard (grammatical) work has been done....

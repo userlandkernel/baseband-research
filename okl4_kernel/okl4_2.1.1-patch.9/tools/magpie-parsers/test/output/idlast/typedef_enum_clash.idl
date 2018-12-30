@@ -1,0 +1,3 @@
+* Semantic error *
+test/input/idlast/typedef_enum_clash.idl:5:Name "color" defined twice in same scope
+test/input/idlast/typedef_enum_clash.idl:1:Name "color" was previously defined here.

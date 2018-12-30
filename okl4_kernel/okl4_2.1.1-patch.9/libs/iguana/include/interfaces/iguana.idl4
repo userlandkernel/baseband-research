@@ -1,0 +1,271 @@
+/*
+ * Copyright (c) 2004, National ICT Australia
+ */
+/*
+ * Copyright (c) 2007 Open Kernel Labs, Inc. (Copyright Holder).
+ * All rights reserved.
+ *
+ * 1. Redistribution and use of OKL4 (Software) in source and binary
+ * forms, with or without modification, are permitted provided that the
+ * following conditions are met:
+ *
+ *     (a) Redistributions of source code must retain this clause 1
+ *         (including paragraphs (a), (b) and (c)), clause 2 and clause 3
+ *         (Licence Terms) and the above copyright notice.
+ *
+ *     (b) Redistributions in binary form must reproduce the above
+ *         copyright notice and the Licence Terms in the documentation and/or
+ *         other materials provided with the distribution.
+ *
+ *     (c) Redistributions in any form must be accompanied by information on
+ *         how to obtain complete source code for:
+ *        (i) the Software; and
+ *        (ii) all accompanying software that uses (or is intended to
+ *        use) the Software whether directly or indirectly.  Such source
+ *        code must:
+ *        (iii) either be included in the distribution or be available
+ *        for no more than the cost of distribution plus a nominal fee;
+ *        and
+ *        (iv) be licensed by each relevant holder of copyright under
+ *        either the Licence Terms (with an appropriate copyright notice)
+ *        or the terms of a licence which is approved by the Open Source
+ *        Initative.  For an executable file, "complete source code"
+ *        means the source code for all modules it contains and includes
+ *        associated build and other files reasonably required to produce
+ *        the executable.
+ *
+ * 2. THIS SOFTWARE IS PROVIDED ``AS IS'' AND, TO THE EXTENT PERMITTED BY
+ * LAW, ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE, OR NON-INFRINGEMENT, ARE DISCLAIMED.  WHERE ANY WARRANTY IS
+ * IMPLIED AND IS PREVENTED BY LAW FROM BEING DISCLAIMED THEN TO THE
+ * EXTENT PERMISSIBLE BY LAW: (A) THE WARRANTY IS READ DOWN IN FAVOUR OF
+ * THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+ * PARTICIPANT) AND (B) ANY LIMITATIONS PERMITTED BY LAW (INCLUDING AS TO
+ * THE EXTENT OF THE WARRANTY AND THE REMEDIES AVAILABLE IN THE EVENT OF
+ * BREACH) ARE DEEMED PART OF THIS LICENCE IN A FORM MOST FAVOURABLE TO
+ * THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+ * PARTICIPANT). IN THE LICENCE TERMS, "PARTICIPANT" INCLUDES EVERY
+ * PERSON WHO HAS CONTRIBUTED TO THE SOFTWARE OR WHO HAS BEEN INVOLVED IN
+ * THE DISTRIBUTION OR DISSEMINATION OF THE SOFTWARE.
+ *
+ * 3. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR ANY OTHER PARTICIPANT BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+/*
+ * Iguana IDL for dealing with userland
+ * eg. pagefaults, exceptions, syscalls.
+ *
+ */
+
+/* Import L4 and standard types */
+import "l4/types.h";
+import "iguana/types.h";
+import "iguana/interface_uuids.h";
+import "stdint.h";
+import "stddef.h";
+
+#if !defined(NDEBUG)
+[before_every_message("workloop_work")]
+#endif
+[unknown_ipc_handler("iguana_client_unknownipc")]
+[exception_handler("iguana_client_exception")]
+[uuid(INTERFACE_IGUANA_EX_UUID)]
+interface iguana_ex
+{
+    /* a pagefault (from iguana userland) */
+    [kernelmsg(idl4::pagefault)]
+    void pagefault(in uintptr_t addr, in uintptr_t ip, in uintptr_t priv,
+                   out fpage fp);
+
+    /* FIXME: add thread exceptions */
+};
+
+[uuid(INTERFACE_IGUANA_PD_UUID)]
+interface iguana_pd
+{
+    /* This method is kind of magic */
+    objref_t mypd();
+
+    cap_t create_memsection(in pd_ref_t pd, in uintptr_t size, in uintptr_t base, in int flags,
+                            in physpool_ref_t physpool, in objref_t virtpool_or_zone,
+                            in clist_ref_t clist, out uintptr_t base_out);
+    cap_t create_pd(in pd_ref_t pd, in clist_ref_t clist);
+    cap_t create_thread(in pd_ref_t pd, in int priority, in clist_ref_t clist, out L4_ThreadId_t l4_id);
+#if defined(CONFIG_EAS)
+#ifndef ARM_PID_RELOC
+    cap_t create_eas(in pd_ref_t pd, in L4_Fpage_t utcb, in clist_ref_t clist, out L4_SpaceId_t l4_id);
+#else
+    cap_t create_eas(in pd_ref_t pd, in L4_Fpage_t utcb, in clist_ref_t clist, in int pid, out L4_SpaceId_t l4_id);
+#endif
+#endif
+#if defined(CONFIG_SESSION)
+    cap_t create_session(in pd_ref_t pd, in thread_ref_t client, in thread_ref_t server,
+                         in clist_ref_t session_clist, in clist_ref_t clist);
+#endif
+    cap_t create_clist(in pd_ref_t pd, in clist_ref_t clist);
+#if defined(CONFIG_ZONE)
+    cap_t create_zone(in pd_ref_t pd, in virtpool_ref_t pool, 
+                      in clist_ref_t clist);
+#endif
+    void set_callback(in pd_ref_t pd, in memsection_ref_t callback_buffer);
+
+    uintptr_t add_clist(in pd_ref_t pd, in clist_ref_t clist);
+
+    void release_clist(in pd_ref_t pd, in clist_ref_t clist, in int slot);
+
+    void delete(in pd_ref_t pd);
+
+    int attach(in pd_ref_t pd, in memsection_ref_t ms, in int rwx);
+    void detach(in pd_ref_t pd, in memsection_ref_t ms);
+#if defined(CONFIG_ZONE)
+    int attach_zone(in pd_ref_t pd, in zone_ref_t zone, in int rwx);
+    void detach_zone(in pd_ref_t pd, in zone_ref_t zone);
+#endif
+    L4_SpaceId_t l4id(in pd_ref_t pd);
+#if defined(CONFIG_MEM_PROTECTED)
+    L4_SpaceId_t ext_l4id(in pd_ref_t pd);
+    uintptr_t ext_l4utcb(in pd_ref_t pd);
+#endif
+};
+
+#if defined(CONFIG_EAS)
+[uuid(INTERFACE_IGUANA_EAS_UUID)]
+interface iguana_eas
+{
+    cap_t create_thread(in eas_ref_t eas, in L4_ThreadId_t pager,
+                        in L4_ThreadId_t scheduler, in uintptr_t utcb,
+                        in clist_ref_t clist, out L4_ThreadId_t l4_id, out L4_ThreadId_t l4_handle);
+    void delete(in eas_ref_t eas);
+#ifdef ARM_PID_RELOC
+    uintptr_t modify(in eas_ref_t pd, in int pid);
+#endif
+    int map(in eas_ref_t eas, in L4_Fpage_t src_fpage, in uintptr_t dst_addr, in uintptr_t attributes);
+    void unmap(in eas_ref_t eas, in L4_Fpage_t dst_fpage);
+#if defined(ARM_SHARED_DOMAINS)
+    int share_domain(in eas_ref_t eas);
+    void unshare_domain(in eas_ref_t eas);
+#endif
+};
+#endif
+
+[uuid(INTERFACE_IGUANA_THREAD_UUID)]
+interface iguana_thread
+{
+    /* This is another `magic' method */
+    thread_ref_t id(in L4_ThreadId_t thread);
+    L4_ThreadId_t l4id(in thread_ref_t thread);
+    void start(in thread_ref_t thread, in uintptr_t ip, in uintptr_t sp);
+    /*      pd_ref_t domain(in thread_ref_t thread);*/
+
+    void delete(in thread_ref_t thread);
+    void set_exception(in thread_ref_t thread, in uintptr_t exc,
+                       in uintptr_t ip, in uintptr_t sp);
+};
+
+[uuid(INTERFACE_IGUANA_HARDWARE_UUID)]
+interface iguana_hardware
+{
+    int register_interrupt(in hw_ref_t hardware, in L4_ThreadId_t handler,
+                           in int interrupt);
+    int back_memsection(in hw_ref_t hardware, in memsection_ref_t memsection,
+                        in uintptr_t paddr, in uintptr_t attributes);
+};
+
+[uuid(INTERFACE_IGUANA_MEMSECTION_UUID)]
+interface iguana_memsection
+{
+    int register_server(in memsection_ref_t memsection, in thread_ref_t thread);
+    memsection_ref_t lookup(in uintptr_t address, out thread_ref_t server);
+    uintptr_t info(in memsection_ref_t memsection, out uintptr_t size);
+    void delete(in memsection_ref_t thread);
+    void set_attributes(in memsection_ref_t memsection, in uintptr_t attributes);
+    int map(in memsection_ref_t memsection, in uintptr_t offset,
+            in physmem_ref_t phys);
+    int unmap(in memsection_ref_t memsection, in uintptr_t offset,
+              in uintptr_t size);
+    /* page_map and page_unmap are deprecated. */
+    int page_map(in memsection_ref_t memsection, in L4_Fpage_t from_page, in L4_Fpage_t to_page);
+    int page_unmap(in memsection_ref_t memsection, in L4_Fpage_t to_page);
+    uintptr_t virt_to_phys(in uintptr_t vaddr, out size_t size);
+};
+
+#if defined(CONFIG_SESSION)
+[uuid(INTERFACE_IGUANA_SESSION_UUID)]
+interface iguana_session
+{
+    void delete(in session_ref_t session);
+    int revoke(in session_ref_t session, in cap_t cap);
+    void add_buffer(in session_ref_t session, in objref_t call_buf, in objref_t return_buf);
+};
+#endif
+
+#if !defined(NDEBUG)
+[uuid(INTERFACE_IGUANA_DEBUG_UUID)]
+interface iguana_debug
+{
+    void dump_info();
+};
+#endif
+
+[uuid(INTERFACE_IGUANA_PHYSPOOL_UUID)]
+interface iguana_physpool
+{
+    cap_t alloc(in physpool_ref_t physpool, in uintptr_t size, in pd_ref_t owner,
+		in clist_ref_t clist);
+    cap_t alloc_fixed(in physpool_ref_t physpool, in uintptr_t size, in uintptr_t base,
+                      in clist_ref_t clist, in pd_ref_t owner);
+};
+
+[uuid(INTERFACE_IGUANA_PHYSMEM_UUID)]
+interface iguana_physmem
+{
+    void delete(in physmem_ref_t pm);
+    void info(in physmem_ref_t pm, out uintptr_t paddr, out uintptr_t psize);
+};
+
+#if defined(CONFIG_STATS)
+[uuid(INTERFACE_IGUANA_STATS_UUID)]
+interface iguana_statistics
+{
+    cap_t get_stats(in pd_ref_t pd, in clist_ref_t clist, out uintptr_t base_out);
+};
+#endif
+
+[uuid(INTERFACE_IGUANA_CLIST_UUID)]
+interface iguana_clist
+{
+    void delete(in clist_ref_t clist);
+    int insert(in clist_ref_t clist, in cap_t cap);
+    int lookup(in clist_ref_t clist, in uintptr_t obj, in unsigned interface_,
+               out cap_t cap);
+    int remove(in clist_ref_t clist, in cap_t cap);
+};
+
+[uuid(INTERFACE_IGUANA_MUTEX_UUID)]
+interface iguana_mutex
+{
+    int allocate(out L4_MutexId_t id);
+    int free(in L4_MutexId_t id);
+};
+#if defined(CONFIG_ZONE)
+[uuid(INTERFACE_IGUANA_ZONE_UUID)]
+interface iguana_zone
+{
+    void delete(in zone_ref_t zone);
+};
+#endif
+
+#if defined(CONFIG_TRACEBUFFER)
+[uuid(INTERFACE_IGUANA_TRACE_UUID)]
+interface iguana_trace
+{
+    int tracebuffer_phys(out uintptr_t phys, out uintptr_t size);
+};
+#endif

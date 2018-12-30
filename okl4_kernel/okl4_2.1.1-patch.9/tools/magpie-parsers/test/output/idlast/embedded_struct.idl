@@ -1,0 +1,18 @@
+ MagpieAST  (0, ?:?)
+  type test  (1, test/input/idlast/embedded_struct.idl:1)
+   (meta_type) = ['interface']
+   type outer  (2, test/input/idlast/embedded_struct.idl:2)
+    (meta_type) = ['struct']
+    members  (3, test/input/idlast/embedded_struct.idl:4)
+     type_instance w  (4, test/input/idlast/embedded_struct.idl:3)
+      type float (backref)
+     type inner  (4, test/input/idlast/embedded_struct.idl:4)
+      (meta_type) = ['struct']
+      members  (5, test/input/idlast/embedded_struct.idl:6)
+       type_instance x  (6, test/input/idlast/embedded_struct.idl:5)
+        type short (backref)
+     type inner (backref)
+     type_instance y  (4, test/input/idlast/embedded_struct.idl:6)
+      type inner (backref)
+     type_instance z  (4, test/input/idlast/embedded_struct.idl:7)
+      type short (backref)

@@ -1,0 +1,34 @@
+The iguana application is implementation of the iguana server.
+It is implemented in a number of different files.
+
+main.c:          Startup and initilisation
+iguana_server.c: Handle IPC requests
+
+Memory subsystem
+----------------
+ptableinit.[ch]: Setup the pagetable and VM system
+ptable.[ch]: Implementation of pagetable insert and lookup 
+kmalloc.[ch]: Dynamic memory allocation for iguana
+vm.[ch]: VM system, logic for ensuring memory is backed, pagefult etc..
+
+Memory section
+--------------
+objalloc.[ch] VM freelist
+objtable.[ch] Structure to hold created memory sections
+btree*.[ch] B+Tree implementation used by objtable.
+memsection.[ch] Memory section object implementation
+
+Security
+--------
+cap.h: Describe the capability structure
+security.c: Perform security checks (currently unimplemented)
+
+Other
+-----
+thread.[ch]:   Thread implementation
+pd.[ch]:       Protection domain implementation
+hardware.[ch]: Hardware access implementation
+eas.[ch]:      External address space implementation
+quota.[ch]:    Quota system implementation
+mutex.[ch]:    Mutex resource control implementation
+

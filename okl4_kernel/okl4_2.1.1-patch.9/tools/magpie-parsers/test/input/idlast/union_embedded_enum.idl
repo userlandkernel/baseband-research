@@ -1,0 +1,6 @@
+   interface test {
+     union foo switch (short) {
+       default:
+         enum color { red, green, blue } c;
+     };
+   };

@@ -1,0 +1,6 @@
+The L4 Version X.2 API Reference Manual (l4-x2.pdf, l4-x2.ps)
+in this directory is current as of the latest Pistachio release.
+However, code in CVS may be more recent than this manual.
+
+If available, an updated version of the L4 Version X.2 API
+Reference Manual can be downloaded from http://l4ka.org/ .

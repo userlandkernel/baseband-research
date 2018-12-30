@@ -1,0 +1,7 @@
+TEMPLATES COMING FROM THE TESTER DIRECTORY
+/*LOOP interface = generator.get_interfaces()*/
+Interface /*-?interface.get_name()-*/ annotations: /*-annotations = interface.get_annotations()-*/
+/*LOOP annotation = annotations*/  /*-?annotation-*/(/*-?', '.join([str(arg) for arg in annotations[annotation]])-*/)
+/*LOOP function = interface.get_functions()*/Function /*-?function.get_name()-*/ annotation: /*-?function.get_modifiers()-*/
+/*ENDLOOP*/
+/*ENDLOOP*//*ENDLOOP*/ 

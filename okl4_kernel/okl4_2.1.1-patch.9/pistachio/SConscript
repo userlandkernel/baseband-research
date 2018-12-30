@@ -1,0 +1,877 @@
+#
+# Copyright (c) 2007 Open Kernel Labs, Inc. (Copyright Holder).
+# All rights reserved.
+# 
+# 1. Redistribution and use of OKL4 (Software) in source and binary
+# forms, with or without modification, are permitted provided that the
+# following conditions are met:
+# 
+#     (a) Redistributions of source code must retain this clause 1
+#         (including paragraphs (a), (b) and (c)), clause 2 and clause 3
+#         (Licence Terms) and the above copyright notice.
+# 
+#     (b) Redistributions in binary form must reproduce the above
+#         copyright notice and the Licence Terms in the documentation and/or
+#         other materials provided with the distribution.
+# 
+#     (c) Redistributions in any form must be accompanied by information on
+#         how to obtain complete source code for:
+#        (i) the Software; and
+#        (ii) all accompanying software that uses (or is intended to
+#        use) the Software whether directly or indirectly.  Such source
+#        code must:
+#        (iii) either be included in the distribution or be available
+#        for no more than the cost of distribution plus a nominal fee;
+#        and
+#        (iv) be licensed by each relevant holder of copyright under
+#        either the Licence Terms (with an appropriate copyright notice)
+#        or the terms of a licence which is approved by the Open Source
+#        Initative.  For an executable file, "complete source code"
+#        means the source code for all modules it contains and includes
+#        associated build and other files reasonably required to produce
+#        the executable.
+# 
+# 2. THIS SOFTWARE IS PROVIDED ``AS IS'' AND, TO THE EXTENT PERMITTED BY
+# LAW, ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+# PURPOSE, OR NON-INFRINGEMENT, ARE DISCLAIMED.  WHERE ANY WARRANTY IS
+# IMPLIED AND IS PREVENTED BY LAW FROM BEING DISCLAIMED THEN TO THE
+# EXTENT PERMISSIBLE BY LAW: (A) THE WARRANTY IS READ DOWN IN FAVOUR OF
+# THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+# PARTICIPANT) AND (B) ANY LIMITATIONS PERMITTED BY LAW (INCLUDING AS TO
+# THE EXTENT OF THE WARRANTY AND THE REMEDIES AVAILABLE IN THE EVENT OF
+# BREACH) ARE DEEMED PART OF THIS LICENCE IN A FORM MOST FAVOURABLE TO
+# THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+# PARTICIPANT). IN THE LICENCE TERMS, "PARTICIPANT" INCLUDES EVERY
+# PERSON WHO HAS CONTRIBUTED TO THE SOFTWARE OR WHO HAS BEEN INVOLVED IN
+# THE DISTRIBUTION OR DISSEMINATION OF THE SOFTWARE.
+# 
+# 3. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR ANY OTHER PARTICIPANT BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+# BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+# OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+# IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+Import("env", "args", "src_glob", "UserError", "conf")
+
+import re, os, time
+import math
+
+# Check architecture exists
+arch = env.machine.arch
+
+src_root = Dir('#').srcnode().abspath
+
+arch_path = os.path.join("arch", arch, args["package"])
+if not os.path.exists(os.path.join(src_root, arch_path)):
+    print "architecture %s is not yet supported by pistachio." % (arch)
+arch_path = "#" + arch_path
+
+provider = "Open Kernel Labs"
+
+platform = env.machine.platform
+platform_dir =  "#" + os.path.join("platform", platform, args["package"])
+
+cpu = env.machine.cpu
+if hasattr(env.machine, "arch_version"):
+    arch_version = env.machine.arch_version
+
+wordsize = env.machine.wordsize
+
+
+####
+# Setup flint rules
+####
+env.Append(FLINT_OPTIONS=[File("pistachio.lnt")])
+
+#############################################################################
+# Find all the src files
+#############################################################################
+
+special_objects = []
+
+# Generic top-level source
+src = ["src/*.cc"]
+
+# Source files for most archs
+# FIXME: fix x86_64, make this proper included build rules
+if 1:
+    src += [ arch_path + "/src/*.cc" ,
+             arch_path + "/src/*.spp" ,
+             arch_path + "/src/%s/*.cc" % (env.toolchain.type),
+             arch_path + "/src/%s/*.spp" % ( env.toolchain.type),
+             arch_path + "/cpu/%s/src/*.cc" % ( cpu ),
+             arch_path + "/cpu/%s/src/%s/*.cc" % ( cpu, env.toolchain.type),
+             ]
+
+    if hasattr(env.machine, "arch_version"):
+        src += [
+            arch_path + "/v%s/src/*.cc" % (arch_version),
+            arch_path + "/v%s/src/*.spp" % (arch_version),
+            ]
+
+    platform_src = ["%s/src/*.cc" % platform_dir,
+                    "%s/src/*.spp" % platform_dir,
+                    "%s/src/%s/*.cc" % (platform_dir, env.toolchain.type),
+                    "%s/src/%s/*.spp" % (platform_dir, env.toolchain.type)]
+
+    src = Flatten([src_glob(glob) for glob in src])
+    platform_src = Flatten([src_glob(glob) for glob in platform_src])
+
+    # Remove anything "asmsyms" the glob picked up
+    src = [src_file for src_file in src if "asmsyms" not in src_file ]
+
+#    # FIXME: move this into the clause above
+#    if arch == "x86_64":
+#        init32_src = [src_file for src_file in src if "init32.cc" in src_file ]
+#        if(len(init32_src) != 1):
+#            raise UserError, "init32.cc not found for x86_64"
+#        init32_src = init32_src[0]
+#        src = [src_file for src_file in src if "init32.cc" not in src_file ]
+#        src = [src_file for src_file in src if "timer-apic.cc" not in src_file ]
+#        init32_obj = env.scons_env.StaticObject(init32_src, CXXFLAGS=["-m32", "-DX86_64_32BIT_CODE"])
+#        special_objects += env.scons_env.Command('init32_64.o', init32_obj, "objcopy -g -O elf64-x86-64 $SOURCES $TARGET")
+
+
+#############################################################################
+# Find all the kdb files
+#############################################################################
+kdb_src = src_glob("kdb/src/*.cc")
+kdb_src += ["%s/kdb/*.cc" % arch_path]
+
+if arch not in ["ia32", "x86_64"]:
+    kdb_src += [
+        "%s/kdb/glue/*.cc" % arch_path,
+        ]
+
+    platform_kdb_src = [
+        "%s/kdb/*.cc" % platform_dir,
+        ]
+
+else:
+    platform_kdb_src = []
+    kdb_src += [("%s/kdb/glue/" % arch_path) + fn for fn in
+                ["prepost.cc", "readmem.cc", "resources.cc",
+                 "space.cc", "thread.cc"]]
+#    kdb_src += [("src/kdb/arch/%s/" % arch) + fn for fn in
+#                ["x86.cc", "breakpoints.cc", "stepping.cc", "space.cc", "prepost.cc", "resources.cc"]]
+
+    # EFI still needs pc99 io and intctrl kdb
+    # (poorly placed files? ceg)
+    plat_pc99_dir = "#" + os.path.join("platform", "pc99", "pistachio")
+    if( platform == "efi" ):
+        platform_kdb_src += ["%s/kdb/io.cc" % plat_pc99_dir]
+        platform_kdb_src += ["%s/intctrl.cc" % plat_pc99_dir]
+        platform_kdb_src += ["%s/kdb/reset.cc" % platform_dir]
+        platform_kdb_src += ["%s/kdb/memmap.cc" % platform_dir]
+        
+    if(arch == "x86_64" ):
+        platform_kdb_src += ["%s/kdb/io.cc" % plat_pc99_dir]
+        platform_kdb_src += ["%s/kdb/intctrl.cc" % plat_pc99_dir]
+    if( platform == "pc99" ): # pc99 needs pc99 files too, strangely enough
+        kdb_src += ["%s/kdb/*.cc" % platform_dir] # Can't be in libplatform because it defined a debugger command.
+
+    # Firewire debugging
+    if( getattr( env.machine, "use_dbg1394", False ) ):
+        platform_kdb_src += ["%s/kdb/dbg1394.cc" % plat_pc99_dir]
+
+#############################################################################
+# Global config options - provided by the project SConstruct (eg projects/iguana)
+#############################################################################
+
+# Read in the scheduling behaviour
+sched_algorithm = args.get("SCHEDULING_ALGORITHM").lower()
+# Get max number of threads
+max_threads =  args.get("MAX_THREADS")
+
+#############################################################################
+# Config defines
+#############################################################################
+
+cppdefines = [
+    ("__API__", "v4"),
+    ("__ARCH__", arch),
+    ("__CPU__", env.machine.cpu),
+    ("__PLATFORM__", platform),
+    
+    ("CONFIG_ARCH_%s" % arch.upper(), 1),
+    ("CONFIG_PLAT_%s" % platform.upper(), 1),
+    ("CONFIG_CPU_%s_%s" % (arch.upper(), env.machine.cpu.upper()), 1),
+    ]
+
+config_xip = args.get("XIP", False)
+if config_xip:
+    cppdefines.append(("CONFIG_XIP", 1))
+
+(year, month, day) = time.localtime()[0:3]
+
+version_cppdefines = [
+    #("__USER__", '\\"%s@%s\\"' % (os.getlogin(), os.uname()[1]) ),
+    ("__USER__", '\\"%s\\"' % (provider) ),
+    ("KERNEL_VERSION", 0), ("KERNEL_SUBVERSION", 1),
+    ("KERNEL_SUBSUBVERSION", 0), ("KERNEL_GEN_DAY", day),
+    ("KERNEL_GEN_MONTH", month), ("KERNEL_GEN_YEAR", year - 2000),
+    ]
+
+cppdefines += version_cppdefines
+
+# Machine configuration
+if env.machine.endian == "big":
+    cppdefines += [("CONFIG_BIGENDIAN", 1)]
+else:
+    cppdefines += [("CONFIG_LITTLEENDIAN", 1)]
+
+if env.machine.wordsize == 32:
+    cppdefines +=  [("CONFIG_IS_32BIT", 1)]
+elif env.machine.wordsize == 64:
+    cppdefines +=  [("CONFIG_IS_64BIT", 1)]
+else:
+    raise UserError, "Wordsize: %s is not support. Only 32 and 64-bit wordsize are supported." % env.machine.wordsize
+
+# Set 1 smp processor
+cppdefines += [("CONFIG_SMP_MAX_CPUS", 1)]
+
+cppdefines += [("CONFIG_MAX_SPACES", "%sU" % args.get("MAX_SPACES", 256))]
+
+# Support for contexts bitmaps
+enable_context_bitmasks = args.get("CONTEXT_BITMASKS", False);
+if (enable_context_bitmasks):
+    cppdefines += [("CONFIG_CONTEXT_BITMASKS", 1)]
+    cppdefines += [("CONFIG_LOCKFREE_SCHEDULER", 1)]
+
+# Support for kernel/hybrid mutexes
+mutex_type = args.get("MUTEX_TYPE", "hybrid").lower()
+if (mutex_type == "hybrid"):
+    cppdefines += [("CONFIG_HYBRID_MUTEXES", 1)]
+
+asm_fastpath_supported = False
+c_fastpath_supported = False
+
+# ia32 gets fastpaths because it only uses a C fastpath
+if arch == "ia32":
+    c_fastpath_supported = (sched_algorithm != 'inheritance')
+
+# ARM has a fastpath implementation
+if arch == "arm":
+    asm_fastpath_supported = True
+    c_fastpath_supported = (sched_algorithm != 'inheritance')
+
+# Fastpaths
+if args.get("ENABLE_FASTPATHS", True):
+    # Enable arch-specific generic fastpaths.
+    cppdefines += [("CONFIG_ENABLE_FASTPATHS", 1)]
+
+    # If assembly fastpaths are enabled, use those.
+    if args.get("EXCEPTION_FASTPATH", True) and asm_fastpath_supported:
+        cppdefines += [("CONFIG_EXCEPTION_FASTPATH", 1)]
+    if args.get("IPC_FASTPATH", 1) and asm_fastpath_supported:
+        cppdefines += [("CONFIG_IPC_FASTPATH", 1)]
+
+    # If assembly fastpaths don't exist, use the C fastpath,
+    # (or potentially both if the user really wants it).
+    if args.get("IPC_C_FASTPATH", not asm_fastpath_supported) \
+            and c_fastpath_supported:
+        print "Warning: C fastpath disabled until fixed.\n"
+        #cppdefines += [("CONFIG_IPC_C_FASTPATH", 1)]
+
+if args.get("KDB_SERIAL", False):
+    cppdefines += [("CONSOLE_PORT_SERIAL", 1)]
+if args.get("USE_UNTANGLED_FASTPATH", False):
+    cppdefines +=[("CONFIG_USE_UNTANGLED_FASTPATH", 1)]
+
+# Kernel debugging options
+if args.get("ENABLE_DEBUG", True): 
+    cppdefines += [("CONFIG_DEBUG", 1)]
+    cppdefines += [("CONFIG_KDB", 1)]
+    if args.get("KDB_COLOR_VT", True):
+        cppdefines += [("CONFIG_KDB_COLOR_VT", 1)]
+    cppdefines += [("CONFIG_ASSERT_LEVEL", args.get("ASSERT_LEVEL", 3))]
+
+    if args.get("ENABLE_KMEM_TRACE", True):
+        cppdefines += [("CONFIG_KMEM_TRACE", 1)]
+    if args.get("ENABLE_TRACEPOINTS", True):
+        cppdefines += [("CONFIG_TRACEPOINTS", 1)]
+    # Kernel tracing
+    if args.get("ENABLE_TRACEBUFFER", True):
+        cppdefines += [("CONFIG_TRACEBUFFER", 1)]
+    cppdefines += [("CONFIG_TRACEBUF_PAGES", args.get("TRACEBUFFER_PAGES", 64))]
+
+    # KDB Console support (needed by CONFIG_KDB_CLI)
+    if args.get("ENABLE_KDB_CONS", True): 
+        cppdefines += [("CONFIG_KDB_CONS", 1)]
+        # KDB Command Line Interface (Interactive debugger)
+        if args.get("ENABLE_KDB_CLI", True):
+            cppdefines += [("CONFIG_KDB_CLI", 1)]
+            if args.get("KDB_BREAKIN", True) and getattr(env.machine, "kdb_breakin", True):
+                cppdefines += [("CONFIG_KDB_BREAKIN", 1)]
+
+    if args.get("ENABLE_THREAD_NAMES", True):
+        cppdefines += [("CONFIG_THREAD_NAMES", 1)]
+    if args.get("ENABLE_MUTEX_NAMES", True):
+        cppdefines += [("CONFIG_MUTEX_NAMES", 1)]
+    if args.get("ENABLE_SPACE_NAMES", False):
+        cppdefines += [("CONFIG_SPACE_NAMES", 1)]
+    # Kernel Profiling
+    if args.get("ENABLE_PROFILING", False):
+        cppdefines += [("CONFIG_L4_PROFILING", 1)]
+    if args.get("VERBOSE_INIT", False):
+        cppdefines += [("CONFIG_VERBOSE_INIT", 1)]
+    if args.get("ENTER_KDB", False):
+        cppdefines += [("CONFIG_KDB_ON_STARTUP", 1)]
+
+else:
+    cppdefines += [("CONFIG_ASSERT_LEVEL", args.get("ASSERT_LEVEL", 5))]
+    cppdefines += [("CONFIG_KDB_NO_ASSERTS", 1)]
+    cppdefines += [("NDEBUG", 1)]
+
+if arch == "ia32" or arch == "x86_64":
+    # don't use serial if we have firewire!
+    if( hasattr(env.machine, "use_dbg1394") and not env.machine.use_dbg1394 ):
+        # x86 KDB COM port blah
+        cppdefines += [("CONFIG_KDB_CONS_COM", args.get("ENABLE_KDB_CONS_COM", 1))]
+        # default for Xserve x86 machines - ceg/nt
+        # nt: xserve user guide (p.19) says you must talk at 56k, but trial and error
+        # gave me 9600 instead
+        if  env.machine.macho:
+            cppdefines += [("CONFIG_KDB_COMSPEED", args.get("CONFIG_KDB_COMSPEED", 57600))]
+
+# Maximum Number of root cap entries  = CONFIG_ROOT_CAP_NO
+# ia32 has a larger kernel heap, so support more cap entries
+if arch in ["ia32"]:
+    default_root_cap_no = 4096
+else:
+    # This has been further reduced to cover needs on small platforms
+    # (which doesn't currently include any ia32 platforms)
+    default_root_cap_no = 1024
+
+root_cap_no = args.get("ROOT_CAP_NO", default_root_cap_no)
+if (root_cap_no < 16) or (root_cap_no > 32768):
+    raise UserError, "ROOT_CAP_NO of %d is out of range" % root_cap_no
+
+#Calculate ROOT_CAP_BITS, this is still needed as long as threadid_t
+#still contains version field and threadno field, ROOT_CAP_BITS will
+#be replaced by ROOT_CAP_NO once threadid_t is replaced completely by
+#capid_t.
+bits = 1
+found = False
+
+while (not found):
+    if ((1<<bits) >= root_cap_no):
+        found = True
+    else:
+        bits = bits + 1 
+
+cppdefines += [("CONFIG_ROOT_CAP_BITS", bits)]
+
+#architecture options
+
+if arch == "mips":
+    cppdefines += [("CONFIG_CPU_CLOCK_SPEED", 100000)]
+    cppdefines += [("CONFIG_MAX_NUM_ASIDS", 256)]
+    cppdefines += [("CONFIG_ASIDS_ROUNDR", 1)]
+    cppdefines += [("CONFIG_BOOTMEM_PAGES", args.get("BOOTMEM_PAGES", 1024))]
+
+if arch == "arm":
+    if arch_version == 5:
+        cppdefines += [("CONFIG_ARM_VER", 5)]
+        cppdefines += [("CONFIG_ENABLE_FASS", 1)]
+    if arch_version == 6:
+        cppdefines += [("CONFIG_ARM_VER", 6)]
+        cppdefines += [("CONFIG_ALIGNED_ACCESSES", 1)]
+        cppdefines += [("CONFIG_MAX_NUM_ASIDS", 256)]
+        cppdefines += [("CONFIG_ASIDS_ROUNDR", 1)]
+    cppdefines += [("CONFIG_BOOTMEM_PAGES", args.get("BOOTMEM_PAGES", 1024))]
+
+    if args.get("DEFAULT_CACHE_ATTR_WB", True):
+        cppdefines += [("CONFIG_DEFAULT_CACHE_ATTR_WB", 1)]
+
+
+if hasattr(env.machine, "subplatform"):
+    subplatform = getattr(env.machine, "subplatform", None)
+    cppdefines += [("CONFIG_SUBPLAT_%s" % subplatform.upper())]
+
+if hasattr(env.machine, "uart"):
+    uart = getattr(env.machine, "uart", None)
+    cppdefines += [("CONFIG_UART_%s" % uart.upper(), 1)];
+
+if platform == "pxa":
+    uarts = ["FFUART", "STUART", "BTUART", "HWUART"];
+
+    subplatform = getattr(env.machine, "subplatform", None)
+
+    if subplatform is None:
+        raise UserError, "The PXA subplatform has not been defined. It must be one of [PXA255, PXA270]"
+    if uart not in uarts:
+        raise UserError, "The PXA platform requires a valid uart to be defined. It must be one of %s" % uarts
+
+if platform == "imx31":
+    cppdefines += [("CONFIG_HAS_L2_CACHE", 1)]
+    if not args.get("DISABLE_L2_CACHE", False):
+        cppdefines += [ ("CONFIG_USE_L2_CACHE", 1),
+                        ("CONFIG_HAS_L2_EVTMON", 1),
+                        ("CONFIG_ARM_HWWALKER_IN_L2", 1)]
+
+#############################################################################
+# ia32 config options
+#############################################################################
+
+if arch == "ia32":
+    # EFI
+    if( platform == "efi" ):
+        cppdefines += [("CONFIG_EFI", 1)]
+
+    # IOAPICS
+    # FIXME: TSC goes here?
+    if( getattr( env.machine, "use_ioapics", False ) ):
+        cppdefines += [ ("CONFIG_IOAPIC", 1),
+                        ("CONFIG_MAX_IOAPICS", 16),
+                        ("CONFIG_APIC_TIMER_TICK", 1000),
+                        ("CONFIG_IA32_TSC", 1) ]
+        
+    # use VGA for the console if requested.
+    if getattr(env.machine, "use_screen", False):
+        cppdefines +=   [("CONFIG_KDB_CONS_SCREEN", 1)]
+    # use firewire by default if it's being compiled in
+    elif getattr(env.machine, "use_dbg1394", False):
+        cppdefines +=   [("CONFIG_KDB_CONS_DBG1394", 1)]
+    else:
+        cppdefines +=   [("CONFIG_KDB_CONS_SERIAL", 1)]
+
+    # Floating point extensions
+    if( getattr( env.machine, "use_fxsr", False ) ):
+        cppdefines += [("CONFIG_IA32_FXSR", 1)]
+
+############################################################################
+## Pull in any arch-specific Sconscripts
+############################################################################ 
+
+root_path = Dir('#').srcnode().abspath
+file_name = os.path.join( arch_path,  "arch.scons")
+
+if os.path.exists(file_name):
+    execfile(file_name)
+
+
+#############################################################################
+# Include Path
+#############################################################################
+
+platform_cppath = env.scons_env['CPPPATH']
+public_headers = [("include/", "include/%(name)s/"),
+                  ("kdb/include/", "include/%(name)s/kdb/"),
+                  ("include/generic/", "include/%(name)s/generic/"),
+                  ("%s/include/" % arch_path, "include/%(name)s/arch/"),
+                  ("%s/cpu/%s/include/" % (arch_path, cpu), "include/%(name)s/cpu/"),
+                  ("%s/include/" % platform_dir, "include/%(name)s/plat/"),
+                  ]
+if hasattr(env.machine, "arch_version"):
+    public_headers.append(("%s/v%s/include/" % (arch_path, arch_version), "include/%(name)s/arch/ver/"))
+
+env.Append(CPPPATH = ["include"],
+           CPPDEFINES = cppdefines)
+
+if hasattr(env.machine, "arch_version"):
+    env.Append(CPPPATH = [ "%s/v%s/include" % (arch_path, arch_version) ])
+
+#platform_cppath = env.scons_env['CPPPATH']
+paths = [("include/arch", "%s/include" % arch_path),
+         ("include/plat", "%s/include" % platform_dir),
+         ("include/cpu", "%s/cpu/%s/include" % (arch_path, cpu)),
+         ("include/kdb", "kdb/include")]
+
+if hasattr(env.machine, "arch_version"):
+    paths.append(("include/arch/ver", "%s/v%s/include" % (arch_path, arch_version)))
+
+for dest_path, src_path in paths:
+    headers = src_glob(os.path.join(src_path, "*.h"))
+    for header in headers:
+        dir, header_file = os.path.split(header)
+        env.Command(os.path.join(dest_path, header_file), os.path.join(src_path, header_file),
+                    Copy('$TARGET', '$SOURCE'))
+
+#############################################################################
+# Voodoo: asmsyms.h
+#############################################################################
+def mk_asmsyms(target, source, env):
+    out = open(target[0].abspath, "w")
+    f = open(source[0].abspath)
+
+    out.write("/* machine-generated file - do NOT edit */\n")
+    out.write("#ifndef __ASMSYMS_H__\n")
+    out.write("#define __ASMSYMS_H__\n\n")
+
+    for line in file(str(source[0])):
+        if "SYM" in line:
+            (_, name, value) = line.split()
+            val = long(value)
+            if val < 0:
+                val += (2 ** wordsize)
+            out.write("#define %-25s 0x%x\n" % (name, val))
+    out.write("\n#endif /* __ASMSYMS_H__ */\n")
+
+asmsyms = env.AsmFile("asmsyms.s", arch_path + "/src/asmsyms.cc" ,
+                      CXX_WARNINGS = [])
+asmsyms_h = env.Command(["include/asmsyms.h"], "asmsyms.s",
+                        Action(mk_asmsyms, "[SYMS] $TARGET"))
+
+#############################################################################
+# Voodoo: tcb_layout.h
+#############################################################################
+def mk_struct_layout_c(target, source, env ):
+    struct_name = env['struct_name']
+    prefix = env['prefix']
+
+    out = open(target[0].abspath, "w");
+    out.write("""
+
+#include <l4.h>
+#define BUILD_TCB_LAYOUT
+#define O(w,x) (u32_t)((char*) &w.x - (char*)(&w))
+#if defined(__GNUC__)
+#define DEFINE(label, val) \
+    __asm__ __volatile__ ("DEFINE " #label " %n0" : : "i" (-val));
+#elif defined(__RVCT_GNU__)
+#define DEFINE(label, val) \
+    DEFINE label __cpp(val);
+#endif
+""")
+    out.write("#include <%s>\n" % source[0].abspath)
+    out.write("%s foo;\n" % (struct_name ))
+    out.write("""
+
+#if defined(__RVCT_GNU__)
+__asm
+#endif
+void make_offsets() {
+""" )
+    for fn in source:
+        printme = False
+        for line in open(fn.abspath).readlines():
+            line = line.strip()
+            if "STRUCT_START_MARKER" in line:
+                printme = True
+                continue
+            if "STRUCT_END_MARKER" in line:
+                printme = False
+                continue
+            if printme:
+                line = line.split(';')
+                if len(line) > 1:
+                    line = line[0] + ";"
+                else:
+                    line = line[0]
+                if line.endswith(';'):
+                    name = line.split()[-1][:-1].split('[')[0]
+                    out.write('DEFINE(%s%s, O(foo, %s)) \n' %
+                              (prefix, name.upper(),  name))
+                elif line.startswith('#'):
+                    out.write(line + "\n")
+    if 'size_prefix' in env.Dictionary():
+        out.write('DEFINE(%sSIZE, sizeof(%s))\n' % (env['size_prefix'], struct_name))
+    out.write("\n}\n")
+
+
+def mk_tcblayout(target, source, env):
+    out = open(target[0].abspath, "w")
+    out.write("""/* machine-generated file - do NOT edit */
+#ifndef __%s_LAYOUT__H__
+#define __%s_LAYOUT__H__
+
+//#define BUILD_%s_LAYOUT 1
+    """% (env['name'], env['name'], env['name'].upper()))
+
+    for line in file(str(source[0])):
+        if "DEFINE" in line:
+            (_, name, offset) = line.split()
+            off = int(offset) 
+            out.write("#define %-35s 0x%02x /* %4d */\n" % (name, off, off))
+            
+    out.write("\n#endif /* __TCB_LAYOUT__H__ */\n")
+
+
+env.Command("context_layout.cc",
+            ["%s/include/thread.h" % arch_path],
+            Action(mk_struct_layout_c, "[CGEN] $TARGET"), struct_name="%s_irq_context_t" % env.machine.arch, prefix="PT_", size_prefix="PT_")
+
+env.Command("tcb_layout.cc",
+            ["include/tcb.h"],
+            Action(mk_struct_layout_c, "[CGEN] $TARGET"), struct_name="tcb_t", prefix="OFS_TCB_")
+
+env.Command("utcb_layout.cc",
+            ["%s/include/utcb.h" % arch_path],
+            Action(mk_struct_layout_c, "[CGEN] $TARGET"), struct_name="utcb_t", prefix="OFS_UTCB_")
+
+env.Command("arch_ktcb_layout.cc",
+            ["%s/include/ktcb.h" % arch_path],
+            Action(mk_struct_layout_c, "[CGEN] $TARGET"), struct_name="arch_ktcb_t", prefix="OFS_ARCH_KTCB_")
+
+# Generate a command to build the ASM file from tcb_layout.cc to get the defines
+tcb_layout_s = env.AsmFile("tcb_layout.cc")
+context_layout_s = env.AsmFile("context_layout.cc")
+utcb_layout_s = env.AsmFile("utcb_layout.cc")
+ktcb_layout_s = env.AsmFile("arch_ktcb_layout.cc")
+
+# Generate the tcb_layout.h from the asm file
+env.Command("include/tcb_layout.h", "tcb_layout.s", Action(mk_tcblayout, "[OFS ] $TARGET"), name="TCB")
+env.Command("include/utcb_layout.h", "utcb_layout.s", Action(mk_tcblayout, "[OFS ] $TARGET"), name="UTCB")
+env.Command("include/ktcb_layout.h", "arch_ktcb_layout.s", Action(mk_tcblayout, "[OFS ] $TARGET"), name="KTCB")
+hdr = env.Command("include/context_layout.h", "context_layout.s", Action(mk_tcblayout, "[OFS ] $TARGET"), name="CONTEXT")
+
+# Copy into the export area.  Needed to implement enter_kdebug() on
+# some architectures.
+env.scons_env.Install(env.builddir + "/include/kernel", hdr)
+
+#############################################################################
+# Build kdb_class_helper.h
+#############################################################################
+def mk_kdb_helper(target, source, env):
+    out = file(target[0].abspath, "w")
+    for fn in source:
+        for line in open(fn.abspath).readlines():
+            line = line.strip()
+            if "DECLARE_CMD (" in line or "DECLARE_CMD(" in line:
+                name = line.split("(", 2)[1].split(",")[0]
+                out.write("static cmd_ret_t %s(cmd_group_t*);\n" % (name))
+
+env.Command("include/kdb_class_helper.h",
+            Flatten([src_glob(glob) for glob in kdb_src]),
+            Action(mk_kdb_helper, "[KDB ] $TARGET"))
+
+#############################################################################
+# Generate macro_set files
+#############################################################################
+
+# Basically pre-process all the source files with a flag
+# to output magic instead of real C. Then run over the output files
+# to build generated files.
+
+MACRO_SET_CC = "macro_sets.cc"
+
+# function to process the pre-processed files
+# FIXME: could make one pass over each file and pass each line to
+# different handlers to do more than the one macro
+def mk_macro_sets_helper(target, source, env):
+
+    # The list of found strings
+    matches = []
+
+    # make the re
+    # MACRO_SET,ws,[set name],ws,SYM,ws,[sym name],ws,TES_ORCAM
+    mstr = "MACRO_SET\s+(\S+)\s+SYM\s+(\S+)\s+TES_ORCAM"
+    
+    # First find all the input lines
+    for fl in source:
+        # print "[SCAN] %s" % fl.path
+        for line in open(fl.abspath).readlines():
+            m = re.findall( mstr, line )
+            matches += m
+
+    # make a dict of sets, each with a list of symbols
+    sets = {}
+    for (set, sym) in matches:
+        lst = sets.get(set, [])
+        # We make DECLARE_SET generate at least the empty set to
+        # get empty arrays.
+        if( sym != "DECLARE" ):
+            lst.append(sym)
+        sets[set] = lst
+
+    ## Write out the actual CXX file
+
+    # open it & write the pre-amble
+    out = file(target[0].abspath, "w")
+    out.write("/* machine-generated file - do NOT edit */ \n")
+    out.write("/* Types? Where we're going we don't need types... */ \n\n")
+    out.write("#include <l4.h> \n\n")
+    
+    # enumerate over the sets
+    for skey in sets.keys():
+        syms = sets[skey]
+        syms.sort()
+
+        out.write("/* Begin Macro Set %s */ \n" % skey )
+
+        # firstly dump the extern decl of each sym
+        out.write("/* externs for macro set: %s */ \n" % skey )
+        for sym in syms:
+            out.write( "extern word_t %s;\n" % sym )
+
+        # Now the array
+        # We terminate the array with a 'NULL' element to prevent
+        # empty arrays because they aren't valid C.
+        out.write("/* set array for macro set: %s */ \n" % skey )
+        out.write("word_t * __macro_set_%s_array[] = { \n" % skey )
+        for sym in syms:
+            out.write( "\t&%s,\n" % sym )
+
+        out.write( " NULL }; /* end set array for %s */\n\n" % skey )
+
+        # now the count
+        # Subtract one to account for 'NULL' trailer
+        out.write("/* set count for macro set: %s */ \n" % skey )
+        out.write("word_t __macro_set_%s_count = (sizeof(__macro_set_%s_array) / sizeof(word_t*)) - 1;\n" % (skey, skey) )
+
+        out.write("/* End Macro Set %s */ \n\n\n" % skey )
+
+    # trailing newline for dumb compilers
+    out.write("\n")
+
+
+# pre-process the source files with the magic flag
+# even though this is for kdb, things like tracepoints appear in the
+# main kernel code.
+pproc_list = []
+for fl in Flatten([src_glob(glob) for glob in src + kdb_src]):
+    # don't process ASM files - ARM doesn't like it (?)
+    if( fl[-4:] == ".spp" ):
+        continue
+    cppflags = env.toolchain.dict.get("CPPFLAGS", []) + ["-DCPP_ONLY"]
+    mexp_src = fl
+    dirname = os.path.dirname(fl)
+    if dirname.startswith("#"):
+        dirname = dirname[1:]
+    mexp_dest = os.path.join(env.builddir, "l4kernel", "object", dirname, os.path.basename(fl) + ".mi")
+    pp_cmd = env.scons_env.MExp( mexp_dest, mexp_src, CPPFLAGS=cppflags )
+    
+    pproc_list.append( pp_cmd )
+
+    # Make sure each .cc.ppo file depends on the macro set header
+    # FIXME: will need more as expanding into DECLARE_CMD etc.
+    env.Depends(pp_cmd,  ["include/kdb/macro_set.h"])
+
+# generate the macro_sets.cc file from the pre-processed output
+# print "pproc_list: %s" % pproc_list
+# CHECKME: do the deps actually work on this one?
+macro_cc = env.Command( [MACRO_SET_CC],
+                        pproc_list,
+                        Action( mk_macro_sets_helper, "[MSET] %s" % MACRO_SET_CC ) )
+
+           
+# add the macro_sets.cc file to the kdb src
+# (should generate the macro_sets.o file)
+kdb_src += [MACRO_SET_CC]
+
+
+#############################################################################
+# KDB
+#############################################################################
+kernel_src = src
+if args.get("ENABLE_DEBUG", 1):
+    kernel_src += kdb_src
+    platform_src += platform_kdb_src
+    special_objects += macro_cc
+
+#############################################################################
+# Build the linkerscript
+#############################################################################
+plat_script = File("linker.lds", "%s/src/%s" % (platform_dir, env.toolchain.type))
+glue_script = File("linker.lds", "%s/src/%s" % (arch_path, env.toolchain.type))
+if platform == "pc99":
+    linker_script_src = [arch_path + "/src/linker-pc99.lds"]
+elif os.path.exists(str(plat_script)):
+    linker_script_src = plat_script
+else:
+    linker_script_src = glue_script
+
+# linker scripts don't work for apple/macho targets
+if( getattr( env.machine, "macho", False ) == False ):
+    linkscript = env.CppFile("lds.tmp", linker_script_src,
+                             CPPDEFINES=env.Extra( ["ASSEMBLY"]))
+else:
+    # Make the macho ld ordering file look like a linker script
+    kipobj = env.Command(["kip.order.X"], ["%s/src/kip.order" % arch_path], 
+                         "cp $SOURCE $TARGET")
+
+    
+
+
+#############################################################################
+# Build the kernel
+#############################################################################
+
+platform_lib = env.KengeLibrary("platform",
+                                CPPPATH=platform_cppath,
+                                source = platform_src)
+
+if getattr( env.machine, "macho", False ) == False:
+    # not macho
+    if env.machine.platform == "pc99":
+        kern_phys_align = env.ALIGN_ELF
+        kern_phys_addr = env.ADDR_AS_BUILT
+    else:
+        # not pc99 or macho
+        kern_phys_align = env.ALIGN_ELF
+        kern_phys_addr = env.ADDR_ALLOC
+
+    addressing = env.WeaverAddressing(
+                    xip = config_xip,
+                    phys_align = kern_phys_align,
+                    virt_addr = 0x0,
+                    phys_addr = kern_phys_addr)
+
+    # If running XIP, then place the read-only segment in the ROM
+    # pool.
+    #
+    # The two segments below refer to the text segment in the file.
+    # When build with gcc it is called 'rx' and when built with RVCT
+    # it is called 'LR_1'.
+    if config_xip:
+        if env.toolchain.type == 'rvct':
+            segment = env.WeaverSegment("LR_1", physpool="rom")
+        else:
+            segment = env.WeaverSegment("rx", physpool="rom")
+
+        xip_segments = [segment]
+    else:
+        xip_segments= None
+
+    weaver = env.WeaverKernel(xip = config_xip,
+                              addressing = addressing,
+                              segments = xip_segments,
+                              max_threads = max_threads,
+                              max_root_caps = root_cap_no)
+
+    linkflags = env.toolchain.dict["LINKFLAGS"] + env.machine.link_flags
+
+    # The entry point is in the platform library, so force the symbol
+    # to be undefined to ensure that it is loaded.
+    linkflags += ['-u',  '_start']
+
+    obj = env.KengeProgram("l4kernel", buildname="kernel",
+                           source = kernel_src,
+                           public_headers = public_headers,                           
+                           LINKSCRIPTS=linkscript,
+                           _LINKADDRESS = "",
+                           LINKFLAGS=linkflags,
+                            LIBS=["platform"],
+                           extra_source = special_objects,
+                           weaver = weaver)
+else:
+    # Apple tool chain is a bit of nasty hack right now
+    # Yes, this is currently a hard-coded address and size :(
+    bss = []
+    obj = env.KengeProgram( "l4kernel", source = kernel_src,
+                            LINKFLAGS= ["-seg1addr", "0xf0800000",
+                                        "-segaddr", "__INIT", "0x00b00000",
+                                        "-sectorder", "__KIP", "__kip", kipobj],
+                            LINKSCRIPTS=kipobj,
+                            LIBS=["platform"],
+                            extra_source=special_objects)
+
+
+# RVCT linker script can't correctly set up the .kip section as we want
+# so we have this postaction to fix up the elf file when compiling with
+# RVCT.
+if env.toolchain.type == "rvct":
+    AddPostAction(obj, "python tools/pyelf/elfweaver modify $TARGET --merge_sections .kip")
+
+#friendly_args = "toolchain gnu"
+#for (key, value) in args.items():
+#    friendly_args += " " + str(key) + " " + str(value)
+#AddPostAction(obj, "python tools/sizes.py $TARGET %s %s %s" % (env.toolchain.dict["READELF"], env.toolchain.dict["OBJCOPY"], friendly_args))
+
+Return("obj")

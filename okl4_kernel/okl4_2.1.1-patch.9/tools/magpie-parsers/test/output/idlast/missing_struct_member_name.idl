@@ -1,0 +1,2 @@
+* Parser error *
+test/input/idlast/missing_struct_member_name.idl:5:Unexpected token ";"

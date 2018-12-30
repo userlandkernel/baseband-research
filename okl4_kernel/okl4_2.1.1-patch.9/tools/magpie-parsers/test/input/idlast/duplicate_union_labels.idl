@@ -1,0 +1,7 @@
+  interface test {
+    union broken switch (short) {
+      case 1: short x;
+      case 2: short y;
+      case 1: float z;
+    };
+  };

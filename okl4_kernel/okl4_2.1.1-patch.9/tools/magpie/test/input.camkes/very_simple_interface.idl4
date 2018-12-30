@@ -1,0 +1,7 @@
+[uuid(23)]
+interface very_simple
+{
+	int foo(in int inputarg, out int result);
+	int ofo(in int inputarg, out int result);
+	int oof(in int inputarg, out int result);
+};

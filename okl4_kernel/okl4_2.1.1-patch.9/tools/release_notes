@@ -1,0 +1,296 @@
+25 June 2007
+
+Notes for OKL release on mx21adse board.
+
+This release consists of the OKL4 kernel with the Iguana operating system,
+     OK-Linux ( virtualized Linux kernel) and a number of services which as
+     user-level applications directly on Iguana.
+
+=== Binary Images ===
+
+1. Single OK-Linux
+    /binary/mx21-single.boot
+2. Dual OK-Linux
+    /binary/mx21-dual.boot
+
+Booting: eg with U-boot:
+    U-Boot> setenv bootfile mx21-single.boot; dhcp; bootelf
+
+=== Building ===
+
+1. Build Single OK-Linux
+
+# rm -f build/image.* build/weaver.xml
+# ./tools/build.py project=iguana machine=mx21ads wombat=True
+
+2. Build Dual OK-Linux
+
+# rm -f build/image.* build/weaver.xml
+# ./tools/build.py project=iguana machine=mx21ads wombat=True wombat2=True
+
+=== Demo ===
+
+Requirements:
+    TFTP Server
+    NFS Server
+        assumed /shared on server which as 'nfs-files.zip' unzipped inside.
+        chmod +x /shared/bin/*
+        chmod +x /shared/lib/*
+        chmod +x /shared/mw/*
+        chmod +x /shared/sdl-examples/*
+    Speakers plugged into the MX21
+
+    [If you can't execute apps on the NFS share, make sure you have chmod +x the files]
+
+1. Single Linux
+
+    Boot the mx21-single.boot image
+
+    After boot, you should be at the shell: You will probably have an IP
+    address from DHCP. eg:
+
+    ...
+    configuring network for  Linux wombat 2.6.11.12-arm #1 Mon Jun 25 11:40:23 EST 2007 OKL4/Linux arm mach-sa1100 unknown
+    info, udhcpc (v0.9.9-pre) started
+    debug, Sending discover...
+    debug, Sending select for 10.21.32.194...
+    info, Lease of 10.21.32.194 obtained, lease time 1800
+    ...
+
+    / # ifconfig
+    eth0      Link encap:Ethernet  HWaddr 00:04:9F:00:64:7C
+              inet addr:10.21.32.194  Bcast:10.255.255.255  Mask:255.255.255.0
+              UP BROADCAST RUNNING  MTU:1500  Metric:1
+              RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+              TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+              collisions:0 txqueuelen:1000
+              RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+              Interrupt:2
+
+    lo        Link encap:Local Loopback
+              inet addr:127.0.0.1  Mask:255.0.0.0
+              UP LOOPBACK RUNNING  MTU:16436  Metric:1
+              RX packets:4 errors:0 dropped:0 overruns:0 frame:0
+              TX packets:4 errors:0 dropped:0 overruns:0 carrier:0
+              collisions:0 txqueuelen:0
+              RX bytes:336 (336.0 B)  TX bytes:336 (336.0 B)
+
+    / # ping some.host.com
+    net_tx padding
+    PING some.host.com (10.21.10.11): 56 data bytes
+    64 bytes from 10.21.10.11: icmp_seq=0 ttl=64 time=0.0 ms
+    64 bytes from 10.21.10.11: icmp_seq=1 ttl=64 time=0.0 ms
+
+    Note in single-Linux mode, you cannot switch. CTRL-P and keypad (EXTRA 1)
+    do nothing.
+
+    Mount the NFS Share:  (set server IP)
+    / # mount -t nfs -o nolock,tcp,soft,nfsvers=2 10.21.10.11:/shared /mnt
+
+    Setup the NAND flash (only need to erase and copy the files once)
+    / # /mnt/bin/flash_eraseall -q -j /dev/mtd0
+
+    Mount the NAND
+    / # mount -t jffs2 mtd0 /nand
+
+    The NAND should be erased and mounted, copy files to NAND
+    (You only need to copy files to NAND once)
+    (SD-Card is SLOW, this may take a while)
+    / # cp -ar /mnt/bin /nand/
+    / # cp -ar /mnt/lib /nand/
+    / # cp -ar /mnt/media /nand/
+
+    Put NAND directories in the PATH
+    / # export PATH=$PATH:/nand/bin
+    / # export LD_LIBRARY_PATH=/lib:/nand/lib
+
+    Start nano-X
+    / # nano-X &
+    / # nanowm &
+
+    X server should start and you should be able to use the cursor keys to
+    move the mouse. (CLICK = ACTION buttom).
+
+    Demo 'madplay' console player:  ( Plug in speakers :) )
+    / # madplay -v /nand/media/Test.mp3
+        ('q' to quit)
+
+    Demo 'ffplay' graphical player:
+    / # ffplay /nand/media/hunter_subres_176x136.mpg
+    (you can mouse click on the image to seek to a file position)
+
+    (click [x] to close player)
+
+    Doom (prboom) demo
+    / # cp -ar /mnt/prboom /nand/   (only need to copy to nand once)
+    / # cd /nand/prboom/
+    / # ./prboom -width 240 -height 320
+    ( CTRL-C on console to close )
+
+    Doom (windowed)
+    / # cd /nand/prboom/
+    / # /mnt/mw/nxkbd &
+    / # ./prboom -width 220 -height 200 &
+
+    (you might need to drag the windows so that you can see both)
+
+    Click on the Keyboard [CTRL] -> [ESC]     to enter the menu
+    'n' - new game
+    'l' - load game etc
+    Its hard to play from nano-X, but shows the input device working
+
+    ( you can close applications by clicking on [x] )
+
+    Event Test (Key pad)
+    / # evtest /dev/event0
+    (Press some keypad buttons)    CTRL-C to exit
+
+    There are some other small apps to play with in /mnt/sdl-examples etc
+
+
+2. Dual Linux
+
+    Dual Linux is similar ot single, but you can switch between the Linux
+    instances.
+    To switch - via serial: CTRL-P
+                via keypad: EXTRA 1
+
+    Each Linux has its own LCD buffer.
+    Each Linux has its own IP address.
+    Each Linux has its own NAND partition.
+        - NB you will need to NFS mount and copy files same as the
+          single Linux case above, for the second Linux.
+    Each Linux shares the serial and keypad (switching)
+    The sound is only available to the Linux currently playing, the other
+    linux will get "Resource unavailable" until the 1st Linux stops
+    using the sound.
+
+    MMC card is owned by the Linux that was active when card is inserted.
+    MMC card driver is currently a little unstable, it may lockup the system.
+    We are working to solve this.
+
+=== General Info ===
+
+The list of new servers added:
+event:    manages broadcasting certain events to interested parties
+vkpp:     provides access to the key pad
+vserial:  access to UARTs
+vtimer:   provides timing services
+vmmc:     mmc card reader
+vmtd:     nand flash chip
+vi2c:     I2C controller
+vnet:     network support
+vaudio:   sound card/chip
+imx21_device_core:
+        the only server with platform specific knowledge. It starts the other
+        servers as appropriate and provides them with platform dependant
+        knowledge and services user requests to be connected with them.
+
+This design ensures that the servers need not be aware of the particulars of a
+given device such as where its registers are located and the interrupt line it
+is attached to. This is provided by the device core, which has intimate
+knowledge of the board layout, or is aware of platform-specific methods to find
+out.
+
+The individual drivers are linked against the server who exports their
+functionality through well-defined interfaces.
+
+The 'v' in the name of each server refers to the virtual devices they export. A
+single server may provide virtual devices to many clients at once. It then
+multiplexes them onto the physical device in a way which makes sense for any
+given case:
+
+vserial:    Input and output is directed to the 'current' client. Typing
+            CTRL-P switches the currently active client.
+vnet:       Each vnet device has a different MAC address. The server forwards
+            packets from all clients fairly and passes incoming packets to the
+            appropriate client by peeking at the destination field in the
+            ethernet header.
+vkpp:       Key events are delivered to the active client. the 'extra1' key has
+            been selected to switch clients.
+vmmc:       The client active at the time of card insertion gets and retains
+            exclusive access to the mmc card.
+vmtd:       The NAND flash is divided into sections (currently 2) and each client is
+            only aware of their allocated section. The block numbers of
+            incoming requests are modified to reside in the clients own area.
+            (On MX21, each Linux gets 32MB of the 64MB NAND)
+vaudio:     The device is allocated to the first client to 'open' it. Once
+            closed, it becomes available again and may be opened by another client or the
+            same one again. 
+vi2c:       Clients simply request transactions on the bus and they occur in
+            the order in which they are received.
+vlcd:       Runs in a full screen mode with the active Linux client display
+            visible.
+
+The release supports two instances of wombat running simultaneously. We have
+provided pre-built binaries of each configuration, or one can be build from
+scratch:
+
+#  tools/build.py machine=mx21ads project=iguana wombat=True
+#  tools/build.py machine=mx21ads project=iguana wombat=True wombat2=True
+
+
+Things to try:
+
+* mount and browse the nand device:
+    # mkdir /nand
+    # mount -t jffs2 mtd0 /nand
+
+* mount and browse a SD card:
+    # mkdir /mmc
+    # mount -t vfat /dev/mmcblk0p1 /mmc
+
+* start nano-X
+    # export LD_LIBRARY_PATH:/lib:/nand/lib
+    # /nand/nano-X &
+
+    ((LEFT-RIGHT-UP-DOWN) on the key-pad map to mouse events,
+     ACTION is LEFT-click, APP2 is RIGHT-click)
+
+* play media files (ffplay requires nanoX to be running):
+    # export LD_LIBRARY_PATH:/lib:/nand/lib
+    # madplay /mmc/file.mp3
+    # ffplay /mmc/movie.mpeg
+    # ffplay -x 200 -y 100 /mmc/file.mp3
+            note:
+             replace mmc with nand if appropriate
+             ffplay of audio files displays waveform
+             (ffplay requires -x 200 -y 100 when playing audio tracks -
+              otherwise it scales too-large)
+
+* start a game (requires nano-X):
+    # cd /nand/doom
+    # ./prboom -width 240 -height 320
+
+    the game launches into demo mode. In order to play:
+        # /mmc/temp/bin1/prboom -window -width 230 -height 200 &
+        # /mmc/tmp/mw/nxkbd &
+
+        This presents an on-screen keyboard which can be used to navigate
+        the menu and start a game (Press SHIFT, then ESC to get to menu)
+        use mouse to navigate and MOUSE-click to fire.
+
+
+* stream internet radio:
+    # wget -O - http://64.236.36.54:80/stream/1003 | madplay -
+            (stream from www.di.fm)
+            (otherwise setup your own http audio server)
+
+* see audio sharing with 2 wombats:
+    play an audio file or movie in one wombat
+    CTRL-P to switch to the other wombat
+    # echo hello > /dev/dsp
+    (you will see - resource busy)
+
+    try:
+    # madplay ...
+    CTRL-P to switch
+    # while 1 do; dd if=/dev/urandom of=/dev/dsp count=1 done;
+    (madplay continues)
+    CTRL-P to switch again
+    type 'q' or 'f' to exit madplay
+        You will find the device is busy until the sound card is release, at which
+        point the while-loop on the other wombat will be able to play random noise.
+
+
+

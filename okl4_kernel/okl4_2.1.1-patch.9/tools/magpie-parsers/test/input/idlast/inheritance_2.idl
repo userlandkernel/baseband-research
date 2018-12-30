@@ -1,0 +1,7 @@
+ interface test {
+    void op();
+  };
+  interface foo : test {
+    void op();
+  };
+

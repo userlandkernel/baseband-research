@@ -1,0 +1,10 @@
+   interface test {
+     union stuff switch (enum color { red, green, blue }) {
+       case red:
+         short foo;
+       case green:
+         long bar;
+       case blue:
+         float color; /* Should clash with color above */
+     };
+   };

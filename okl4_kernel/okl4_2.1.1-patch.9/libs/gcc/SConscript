@@ -1,0 +1,38 @@
+#
+# @LICENCE("Open Kernel Labs, Inc.", "2007")@
+#
+
+# Note: you should only use this library for
+# libgcc.
+Import("env", "args", "conf")
+import os
+
+
+# Get SRC directory
+src_root = Dir('#').srcnode().abspath
+
+# Check architecture exists
+arch = env.machine.arch
+arch_path = os.path.join('arch', arch, args['package'])
+
+possible_arch_path = os.path.join("cust", args["cust"], "arch", arch, args["package"])
+if os.path.exists(os.path.join(src_root, possible_arch_path)):
+    arch_path = possible_arch_path
+
+if arch == "arm" and not os.path.exists(os.path.join(src_root, arch_path)):
+    print "architecture %s is not yet supported by libgcc." % (arch)
+
+arch_path = "#" + arch_path
+
+source = [ "src/*.c",
+           "src/*.spp",
+           arch_path + "/src/*.c",
+           arch_path + "/src/*.spp"
+         ]
+
+public_headers = [
+                 ("src/",  "include/%(name)s/")
+                 ]
+
+lib = env.KengeLibrary("gcc", source=source, public_headers=public_headers)
+Return("lib")

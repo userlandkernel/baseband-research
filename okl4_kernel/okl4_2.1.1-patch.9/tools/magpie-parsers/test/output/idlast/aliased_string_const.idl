@@ -1,0 +1,18 @@
+ MagpieAST  (0, ?:?)
+  type test  (1, test/input/idlast/aliased_string_const.idl:1)
+   (meta_type) = ['interface']
+   type mystring  (2, test/input/idlast/aliased_string_const.idl:2)
+    (meta_type) = ['alias']
+    type  (3, test/input/idlast/aliased_string_const.idl:2)
+     (max_length) = [None]
+     customised  (4, ?:?)
+      type string (backref)
+    target  (3, test/input/idlast/aliased_string_const.idl:2)
+     type None (backref)
+   type_instance s  (2, test/input/idlast/aliased_string_const.idl:3)
+    (meta_type) = ['const']
+    target  (3, test/input/idlast/aliased_string_const.idl:2)
+     type mystring (backref)
+    expression  (3, ?:?)
+     (value) = ['Test']
+     type string (backref)

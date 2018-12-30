@@ -1,0 +1,13 @@
+README libgcc
+
+This project is NOT meant to be explicitly exported.  None of these
+functions are meant to be explicitly used.  These are the functions
+that are included with libgcc, but cannot use the original version
+due to static/dynamic library incompatibility.
+
+You are required to include this library in your list of libraries to link,
+however, if gcc implicitly emits code that makes use of these functions.
+
+These functions originate from the klibc library by
+Peter Anvin <hpa@zytor.com>.
+

@@ -1,0 +1,9 @@
+/* Interfaces for test purposes */
+import "struct_params.h";
+
+/* test interface */
+[uuid(57)]
+interface qcom_test
+{
+  int param_test (in test_struct_in  input, out test_struct_out response);
+};

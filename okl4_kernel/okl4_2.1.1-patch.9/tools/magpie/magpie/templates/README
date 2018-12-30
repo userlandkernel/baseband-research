@@ -1,0 +1,8 @@
+Templating philosophy
+
+- The templates are there to mark-up pre-specified data in a given format
+- They should be simple. Ideally they should do no processing.
+
+This means that the templates are not very flexible. This is very much by design. If you need to perform complicated processing, write it in Python, in the generator.
+
+The reason for this is so we avoid hiding arcana about the output in the templates.

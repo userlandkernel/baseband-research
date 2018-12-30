@@ -1,0 +1,30 @@
+ MagpieAST  (0, ?:?)
+  type test  (1, test/input/idlast/union_embedded_enum.idl:1)
+   (meta_type) = ['interface']
+   type foo  (2, test/input/idlast/union_embedded_enum.idl:2)
+    (meta_type) = ['union']
+    discriminator  (3, <builtin>:?)
+     type short (backref)
+    switch  (3, test/input/idlast/union_embedded_enum.idl:5)
+     case  (4, test/input/idlast/union_embedded_enum.idl:3)
+      type color  (5, test/input/idlast/union_embedded_enum.idl:4)
+       (meta_type) = ['enum']
+       (enumeration) = ['red', 'green', 'blue']
+      type red  (5, test/input/idlast/union_embedded_enum.idl:4)
+       (meta_type) = ['enum_member']
+       (value) = [0]
+       target  (6, ?:?)
+        type color (backref)
+      type green  (5, test/input/idlast/union_embedded_enum.idl:4)
+       (meta_type) = ['enum_member']
+       (value) = [1]
+       target  (6, ?:?)
+        type color (backref)
+      type blue  (5, test/input/idlast/union_embedded_enum.idl:4)
+       (meta_type) = ['enum_member']
+       (value) = [2]
+       target  (6, ?:?)
+        type color (backref)
+      type color (backref)
+      type_instance c  (5, test/input/idlast/union_embedded_enum.idl:4)
+       type color (backref)

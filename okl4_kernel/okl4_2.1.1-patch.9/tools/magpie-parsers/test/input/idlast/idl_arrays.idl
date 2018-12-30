@@ -1,0 +1,3 @@
+typedef int arr1[30];
+typedef int arr2[30][40][50];
+

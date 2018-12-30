@@ -1,0 +1,1332 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD>
+<TITLE>Grammar CPP_parser.g</TITLE>
+</HEAD>
+<BODY>
+<table summary="" border="1" cellpadding="5">
+<tr>
+<td>
+<font size="+2">Grammar CPPParser</font><br>
+<a href="http://www.ANTLR.org">ANTLR</a>-generated HTML file from CPP_parser.g
+<p>
+Terence Parr, <a href="http://www.magelang.com">MageLang Institute</a>
+<br>ANTLR Version 2.7.5 (20050403); 1989-2005
+</td>
+</tr>
+</table>
+<PRE>
+
+Definition of parser CPPParser, which is a subclass of LLkParser.
+
+
+<a name="translation_unit">translation_unit</a>
+	:	( <a href="CPPParser.html#external_declaration">external_declaration</a> )+ EOF 
+	;
+
+
+<a name="external_declaration">external_declaration</a>
+	:	(	&quot;template&quot; LESSTHAN GREATERTHAN <a href="CPPParser.html#declaration">declaration</a> 
+		|	<a href="CPPParser.html#declaration">declaration</a> 
+		|	<a href="CPPParser.html#template_head">template_head</a> <a href="CPPParser.html#declaration">declaration</a> 
+		|	<a href="CPPParser.html#enum_specifier">enum_specifier</a> 
+			(	<a href="CPPParser.html#init_declarator_list">init_declarator_list</a> 
+			|	
+			) 
+			SEMICOLON 
+		|	
+			(	<a href="CPPParser.html#template_head">template_head</a> 
+			|	
+			) 
+			<a href="CPPParser.html#dtor_head">dtor_head</a> <a href="CPPParser.html#dtor_body">dtor_body</a> 
+		|	<a href="CPPParser.html#ctor_definition">ctor_definition</a> 
+		|	
+			(	&quot;inline&quot; 
+			|	
+			) 
+			<a href="CPPParser.html#scope_override">scope_override</a> <a href="CPPParser.html#conversion_function_decl_or_def">conversion_function_decl_or_def</a> 
+		|	<a href="CPPParser.html#declaration">declaration</a> 
+		|	<a href="CPPParser.html#function_definition">function_definition</a> 
+		|	<a href="CPPParser.html#function_definition">function_definition</a> 
+		|	<a href="CPPParser.html#template_head">template_head</a> <a href="CPPParser.html#declaration_specifiers">declaration_specifiers</a> 
+			(	<a href="CPPParser.html#init_declarator_list">init_declarator_list</a> 
+			|	
+			) 
+			SEMICOLON 
+		|	<a href="CPPParser.html#template_head">template_head</a> 
+			(	<a href="CPPParser.html#ctor_definition">ctor_definition</a> 
+			|	<a href="CPPParser.html#declaration">declaration</a> 
+			|	<a href="CPPParser.html#function_definition">function_definition</a> 
+			) 
+			
+		|	<a href="CPPParser.html#decl_namespace">decl_namespace</a> 
+		|	<a href="CPPParser.html#declaration">declaration</a> 
+		|	SEMICOLON 
+		) 
+	;
+
+
+<a name="declaration">declaration</a>
+	:	<a href="CPPParser.html#linkage_specification">linkage_specification</a> 
+	|	<a href="CPPParser.html#declaration_specifiers">declaration_specifiers</a> 
+		(	(	COMMA 
+			|	
+			) 
+			(	<a href="CPPParser.html#attribute">attribute</a> 
+			|	
+			) 
+			<a href="CPPParser.html#init_declarator_list">init_declarator_list</a> 
+		|	
+		) 
+		SEMICOLON 
+	|	<a href="CPPParser.html#using_declaration">using_declaration</a> 
+	;
+
+
+<a name="class_head">class_head</a>
+	:	
+		(	&quot;struct&quot; 
+		|	&quot;union&quot; 
+		|	&quot;class&quot; 
+		) 
+		(	ID 
+			(	LESSTHAN <a href="CPPParser.html#template_argument_list">template_argument_list</a> GREATERTHAN 
+			|	
+			) 
+			(	<a href="CPPParser.html#base_clause">base_clause</a> 
+			|	
+			) 
+		|	
+		) 
+		LCURLY 
+	;
+
+
+<a name="template_head">template_head</a>
+	:	&quot;template&quot; LESSTHAN <a href="CPPParser.html#template_parameter_list">template_parameter_list</a> GREATERTHAN 
+	;
+
+
+<a name="enum_specifier">enum_specifier</a>
+	:	&quot;enum&quot; 
+		(	LCURLY <a href="CPPParser.html#enumerator_list">enumerator_list</a> RCURLY 
+		|	ID 
+			(	LCURLY <a href="CPPParser.html#enumerator_list">enumerator_list</a> RCURLY 
+			|	
+			) 
+			
+		) 
+		
+	;
+
+
+<a name="init_declarator_list">init_declarator_list</a>
+	:	<a href="CPPParser.html#init_declarator">init_declarator</a> ( COMMA <a href="CPPParser.html#init_declarator">init_declarator</a> )* 
+		(	<a href="CPPParser.html#attribute">attribute</a> 
+		|	
+		) 
+		
+	;
+
+
+<a name="dtor_head">dtor_head</a>
+	:	<a href="CPPParser.html#dtor_decl_spec">dtor_decl_spec</a> <a href="CPPParser.html#dtor_declarator">dtor_declarator</a> 
+	;
+
+
+<a name="dtor_body">dtor_body</a>
+	:	<a href="CPPParser.html#compound_statement">compound_statement</a> 
+	;
+
+
+<a name="ctor_decl_spec">ctor_decl_spec</a>
+	:	
+		(	(	&quot;inline&quot; 
+			|	&quot;_inline&quot; 
+			|	&quot;__inline&quot; 
+			) 
+			
+		|	&quot;explicit&quot; 
+		)* 
+		
+	;
+
+
+<a name="ctor_definition">ctor_definition</a>
+	:	<a href="CPPParser.html#ctor_head">ctor_head</a> <a href="CPPParser.html#ctor_body">ctor_body</a> 
+	;
+
+
+<a name="scope_override">scope_override</a>
+	:	(	SCOPE 
+		|	
+		) 
+		( ID 
+			(	LESSTHAN <a href="CPPParser.html#template_argument_list">template_argument_list</a> GREATERTHAN 
+			|	
+			) 
+			SCOPE )* 
+	;
+
+
+<a name="conversion_function_decl_or_def">conversion_function_decl_or_def</a>
+	:	OPERATOR <a href="CPPParser.html#declaration_specifiers">declaration_specifiers</a> 
+		(	STAR 
+		|	AMPERSAND 
+		|	
+		) 
+		(	LESSTHAN <a href="CPPParser.html#template_parameter_list">template_parameter_list</a> GREATERTHAN 
+		|	
+		) 
+		LPAREN 
+		(	<a href="CPPParser.html#parameter_list">parameter_list</a> 
+		|	
+		) 
+		RPAREN 
+		(	<a href="CPPParser.html#type_qualifier">type_qualifier</a> 
+		|	
+		) 
+		(	<a href="CPPParser.html#exception_specification">exception_specification</a> 
+		|	
+		) 
+		(	<a href="CPPParser.html#compound_statement">compound_statement</a> 
+		|	SEMICOLON 
+		) 
+		
+	;
+
+
+<a name="declaration_specifiers">declaration_specifiers</a>
+	:	
+		(	(	<a href="CPPParser.html#storage_class_specifier">storage_class_specifier</a> 
+			|	<a href="CPPParser.html#type_qualifier">type_qualifier</a> 
+			|	(	&quot;inline&quot; 
+				|	&quot;_inline&quot; 
+				|	&quot;__inline&quot; 
+				) 
+				
+			|	&quot;virtual&quot; 
+			|	&quot;explicit&quot; 
+			|	&quot;typedef&quot; 
+			|	&quot;friend&quot; 
+			|	(	&quot;_stdcall&quot; 
+				|	&quot;__stdcall&quot; 
+				) 
+				
+			)* 
+			<a href="CPPParser.html#type_specifier">type_specifier</a> 
+		|	&quot;typename&quot; <a href="CPPParser.html#direct_declarator">direct_declarator</a> 
+		) 
+		
+	;
+
+
+<a name="function_declarator">function_declarator</a>
+	:	<a href="CPPParser.html#ptr_operator">ptr_operator</a> <a href="CPPParser.html#function_declarator">function_declarator</a> 
+	|	<a href="CPPParser.html#function_direct_declarator">function_direct_declarator</a> 
+	;
+
+
+<a name="function_definition">function_definition</a>
+	:	
+		(	<a href="CPPParser.html#declaration_specifiers">declaration_specifiers</a> <a href="CPPParser.html#function_declarator">function_declarator</a> 
+			(	( <a href="CPPParser.html#declaration">declaration</a> )* 
+			|	
+			) 
+			<a href="CPPParser.html#compound_statement">compound_statement</a> 
+		|	<a href="CPPParser.html#function_declarator">function_declarator</a> 
+			(	( <a href="CPPParser.html#declaration">declaration</a> )* 
+			|	
+			) 
+			<a href="CPPParser.html#compound_statement">compound_statement</a> 
+		) 
+		
+	;
+
+
+<a name="decl_namespace">decl_namespace</a>
+	:	&quot;namespace&quot; 
+		(	
+			(	ID 
+			|	
+			) 
+			LCURLY ( <a href="CPPParser.html#external_declaration">external_declaration</a> )* RCURLY 
+		|	ID ASSIGNEQUAL <a href="CPPParser.html#qualified_id">qualified_id</a> SEMICOLON 
+		) 
+	;
+
+
+<a name="qualified_id">qualified_id</a>
+	:	<a href="CPPParser.html#scope_override">scope_override</a> 
+		(	ID 
+			(	LESSTHAN <a href="CPPParser.html#template_argument_list">template_argument_list</a> GREATERTHAN 
+			|	
+			) 
+			
+		|	OPERATOR <a href="CPPParser.html#optor">optor</a> 
+		|	&quot;this&quot; 
+		|	(	&quot;true&quot; 
+			|	&quot;false&quot; 
+			) 
+		) 
+		
+	;
+
+
+<a name="member_declaration">member_declaration</a>
+	:	(	<a href="CPPParser.html#declaration">declaration</a> 
+		|	<a href="CPPParser.html#enum_specifier">enum_specifier</a> 
+			(	<a href="CPPParser.html#member_declarator_list">member_declarator_list</a> 
+			|	
+			) 
+			SEMICOLON 
+		|	<a href="CPPParser.html#ctor_decl_spec">ctor_decl_spec</a> <a href="CPPParser.html#ctor_declarator">ctor_declarator</a> SEMICOLON 
+		|	<a href="CPPParser.html#ctor_definition">ctor_definition</a> 
+		|	<a href="CPPParser.html#dtor_head">dtor_head</a> SEMICOLON 
+		|	<a href="CPPParser.html#dtor_head">dtor_head</a> <a href="CPPParser.html#dtor_body">dtor_body</a> 
+		|	<a href="CPPParser.html#declaration">declaration</a> 
+		|	<a href="CPPParser.html#function_definition">function_definition</a> 
+		|	
+			(	&quot;inline&quot; 
+			|	
+			) 
+			<a href="CPPParser.html#conversion_function_decl_or_def">conversion_function_decl_or_def</a> 
+		|	<a href="CPPParser.html#qualified_id">qualified_id</a> SEMICOLON 
+		|	<a href="CPPParser.html#declaration_specifiers">declaration_specifiers</a> 
+			(	<a href="CPPParser.html#member_declarator_list">member_declarator_list</a> 
+			|	
+			) 
+			SEMICOLON 
+		|	<a href="CPPParser.html#function_declarator">function_declarator</a> SEMICOLON 
+		|	<a href="CPPParser.html#function_declarator">function_declarator</a> <a href="CPPParser.html#compound_statement">compound_statement</a> 
+		|	<a href="CPPParser.html#template_head">template_head</a> <a href="CPPParser.html#declaration_specifiers">declaration_specifiers</a> 
+			(	<a href="CPPParser.html#init_declarator_list">init_declarator_list</a> 
+			|	
+			) 
+			SEMICOLON 
+		|	<a href="CPPParser.html#template_head">template_head</a> 
+			(	<a href="CPPParser.html#ctor_definition">ctor_definition</a> 
+			|	<a href="CPPParser.html#declaration">declaration</a> 
+			|	<a href="CPPParser.html#function_definition">function_definition</a> 
+			|	<a href="CPPParser.html#conversion_function_decl_or_def">conversion_function_decl_or_def</a> 
+			) 
+			
+		|	<a href="CPPParser.html#access_specifier">access_specifier</a> COLON 
+		|	SEMICOLON 
+		) 
+	;
+
+
+<a name="member_declarator_list">member_declarator_list</a>
+	:	<a href="CPPParser.html#member_declarator">member_declarator</a> ( COMMA <a href="CPPParser.html#member_declarator">member_declarator</a> )* 
+	;
+
+
+<a name="ctor_declarator">ctor_declarator</a>
+	:	<a href="CPPParser.html#qualified_ctor_id">qualified_ctor_id</a> LPAREN 
+		(	<a href="CPPParser.html#parameter_list">parameter_list</a> 
+		|	
+		) 
+		RPAREN 
+		(	<a href="CPPParser.html#exception_specification">exception_specification</a> 
+		|	
+		) 
+		
+	;
+
+
+<a name="compound_statement">compound_statement</a>
+	:	LCURLY 
+		(	<a href="CPPParser.html#statement_list">statement_list</a> 
+		|	
+		) 
+		RCURLY 
+	;
+
+
+<a name="access_specifier">access_specifier</a>
+	:	&quot;public&quot; 
+	|	&quot;protected&quot; 
+	|	&quot;private&quot; 
+	;
+
+
+<a name="linkage_specification">linkage_specification</a>
+	:	&quot;extern&quot; StringLiteral 
+		(	LCURLY ( <a href="CPPParser.html#external_declaration">external_declaration</a> )* RCURLY 
+		|	<a href="CPPParser.html#declaration">declaration</a> 
+		) 
+	;
+
+
+<a name="attribute">attribute</a>
+	:	&quot;__attribute__&quot; LPAREN LPAREN <a href="CPPParser.html#attribute_decl_list">attribute_decl_list</a> RPAREN RPAREN 
+	;
+
+
+<a name="using_declaration">using_declaration</a>
+	:	&quot;using&quot; 
+		(	&quot;namespace&quot; <a href="CPPParser.html#qualified_id">qualified_id</a> 
+		|	<a href="CPPParser.html#qualified_id">qualified_id</a> 
+		) 
+		SEMICOLON 
+	;
+
+
+<a name="storage_class_specifier">storage_class_specifier</a>
+	:	&quot;auto&quot; 
+	|	&quot;register&quot; 
+	|	&quot;static&quot; 
+	|	&quot;extern&quot; 
+	|	&quot;mutable&quot; 
+	;
+
+
+<a name="type_qualifier">type_qualifier</a>
+	:	(	&quot;const&quot; 
+		|	&quot;const_cast&quot; 
+		) 
+		
+	|	&quot;volatile&quot; 
+	;
+
+
+<a name="type_specifier">type_specifier</a>
+	:	<a href="CPPParser.html#simple_type_specifier">simple_type_specifier</a> 
+	|	<a href="CPPParser.html#class_specifier">class_specifier</a> 
+	|	<a href="CPPParser.html#enum_specifier">enum_specifier</a> 
+	;
+
+
+<a name="direct_declarator">direct_declarator</a>
+	:	<a href="CPPParser.html#qualified_id">qualified_id</a> LPAREN 
+		(	<a href="CPPParser.html#parameter_list">parameter_list</a> 
+		|	
+		) 
+		RPAREN ( <a href="CPPParser.html#type_qualifier">type_qualifier</a> )* 
+		(	<a href="CPPParser.html#exception_specification">exception_specification</a> 
+		|	
+		) 
+	|	<a href="CPPParser.html#qualified_id">qualified_id</a> LPAREN <a href="CPPParser.html#expression_list">expression_list</a> RPAREN 
+	|	<a href="CPPParser.html#qualified_id">qualified_id</a> ( LSQUARE 
+			(	<a href="CPPParser.html#constant_expression">constant_expression</a> 
+			|	
+			) 
+			RSQUARE )+ 
+	|	<a href="CPPParser.html#qualified_id">qualified_id</a> 
+	|	TILDE ID LPAREN 
+		(	<a href="CPPParser.html#parameter_list">parameter_list</a> 
+		|	
+		) 
+		RPAREN 
+	|	LPAREN <a href="CPPParser.html#declarator">declarator</a> RPAREN <a href="CPPParser.html#declarator_suffixes">declarator_suffixes</a> 
+	;
+
+
+<a name="attribute_decl_list">attribute_decl_list</a>
+	:	&quot;__mode__&quot; LPAREN ID RPAREN 
+	|	&quot;const&quot; 
+	;
+
+
+<a name="simple_type_specifier">simple_type_specifier</a>
+	:	(	<a href="CPPParser.html#qualified_type">qualified_type</a> 
+		|	(	&quot;char&quot; 
+			|	&quot;wchar_t&quot; 
+			|	&quot;bool&quot; 
+			|	&quot;short&quot; 
+			|	&quot;int&quot; 
+			|	(	&quot;_int64&quot; 
+				|	&quot;__int64&quot; 
+				) 
+				
+			|	&quot;__w64&quot; 
+			|	&quot;long&quot; 
+			|	&quot;signed&quot; 
+			|	&quot;unsigned&quot; 
+			|	&quot;float&quot; 
+			|	&quot;double&quot; 
+			|	&quot;void&quot; 
+			|	(	&quot;_declspec&quot; 
+				|	&quot;__declspec&quot; 
+				) 
+				LPAREN ID RPAREN 
+			)+ 
+		|	<a href="CPPParser.html#qualified_type">qualified_type</a> 
+		) 
+		
+	;
+
+
+<a name="class_specifier">class_specifier</a>
+	:	(	&quot;class&quot; 
+		|	&quot;struct&quot; 
+		|	&quot;union&quot; 
+		) 
+		(	<a href="CPPParser.html#qualified_id">qualified_id</a> 
+			(	
+				(	<a href="CPPParser.html#base_clause">base_clause</a> 
+				|	
+				) 
+				LCURLY ( <a href="CPPParser.html#member_declaration">member_declaration</a> )* RCURLY 
+			|	
+			) 
+		|	LCURLY ( <a href="CPPParser.html#member_declaration">member_declaration</a> )* RCURLY 
+		) 
+	;
+
+
+<a name="qualified_type">qualified_type</a>
+	:	<a href="CPPParser.html#scope_override">scope_override</a> ID 
+		(	LESSTHAN <a href="CPPParser.html#template_argument_list">template_argument_list</a> GREATERTHAN 
+		|	
+		) 
+		
+	;
+
+
+<a name="template_argument_list">template_argument_list</a>
+	:	<a href="CPPParser.html#template_argument">template_argument</a> ( COMMA <a href="CPPParser.html#template_argument">template_argument</a> )* 
+	;
+
+
+<a name="base_clause">base_clause</a>
+	:	COLON <a href="CPPParser.html#base_specifier">base_specifier</a> ( COMMA <a href="CPPParser.html#base_specifier">base_specifier</a> )* 
+	;
+
+
+<a name="enumerator_list">enumerator_list</a>
+	:	<a href="CPPParser.html#enumerator">enumerator</a> ( COMMA <a href="CPPParser.html#enumerator">enumerator</a> )* 
+	;
+
+
+<a name="enumerator">enumerator</a>
+	:	ID 
+		(	ASSIGNEQUAL <a href="CPPParser.html#constant_expression">constant_expression</a> 
+		|	
+		) 
+		
+	;
+
+
+<a name="constant_expression">constant_expression</a>
+	:	<a href="CPPParser.html#conditional_expression">conditional_expression</a> 
+	;
+
+
+<a name="optor">optor</a>
+	:	&quot;new&quot; 
+		(	LSQUARE RSQUARE 
+		|	
+		) 
+	|	&quot;delete&quot; 
+		(	LSQUARE RSQUARE 
+		|	
+		) 
+	|	LPAREN RPAREN 
+	|	LSQUARE RSQUARE 
+	|	<a href="CPPParser.html#optor_simple_tokclass">optor_simple_tokclass</a> 
+	;
+
+
+<a name="typeID">typeID</a>
+	:	ID 
+	;
+
+
+<a name="init_declarator">init_declarator</a>
+	:	<a href="CPPParser.html#declarator">declarator</a> 
+		(	ASSIGNEQUAL <a href="CPPParser.html#initializer">initializer</a> 
+		|	LPAREN <a href="CPPParser.html#expression_list">expression_list</a> RPAREN 
+		|	
+		) 
+	;
+
+
+<a name="declarator">declarator</a>
+	:	<a href="CPPParser.html#ptr_operator">ptr_operator</a> <a href="CPPParser.html#declarator">declarator</a> 
+	|	<a href="CPPParser.html#direct_declarator">direct_declarator</a> 
+	;
+
+
+<a name="initializer">initializer</a>
+	:	<a href="CPPParser.html#remainder_expression">remainder_expression</a> 
+	|	LCURLY <a href="CPPParser.html#initializer">initializer</a> ( COMMA <a href="CPPParser.html#initializer">initializer</a> )* RCURLY 
+	|	<a href="CPPParser.html#gcc_designator">gcc_designator</a> <a href="CPPParser.html#initializer">initializer</a> 
+	|	<a href="CPPParser.html#c99_designator">c99_designator</a> <a href="CPPParser.html#initializer">initializer</a> 
+	;
+
+
+<a name="expression_list">expression_list</a>
+	:	<a href="CPPParser.html#assignment_expression">assignment_expression</a> ( COMMA <a href="CPPParser.html#assignment_expression">assignment_expression</a> )* 
+	;
+
+
+<a name="remainder_expression">remainder_expression</a>
+	:	(	<a href="CPPParser.html#assignment_expression">assignment_expression</a> 
+		|	<a href="CPPParser.html#assignment_expression">assignment_expression</a> 
+		) 
+	;
+
+
+<a name="gcc_designator">gcc_designator</a>
+	:	ID COLON 
+	;
+
+
+<a name="c99_designator">c99_designator</a>
+	:	DOT ID EQUALS 
+	;
+
+
+<a name="base_specifier">base_specifier</a>
+	:	
+		(	&quot;virtual&quot; 
+			(	<a href="CPPParser.html#access_specifier">access_specifier</a> 
+			|	
+			) 
+			<a href="CPPParser.html#qualified_type">qualified_type</a> 
+		|	<a href="CPPParser.html#access_specifier">access_specifier</a> 
+			(	&quot;virtual&quot; 
+			|	
+			) 
+			<a href="CPPParser.html#qualified_type">qualified_type</a> 
+		|	<a href="CPPParser.html#qualified_type">qualified_type</a> 
+		) 
+	;
+
+
+<a name="member_declarator">member_declarator</a>
+	:	
+		(	ID 
+		|	
+		) 
+		COLON <a href="CPPParser.html#constant_expression">constant_expression</a> 
+		(	ASSIGNEQUAL OCTALINT 
+		|	
+		) 
+	|	<a href="CPPParser.html#declarator">declarator</a> 
+		(	ASSIGNEQUAL OCTALINT 
+		|	
+		) 
+	;
+
+
+<a name="template_parameter_list">template_parameter_list</a>
+	:	<a href="CPPParser.html#template_parameter">template_parameter</a> ( COMMA <a href="CPPParser.html#template_parameter">template_parameter</a> )* 
+	;
+
+
+<a name="parameter_list">parameter_list</a>
+	:	<a href="CPPParser.html#parameter_declaration_list">parameter_declaration_list</a> 
+		(	ELLIPSIS 
+		|	
+		) 
+	;
+
+
+<a name="exception_specification">exception_specification</a>
+	:	&quot;throw&quot; LPAREN 
+		(	(	<a href="CPPParser.html#scope_override">scope_override</a> ID 
+				(	COMMA <a href="CPPParser.html#scope_override">scope_override</a> ID 
+				|	
+				) 
+			|	
+			) 
+		|	ELLIPSIS 
+		) 
+		RPAREN 
+	;
+
+
+<a name="cv_qualifier_seq">cv_qualifier_seq</a>
+	:	( <a href="CPPParser.html#type_qualifier">type_qualifier</a> )* 
+	;
+
+
+<a name="ptr_operator">ptr_operator</a>
+	:	
+		(	AMPERSAND 
+		|	(	&quot;_cdecl&quot; 
+			|	&quot;__cdecl&quot; 
+			) 
+			
+		|	(	&quot;_near&quot; 
+			|	&quot;__near&quot; 
+			) 
+			
+		|	(	&quot;_far&quot; 
+			|	&quot;__far&quot; 
+			) 
+			
+		|	&quot;__interrupt&quot; 
+		|	(	&quot;pascal&quot; 
+			|	&quot;_pascal&quot; 
+			|	&quot;__pascal&quot; 
+			) 
+			
+		|	(	&quot;_stdcall&quot; 
+			|	&quot;__stdcall&quot; 
+			) 
+			
+		|	<a href="CPPParser.html#ptr_to_member">ptr_to_member</a> 
+		) 
+	;
+
+
+<a name="declarator_suffixes">declarator_suffixes</a>
+	:	(	( LSQUARE 
+				(	<a href="CPPParser.html#constant_expression">constant_expression</a> 
+				|	
+				) 
+				RSQUARE )+ 
+		|	LPAREN 
+			(	<a href="CPPParser.html#parameter_list">parameter_list</a> 
+			|	
+			) 
+			RPAREN ( <a href="CPPParser.html#type_qualifier">type_qualifier</a> )* 
+			(	<a href="CPPParser.html#exception_specification">exception_specification</a> 
+			|	
+			) 
+		) 
+		
+	;
+
+
+<a name="function_direct_declarator">function_direct_declarator</a>
+	:	(	LPAREN <a href="CPPParser.html#qualified_id">qualified_id</a> RPAREN 
+		|	<a href="CPPParser.html#qualified_id">qualified_id</a> 
+		) 
+		LPAREN 
+		(	<a href="CPPParser.html#parameter_list">parameter_list</a> 
+		|	
+		) 
+		RPAREN ( <a href="CPPParser.html#type_qualifier">type_qualifier</a> )* 
+		(	ASSIGNEQUAL OCTALINT 
+		|	
+		) 
+		
+		(	<a href="CPPParser.html#exception_specification">exception_specification</a> 
+		|	
+		) 
+	;
+
+
+<a name="ctor_head">ctor_head</a>
+	:	<a href="CPPParser.html#ctor_decl_spec">ctor_decl_spec</a> <a href="CPPParser.html#ctor_declarator">ctor_declarator</a> 
+	;
+
+
+<a name="ctor_body">ctor_body</a>
+	:	
+		(	<a href="CPPParser.html#ctor_initializer">ctor_initializer</a> 
+		|	
+		) 
+		<a href="CPPParser.html#compound_statement">compound_statement</a> 
+	;
+
+
+<a name="qualified_ctor_id">qualified_ctor_id</a>
+	:	<a href="CPPParser.html#scope_override">scope_override</a> ID 
+	;
+
+
+<a name="ctor_initializer">ctor_initializer</a>
+	:	COLON <a href="CPPParser.html#superclass_init">superclass_init</a> ( COMMA <a href="CPPParser.html#superclass_init">superclass_init</a> )* 
+	;
+
+
+<a name="superclass_init">superclass_init</a>
+	:	<a href="CPPParser.html#qualified_id">qualified_id</a> LPAREN 
+		(	<a href="CPPParser.html#expression_list">expression_list</a> 
+		|	
+		) 
+		RPAREN 
+	;
+
+
+<a name="dtor_decl_spec">dtor_decl_spec</a>
+	:	
+		(	(	&quot;inline&quot; 
+			|	&quot;_inline&quot; 
+			|	&quot;__inline&quot; 
+			) 
+			
+		|	&quot;virtual&quot; 
+		)* 
+	;
+
+
+<a name="dtor_declarator">dtor_declarator</a>
+	:	<a href="CPPParser.html#scope_override">scope_override</a> TILDE ID LPAREN RPAREN 
+		(	<a href="CPPParser.html#exception_specification">exception_specification</a> 
+		|	
+		) 
+		
+	;
+
+
+<a name="parameter_declaration_list">parameter_declaration_list</a>
+	:	( <a href="CPPParser.html#parameter_declaration">parameter_declaration</a> ( COMMA <a href="CPPParser.html#parameter_declaration">parameter_declaration</a> )* ) 
+	;
+
+
+<a name="parameter_declaration">parameter_declaration</a>
+	:	
+		(	<a href="CPPParser.html#declaration_specifiers">declaration_specifiers</a> 
+			(	<a href="CPPParser.html#declarator">declarator</a> 
+			|	<a href="CPPParser.html#abstract_declarator">abstract_declarator</a> 
+			) 
+		|	<a href="CPPParser.html#declarator">declarator</a> 
+		|	ELLIPSIS 
+		) 
+		(	ASSIGNEQUAL <a href="CPPParser.html#remainder_expression">remainder_expression</a> 
+		|	
+		) 
+	;
+
+
+<a name="abstract_declarator">abstract_declarator</a>
+	:	<a href="CPPParser.html#ptr_operator">ptr_operator</a> <a href="CPPParser.html#abstract_declarator">abstract_declarator</a> 
+	|	LPAREN <a href="CPPParser.html#abstract_declarator">abstract_declarator</a> RPAREN ( <a href="CPPParser.html#abstract_declarator_suffix">abstract_declarator_suffix</a> )+ 
+	|	( LSQUARE 
+			(	<a href="CPPParser.html#constant_expression">constant_expression</a> 
+			|	
+			) 
+			RSQUARE )+ 
+	|	
+	;
+
+
+<a name="type_name">type_name</a>
+	:	<a href="CPPParser.html#declaration_specifiers">declaration_specifiers</a> <a href="CPPParser.html#abstract_declarator">abstract_declarator</a> 
+	;
+
+
+<a name="abstract_declarator_suffix">abstract_declarator_suffix</a>
+	:	LSQUARE 
+		(	<a href="CPPParser.html#constant_expression">constant_expression</a> 
+		|	
+		) 
+		RSQUARE 
+	|	LPAREN 
+		(	<a href="CPPParser.html#parameter_list">parameter_list</a> 
+		|	
+		) 
+		RPAREN <a href="CPPParser.html#cv_qualifier_seq">cv_qualifier_seq</a> 
+		(	<a href="CPPParser.html#exception_specification">exception_specification</a> 
+		|	
+		) 
+	;
+
+
+<a name="template_parameter">template_parameter</a>
+	:	(	(	&quot;class&quot; 
+			|	&quot;typename&quot; 
+			) 
+			(	ID 
+				(	ASSIGNEQUAL <a href="CPPParser.html#assigned_type_name">assigned_type_name</a> 
+				|	
+				) 
+			|	
+			) 
+			
+		|	<a href="CPPParser.html#parameter_declaration">parameter_declaration</a> 
+		) 
+		
+	;
+
+
+<a name="assigned_type_name">assigned_type_name</a>
+	:	(	<a href="CPPParser.html#qualified_type">qualified_type</a> <a href="CPPParser.html#abstract_declarator">abstract_declarator</a> 
+		|	<a href="CPPParser.html#simple_type_specifier">simple_type_specifier</a> <a href="CPPParser.html#abstract_declarator">abstract_declarator</a> 
+		) 
+	;
+
+
+<a name="template_id">template_id</a>
+	:	ID LESSTHAN <a href="CPPParser.html#template_argument_list">template_argument_list</a> GREATERTHAN 
+	;
+
+
+<a name="template_argument">template_argument</a>
+	:	<a href="CPPParser.html#type_name">type_name</a> 
+	|	<a href="CPPParser.html#shift_expression">shift_expression</a> 
+	;
+
+
+<a name="shift_expression">shift_expression</a>
+	:	<a href="CPPParser.html#additive_expression">additive_expression</a> ( (	SHIFTLEFT 
+			|	SHIFTRIGHT 
+			) 
+			<a href="CPPParser.html#additive_expression">additive_expression</a> )* 
+	;
+
+
+<a name="statement_list">statement_list</a>
+	:	( <a href="CPPParser.html#statement">statement</a> )+ 
+	;
+
+
+<a name="statement">statement</a>
+	:	(	<a href="CPPParser.html#declaration">declaration</a> 
+		|	<a href="CPPParser.html#labeled_statement">labeled_statement</a> 
+		|	<a href="CPPParser.html#case_statement">case_statement</a> 
+		|	<a href="CPPParser.html#default_statement">default_statement</a> 
+		|	<a href="CPPParser.html#expression">expression</a> SEMICOLON 
+		|	<a href="CPPParser.html#compound_statement">compound_statement</a> 
+		|	<a href="CPPParser.html#selection_statement">selection_statement</a> 
+		|	<a href="CPPParser.html#iteration_statement">iteration_statement</a> 
+		|	<a href="CPPParser.html#jump_statement">jump_statement</a> 
+		|	SEMICOLON 
+		|	<a href="CPPParser.html#try_block">try_block</a> 
+		|	<a href="CPPParser.html#throw_statement">throw_statement</a> 
+		|	<a href="CPPParser.html#asm_block">asm_block</a> 
+		) 
+	;
+
+
+<a name="labeled_statement">labeled_statement</a>
+	:	ID COLON <a href="CPPParser.html#statement">statement</a> 
+	;
+
+
+<a name="case_statement">case_statement</a>
+	:	&quot;case&quot; <a href="CPPParser.html#constant_expression">constant_expression</a> COLON <a href="CPPParser.html#statement">statement</a> 
+	;
+
+
+<a name="default_statement">default_statement</a>
+	:	&quot;default&quot; COLON <a href="CPPParser.html#statement">statement</a> 
+	;
+
+
+<a name="expression">expression</a>
+	:	<a href="CPPParser.html#assignment_expression">assignment_expression</a> ( COMMA <a href="CPPParser.html#assignment_expression">assignment_expression</a> )* 
+	;
+
+
+<a name="selection_statement">selection_statement</a>
+	:	&quot;if&quot; LPAREN <a href="CPPParser.html#expression">expression</a> RPAREN <a href="CPPParser.html#statement">statement</a> 
+		(	&quot;else&quot; <a href="CPPParser.html#statement">statement</a> 
+		|	
+		) 
+	|	&quot;switch&quot; LPAREN <a href="CPPParser.html#expression">expression</a> RPAREN <a href="CPPParser.html#statement">statement</a> 
+	;
+
+
+<a name="iteration_statement">iteration_statement</a>
+	:	&quot;while&quot; LPAREN <a href="CPPParser.html#expression">expression</a> RPAREN <a href="CPPParser.html#statement">statement</a> 
+	|	&quot;do&quot; <a href="CPPParser.html#statement">statement</a> &quot;while&quot; LPAREN <a href="CPPParser.html#expression">expression</a> RPAREN SEMICOLON 
+	|	&quot;for&quot; LPAREN 
+		(	<a href="CPPParser.html#declaration">declaration</a> 
+		|	<a href="CPPParser.html#expression">expression</a> SEMICOLON 
+		|	SEMICOLON 
+		) 
+		
+		(	<a href="CPPParser.html#expression">expression</a> 
+		|	
+		) 
+		SEMICOLON 
+		(	<a href="CPPParser.html#expression">expression</a> 
+		|	
+		) 
+		RPAREN <a href="CPPParser.html#statement">statement</a> 
+	;
+
+
+<a name="jump_statement">jump_statement</a>
+	:	(	&quot;goto&quot; ID SEMICOLON 
+		|	&quot;continue&quot; SEMICOLON 
+		|	&quot;break&quot; SEMICOLON 
+		|	&quot;return&quot; <a href="CPPParser.html#expression">expression</a> SEMICOLON 
+		) 
+	;
+
+
+<a name="try_block">try_block</a>
+	:	&quot;try&quot; <a href="CPPParser.html#compound_statement">compound_statement</a> ( <a href="CPPParser.html#handler">handler</a> )* 
+	;
+
+
+<a name="throw_statement">throw_statement</a>
+	:	&quot;throw&quot; 
+		(	<a href="CPPParser.html#assignment_expression">assignment_expression</a> 
+		|	
+		) 
+		SEMICOLON 
+	;
+
+
+<a name="asm_block">asm_block</a>
+	:	<a href="CPPParser.html#std_asm_block">std_asm_block</a> 
+	|	<a href="CPPParser.html#gcc_asm_block">gcc_asm_block</a> 
+	;
+
+
+<a name="handler">handler</a>
+	:	&quot;catch&quot; LPAREN <a href="CPPParser.html#exception_declaration">exception_declaration</a> RPAREN <a href="CPPParser.html#compound_statement">compound_statement</a> 
+	;
+
+
+<a name="exception_declaration">exception_declaration</a>
+	:	<a href="CPPParser.html#parameter_declaration_list">parameter_declaration_list</a> 
+	;
+
+
+<a name="assignment_expression">assignment_expression</a>
+	:	<a href="CPPParser.html#conditional_expression">conditional_expression</a> 
+		(	(	ASSIGNEQUAL 
+			|	TIMESEQUAL 
+			|	DIVIDEEQUAL 
+			|	MINUSEQUAL 
+			|	PLUSEQUAL 
+			|	MODEQUAL 
+			|	SHIFTLEFTEQUAL 
+			|	SHIFTRIGHTEQUAL 
+			|	BITWISEANDEQUAL 
+			|	BITWISEXOREQUAL 
+			|	BITWISEOREQUAL 
+			) 
+			<a href="CPPParser.html#remainder_expression">remainder_expression</a> 
+		|	
+		) 
+	;
+
+
+<a name="std_asm_block">std_asm_block</a>
+	:	(	&quot;_asm&quot; 
+		|	&quot;__asm&quot; 
+		) 
+		LCURLY ( ~RCURLY )* RCURLY 
+	;
+
+
+<a name="gcc_asm_block">gcc_asm_block</a>
+	:	(	&quot;__asm__&quot; 
+		|	&quot;asm&quot; 
+		) 
+		(	&quot;volatile&quot; 
+		|	
+		) 
+		LPAREN <a href="CPPParser.html#asm_code">asm_code</a> COLON 
+		(	<a href="CPPParser.html#asm_reg_spec">asm_reg_spec</a> 
+		|	
+		) 
+		COLON 
+		(	<a href="CPPParser.html#asm_reg_spec">asm_reg_spec</a> 
+		|	
+		) 
+		RPAREN 
+	;
+
+
+<a name="asm_code">asm_code</a>
+	:	( StringLiteral )+ 
+	;
+
+
+<a name="asm_reg_spec">asm_reg_spec</a>
+	:	StringLiteral LPAREN ID RPAREN ( COMMA StringLiteral LPAREN ID RPAREN )* 
+	;
+
+
+<a name="conditional_expression">conditional_expression</a>
+	:	<a href="CPPParser.html#logical_or_expression">logical_or_expression</a> 
+		(	QUESTIONMARK <a href="CPPParser.html#expression">expression</a> COLON <a href="CPPParser.html#conditional_expression">conditional_expression</a> 
+		|	
+		) 
+	;
+
+
+<a name="logical_or_expression">logical_or_expression</a>
+	:	<a href="CPPParser.html#logical_and_expression">logical_and_expression</a> ( OR <a href="CPPParser.html#logical_and_expression">logical_and_expression</a> )* 
+	;
+
+
+<a name="logical_and_expression">logical_and_expression</a>
+	:	<a href="CPPParser.html#inclusive_or_expression">inclusive_or_expression</a> ( AND <a href="CPPParser.html#inclusive_or_expression">inclusive_or_expression</a> )* 
+	;
+
+
+<a name="inclusive_or_expression">inclusive_or_expression</a>
+	:	<a href="CPPParser.html#exclusive_or_expression">exclusive_or_expression</a> ( BITWISEOR <a href="CPPParser.html#exclusive_or_expression">exclusive_or_expression</a> )* 
+	;
+
+
+<a name="exclusive_or_expression">exclusive_or_expression</a>
+	:	<a href="CPPParser.html#and_expression">and_expression</a> ( BITWISEXOR <a href="CPPParser.html#and_expression">and_expression</a> )* 
+	;
+
+
+<a name="and_expression">and_expression</a>
+	:	<a href="CPPParser.html#equality_expression">equality_expression</a> ( AMPERSAND <a href="CPPParser.html#equality_expression">equality_expression</a> )* 
+	;
+
+
+<a name="equality_expression">equality_expression</a>
+	:	<a href="CPPParser.html#relational_expression">relational_expression</a> ( (	NOTEQUAL 
+			|	EQUAL 
+			) 
+			<a href="CPPParser.html#relational_expression">relational_expression</a> )* 
+	;
+
+
+<a name="relational_expression">relational_expression</a>
+	:	<a href="CPPParser.html#shift_expression">shift_expression</a> ( (	LESSTHAN 
+			|	GREATERTHAN 
+			|	LESSTHANOREQUALTO 
+			|	GREATERTHANOREQUALTO 
+			) 
+			<a href="CPPParser.html#shift_expression">shift_expression</a> )* 
+	;
+
+
+<a name="additive_expression">additive_expression</a>
+	:	<a href="CPPParser.html#multiplicative_expression">multiplicative_expression</a> ( (	PLUS 
+			|	MINUS 
+			) 
+			<a href="CPPParser.html#multiplicative_expression">multiplicative_expression</a> )* 
+	;
+
+
+<a name="multiplicative_expression">multiplicative_expression</a>
+	:	<a href="CPPParser.html#pm_expression">pm_expression</a> ( (	STAR 
+			|	DIVIDE 
+			|	MOD 
+			) 
+			<a href="CPPParser.html#pm_expression">pm_expression</a> )* 
+	;
+
+
+<a name="pm_expression">pm_expression</a>
+	:	<a href="CPPParser.html#cast_expression">cast_expression</a> ( (	DOTMBR 
+			|	POINTERTOMBR 
+			) 
+			<a href="CPPParser.html#cast_expression">cast_expression</a> )* 
+	;
+
+
+<a name="cast_expression">cast_expression</a>
+	:	<a href="CPPParser.html#compound_literal">compound_literal</a> 
+	|	LPAREN 
+		(	<a href="CPPParser.html#type_qualifier">type_qualifier</a> 
+		|	
+		) 
+		<a href="CPPParser.html#simple_type_specifier">simple_type_specifier</a> 
+		(	<a href="CPPParser.html#ptr_operator">ptr_operator</a> 
+		|	
+		) 
+		RPAREN <a href="CPPParser.html#cast_expression">cast_expression</a> 
+	|	<a href="CPPParser.html#unary_expression">unary_expression</a> 
+	;
+
+
+<a name="compound_literal">compound_literal</a>
+	:	LPAREN <a href="CPPParser.html#type_name">type_name</a> RPAREN LCURLY <a href="CPPParser.html#initializer">initializer</a> RCURLY 
+	;
+
+
+<a name="unary_expression">unary_expression</a>
+	:	(	<a href="CPPParser.html#postfix_expression">postfix_expression</a> 
+		|	PLUSPLUS <a href="CPPParser.html#unary_expression">unary_expression</a> 
+		|	MINUSMINUS <a href="CPPParser.html#unary_expression">unary_expression</a> 
+		|	<a href="CPPParser.html#unary_operator">unary_operator</a> <a href="CPPParser.html#cast_expression">cast_expression</a> 
+		|	&quot;sizeof&quot; 
+			(	LPAREN <a href="CPPParser.html#type_name">type_name</a> RPAREN 
+			|	<a href="CPPParser.html#unary_expression">unary_expression</a> 
+			) 
+		|	
+			(	SCOPE 
+			|	
+			) 
+			(	<a href="CPPParser.html#new_expression">new_expression</a> 
+			|	<a href="CPPParser.html#delete_expression">delete_expression</a> 
+			) 
+		) 
+	;
+
+
+<a name="postfix_expression">postfix_expression</a>
+	:	(	<a href="CPPParser.html#simple_type_specifier">simple_type_specifier</a> LPAREN RPAREN LPAREN 
+			(	<a href="CPPParser.html#expression_list">expression_list</a> 
+			|	
+			) 
+			RPAREN 
+		|	<a href="CPPParser.html#simple_type_specifier">simple_type_specifier</a> LPAREN 
+			(	<a href="CPPParser.html#expression_list">expression_list</a> 
+			|	
+			) 
+			RPAREN 
+		|	<a href="CPPParser.html#primary_expression">primary_expression</a> 
+			(	LSQUARE <a href="CPPParser.html#expression">expression</a> RSQUARE 
+			|	LPAREN 
+				(	<a href="CPPParser.html#expression_list">expression_list</a> 
+				|	
+				) 
+				RPAREN 
+			|	DOT <a href="CPPParser.html#id_expression">id_expression</a> 
+			|	POINTERTO <a href="CPPParser.html#id_expression">id_expression</a> 
+			|	PLUSPLUS 
+			|	MINUSMINUS 
+			)* 
+		|	(	&quot;dynamic_cast&quot; 
+			|	&quot;static_cast&quot; 
+			|	&quot;reinterpret_cast&quot; 
+			|	&quot;const_cast&quot; 
+			) 
+			LESSTHAN <a href="CPPParser.html#type_specifier">type_specifier</a> 
+			(	<a href="CPPParser.html#ptr_operator">ptr_operator</a> 
+			|	
+			) 
+			GREATERTHAN LPAREN <a href="CPPParser.html#expression">expression</a> RPAREN 
+		) 
+	;
+
+
+<a name="unary_operator">unary_operator</a>
+	:	AMPERSAND 
+	|	STAR 
+	|	PLUS 
+	|	MINUS 
+	|	TILDE 
+	|	NOT 
+	;
+
+
+<a name="new_expression">new_expression</a>
+	:	( &quot;new&quot; 
+			(	LPAREN <a href="CPPParser.html#expression_list">expression_list</a> RPAREN 
+			|	
+			) 
+			(	<a href="CPPParser.html#new_type_id">new_type_id</a> 
+			|	LPAREN <a href="CPPParser.html#type_name">type_name</a> RPAREN 
+			) 
+			(	<a href="CPPParser.html#new_initializer">new_initializer</a> 
+			|	
+			) ) 
+	;
+
+
+<a name="delete_expression">delete_expression</a>
+	:	&quot;delete&quot; 
+		(	LSQUARE RSQUARE 
+		|	
+		) 
+		<a href="CPPParser.html#cast_expression">cast_expression</a> 
+	;
+
+
+<a name="primary_expression">primary_expression</a>
+	:	<a href="CPPParser.html#id_expression">id_expression</a> 
+	|	<a href="CPPParser.html#constant">constant</a> 
+	|	&quot;this&quot; 
+	|	LPAREN <a href="CPPParser.html#expression">expression</a> RPAREN 
+	;
+
+
+<a name="id_expression">id_expression</a>
+	:	<a href="CPPParser.html#scope_override">scope_override</a> 
+		(	ID 
+		|	OPERATOR <a href="CPPParser.html#optor">optor</a> 
+		|	TILDE 
+			(	STAR 
+			|	
+			) 
+			ID 
+		) 
+	;
+
+
+<a name="constant">constant</a>
+	:	OCTALINT 
+	|	DECIMALINT 
+	|	HEXADECIMALINT 
+	|	CharLiteral 
+	|	( StringLiteral )+ 
+	|	FLOATONE 
+	|	FLOATTWO 
+	|	&quot;true&quot; 
+	|	&quot;false&quot; 
+	;
+
+
+<a name="new_type_id">new_type_id</a>
+	:	<a href="CPPParser.html#declaration_specifiers">declaration_specifiers</a> 
+		(	<a href="CPPParser.html#new_declarator">new_declarator</a> 
+		|	
+		) 
+	;
+
+
+<a name="new_initializer">new_initializer</a>
+	:	LPAREN 
+		(	<a href="CPPParser.html#expression_list">expression_list</a> 
+		|	
+		) 
+		RPAREN 
+	;
+
+
+<a name="new_declarator">new_declarator</a>
+	:	<a href="CPPParser.html#ptr_operator">ptr_operator</a> 
+		(	<a href="CPPParser.html#new_declarator">new_declarator</a> 
+		|	
+		) 
+	|	<a href="CPPParser.html#direct_new_declarator">direct_new_declarator</a> 
+	;
+
+
+<a name="direct_new_declarator">direct_new_declarator</a>
+	:	( LSQUARE <a href="CPPParser.html#expression">expression</a> RSQUARE )+ 
+	;
+
+
+<a name="ptr_to_member">ptr_to_member</a>
+	:	<a href="CPPParser.html#scope_override">scope_override</a> STAR <a href="CPPParser.html#cv_qualifier_seq">cv_qualifier_seq</a> 
+	;
+
+
+<a name="optor_simple_tokclass">optor_simple_tokclass</a>
+	:	(	PLUS 
+		|	MINUS 
+		|	STAR 
+		|	DIVIDE 
+		|	MOD 
+		|	BITWISEXOR 
+		|	AMPERSAND 
+		|	BITWISEOR 
+		|	TILDE 
+		|	NOT 
+		|	SHIFTLEFT 
+		|	SHIFTRIGHT 
+		|	ASSIGNEQUAL 
+		|	TIMESEQUAL 
+		|	DIVIDEEQUAL 
+		|	MODEQUAL 
+		|	PLUSEQUAL 
+		|	MINUSEQUAL 
+		|	SHIFTLEFTEQUAL 
+		|	SHIFTRIGHTEQUAL 
+		|	BITWISEANDEQUAL 
+		|	BITWISEXOREQUAL 
+		|	BITWISEOREQUAL 
+		|	EQUAL 
+		|	NOTEQUAL 
+		|	LESSTHAN 
+		|	GREATERTHAN 
+		|	LESSTHANOREQUALTO 
+		|	GREATERTHANOREQUALTO 
+		|	OR 
+		|	AND 
+		|	PLUSPLUS 
+		|	MINUSMINUS 
+		|	COMMA 
+		|	POINTERTO 
+		|	POINTERTOMBR 
+		) 
+	;
+
+</PRE>
+</BODY>
+</HTML>

@@ -1,0 +1,352 @@
+/*
+ * Copyright (c) 2007 Open Kernel Labs, Inc. (Copyright Holder).
+ * All rights reserved.
+ *
+ * 1. Redistribution and use of OKL4 (Software) in source and binary
+ * forms, with or without modification, are permitted provided that the
+ * following conditions are met:
+ *
+ *     (a) Redistributions of source code must retain this clause 1
+ *         (including paragraphs (a), (b) and (c)), clause 2 and clause 3
+ *         (Licence Terms) and the above copyright notice.
+ *
+ *     (b) Redistributions in binary form must reproduce the above
+ *         copyright notice and the Licence Terms in the documentation and/or
+ *         other materials provided with the distribution.
+ *
+ *     (c) Redistributions in any form must be accompanied by information on
+ *         how to obtain complete source code for:
+ *        (i) the Software; and
+ *        (ii) all accompanying software that uses (or is intended to
+ *        use) the Software whether directly or indirectly.  Such source
+ *        code must:
+ *        (iii) either be included in the distribution or be available
+ *        for no more than the cost of distribution plus a nominal fee;
+ *        and
+ *        (iv) be licensed by each relevant holder of copyright under
+ *        either the Licence Terms (with an appropriate copyright notice)
+ *        or the terms of a licence which is approved by the Open Source
+ *        Initative.  For an executable file, "complete source code"
+ *        means the source code for all modules it contains and includes
+ *        associated build and other files reasonably required to produce
+ *        the executable.
+ *
+ * 2. THIS SOFTWARE IS PROVIDED ``AS IS'' AND, TO THE EXTENT PERMITTED BY
+ * LAW, ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE, OR NON-INFRINGEMENT, ARE DISCLAIMED.  WHERE ANY WARRANTY IS
+ * IMPLIED AND IS PREVENTED BY LAW FROM BEING DISCLAIMED THEN TO THE
+ * EXTENT PERMISSIBLE BY LAW: (A) THE WARRANTY IS READ DOWN IN FAVOUR OF
+ * THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+ * PARTICIPANT) AND (B) ANY LIMITATIONS PERMITTED BY LAW (INCLUDING AS TO
+ * THE EXTENT OF THE WARRANTY AND THE REMEDIES AVAILABLE IN THE EVENT OF
+ * BREACH) ARE DEEMED PART OF THIS LICENCE IN A FORM MOST FAVOURABLE TO
+ * THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+ * PARTICIPANT). IN THE LICENCE TERMS, "PARTICIPANT" INCLUDES EVERY
+ * PERSON WHO HAS CONTRIBUTED TO THE SOFTWARE OR WHO HAS BEEN INVOLVED IN
+ * THE DISTRIBUTION OR DISSEMINATION OF THE SOFTWARE.
+ *
+ * 3. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR ANY OTHER PARTICIPANT BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * Author: Carlos Dyonisio <medaglia@ok-labs.com>
+ */
+
+#include <compat/asm.h>
+#include <l4/arch/vregs_asm.h>
+
+#if defined(__ADS__) || defined(__RVCT__) || defined(__RVCT_GNU__)
+    AREA    AtomicOps, CODE
+#endif
+
+#if defined(__ADS__) || defined(__RVCT__) || defined(__RVCT_GNU__)
+
+    MACRO
+    _ATOMIC_LOCK    $func
+    mov     r2, r1
+    mov     r5, #0xff000000
+    ldr     r6, [r5, #0xff0]
+    adr     r0, __okl4_atomic_$func._cbk
+    str     r0, [r6, #(__L4_TCR_PREEMPT_CALLBACK_IP)*4]
+    mov     r0, #32
+    strb    r0, [r6, #(__L4_TCR_PREEMPT_FLAGS)*4]
+__okl4_atomic_$func._cbk
+    cmp     r1, r2
+    bne     __okl4_atomic_$func._the_end
+    ldr     r5, [r1] /* r5 = [r1] = &target->value */
+    MEND
+
+    MACRO
+    _ATOMIC_UNLOCK  $func
+    str     r5, [r1], #4
+__okl4_atomic_$func._the_end
+    mov     r4, #0
+    strb    r4, [r6, #(__L4_TCR_PREEMPT_FLAGS)*4]
+    MEND
+
+#define __ATOMIC_LOCK(func)     _ATOMIC_LOCK func
+#define __ATOMIC_UNLOCK(func)   _ATOMIC_UNLOCK func
+
+#else /* GNU */
+
+#define __ATOMIC_LOCK(func) \
+    mov     r2, r1; \
+    mov     r5, #0xff000000; \
+    ldr     r6, [r5, #0xff0]; \
+    adr     r0, __okl4_atomic_ ## func ## _cbk; \
+    str     r0, [r6, #(__L4_TCR_PREEMPT_CALLBACK_IP)*4]; \
+    mov     r0, #32; \
+    strb    r0, [r6, #(__L4_TCR_PREEMPT_FLAGS)*4]; \
+LABEL(__okl4_atomic_ ## func ## _cbk); \
+    cmp     r1, r2; \
+    bne     __okl4_atomic_ ## func ## _the_end; \
+    ldr     r5, [r1] /* r5 = [r1] = &target->value */
+
+#define __ATOMIC_UNLOCK(func) \
+    str     r5, [r1], #4; \
+LABEL(__okl4_atomic_ ## func ## _the_end); \
+    mov     r4, #0; \
+    strb    r4, [r6, #(__L4_TCR_PREEMPT_FLAGS)*4]
+
+#endif
+
+/*
+ * IMPORTANT!
+ * These functions expect the first member of the structure
+ * okl4_atomic_word_t to be an okl4_atomic_plain_word_t value.
+ */
+
+/*
+ * void okl4_atomic_and(*target, mask)
+ */
+    EXPORT okl4_atomic_and
+LABEL(okl4_atomic_and)
+    stmdb   sp!, {r4, r5, r6}
+    mov     r3, r1 /* r3 = mask */
+    mov     r1, r0 /* r1 = target = &target->value */
+
+    __ATOMIC_LOCK(and)
+
+    and     r5, r5, r3
+
+    __ATOMIC_UNLOCK(and)
+
+    ldmia   sp!, {r4, r5, r6}
+    bx      lr
+
+/*
+ * void okl4_atomic_or(*target, mask)
+ */
+    EXPORT okl4_atomic_or
+LABEL(okl4_atomic_or)
+    stmdb   sp!, {r4, r5, r6}
+    mov     r3, r1 /* r3 = mask */
+    mov     r1, r0 /* r1 = target = &target->value */
+
+    __ATOMIC_LOCK(or)
+
+    orr     r5, r5, r3
+
+    __ATOMIC_UNLOCK(or)
+
+    ldmia   sp!, {r4, r5, r6}
+    bx      lr
+
+/*
+ * void okl4_atomic_xor(*target, mask)
+ */
+    EXPORT okl4_atomic_xor
+LABEL(okl4_atomic_xor)
+    stmdb   sp!, {r4, r5, r6}
+    mov     r3, r1 /* r3 = mask */
+    mov     r1, r0 /* r1 = target = &target->value */
+
+    __ATOMIC_LOCK(xor)
+
+    eor     r5, r5, r3
+
+    __ATOMIC_UNLOCK(xor)
+
+    ldmia   sp!, {r4, r5, r6}
+    bx      lr
+
+/*
+ * void okl4_atomic_add(*target, value)
+ */
+    EXPORT okl4_atomic_add
+LABEL(okl4_atomic_add)
+    stmdb   sp!, {r4, r5, r6}
+    mov     r3, r1 /* r3 = value */
+    mov     r1, r0 /* r1 = target = &target->value */
+
+    __ATOMIC_LOCK(add)
+
+    add     r5, r5, r3
+
+    __ATOMIC_UNLOCK(add)
+
+    ldmia   sp!, {r4, r5, r6}
+    bx      lr
+
+/*
+ * void okl4_atomic_sub(*target, value)
+ */
+    EXPORT okl4_atomic_sub
+LABEL(okl4_atomic_sub)
+    stmdb   sp!, {r4, r5, r6}
+    mov     r3, r1 /* r3 = value */
+    mov     r1, r0 /* r1 = target = &target->value */
+
+    __ATOMIC_LOCK(sub)
+
+    sub     r5, r5, r3
+
+    __ATOMIC_UNLOCK(sub)
+
+    ldmia   sp!, {r4, r5, r6}
+    bx      lr
+
+/*
+ * word_t okl4_atomic_and_return(*target, mask)
+ */
+    EXPORT okl4_atomic_and_return
+LABEL(okl4_atomic_and_return)
+    stmdb   sp!, {r4, r5, r6}
+    mov     r3, r1 /* r3 = mask */
+    mov     r1, r0 /* r1 = target = &target->value */
+
+    __ATOMIC_LOCK(and_ret)
+
+    and     r5, r5, r3
+    mov     r0, r5
+
+    __ATOMIC_UNLOCK(and_ret)
+
+    ldmia   sp!, {r4, r5, r6}
+    bx      lr
+
+/*
+ * word_t okl4_atomic_or_return(*target, mask)
+ */
+    EXPORT okl4_atomic_or_return
+LABEL(okl4_atomic_or_return)
+    stmdb   sp!, {r4, r5, r6}
+    mov     r3, r1 /* r3 = mask */
+    mov     r1, r0 /* r1 = target = &target->value */
+
+    __ATOMIC_LOCK(or_ret)
+
+    orr     r5, r5, r3
+    mov     r0, r5
+
+    __ATOMIC_UNLOCK(or_ret)
+
+    ldmia   sp!, {r4, r5, r6}
+    bx      lr
+
+/*
+ * word_t okl4_atomic_xor_return(*target, mask)
+ */
+    EXPORT okl4_atomic_xor_return
+LABEL(okl4_atomic_xor_return)
+    stmdb   sp!, {r4, r5, r6}
+    mov     r3, r1 /* r3 = mask */
+    mov     r1, r0 /* r1 = target = &target->value */
+
+    __ATOMIC_LOCK(xor_ret)
+
+    eor     r5, r5, r3
+    mov     r0, r5
+
+    __ATOMIC_UNLOCK(xor_ret)
+
+    ldmia   sp!, {r4, r5, r6}
+    bx      lr
+
+/*
+ * word_t okl4_atomic_add_return(*target, value)
+ */
+    EXPORT okl4_atomic_add_return
+LABEL(okl4_atomic_add_return)
+    stmdb   sp!, {r4, r5, r6}
+    mov     r3, r1 /* r3 = value */
+    mov     r1, r0 /* r1 = target = &target->value */
+
+    __ATOMIC_LOCK(add_ret)
+
+    add     r5, r5, r3
+    mov     r0, r5
+
+    __ATOMIC_UNLOCK(add_ret)
+
+    ldmia   sp!, {r4, r5, r6}
+    bx      lr
+
+/*
+ * word_t okl4_atomic_sub_return(*target, value)
+ */
+    EXPORT okl4_atomic_sub_return
+LABEL(okl4_atomic_sub_return)
+    stmdb   sp!, {r4, r5, r6}
+    mov     r3, r1 /* r3 = value */
+    mov     r1, r0 /* r1 = target = &target->value */
+
+    __ATOMIC_LOCK(sub_ret)
+
+    sub     r5, r5, r3
+    mov     r0, r5
+
+    __ATOMIC_UNLOCK(sub_ret)
+
+    ldmia   sp!, {r4, r5, r6}
+    bx      lr
+
+/*
+ * void __okl4_atomic_asm_bit_clear(*target, mask)
+ */
+    EXPORT __okl4_atomic_asm_bit_clear
+LABEL(__okl4_atomic_asm_bit_clear)
+    stmdb   sp!, {r4, r5, r6}
+    mov     r3, r1 /* r3 = mask */
+    mov     r1, r0 /* r1 = target = &target->value */
+
+    __ATOMIC_LOCK(bic)
+
+    bic     r5, r5, r3
+
+    __ATOMIC_UNLOCK(bic)
+
+    ldmia   sp!, {r4, r5, r6}
+    bx      lr
+
+/*
+ * int okl4_atomic_compare_and_set(*target, old_val, new_val)
+ */
+    EXPORT okl4_atomic_compare_and_set
+LABEL(okl4_atomic_compare_and_set)
+    stmdb   sp!, {r4, r5, r6}
+    mov     r4, r2 /* r4 = new_val */
+    mov     r3, r1 /* r3 = old_val */
+    mov     r1, r0 /* r1 = target = &target->value */
+
+    __ATOMIC_LOCK(comp_set)
+
+    cmp     r5, r3
+    moveq   r5, r4
+    moveq   r0, #1
+    movne   r0, #0
+
+    __ATOMIC_UNLOCK(comp_set)
+
+    ldmia   sp!, {r4, r5, r6}
+    bx      lr
+
+    END

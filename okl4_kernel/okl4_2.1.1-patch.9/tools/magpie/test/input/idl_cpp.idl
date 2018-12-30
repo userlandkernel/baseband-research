@@ -1,0 +1,9 @@
+[uuid(32)]
+interface one
+{
+#ifdef USING_ARM
+	void arm_only();
+#else
+	void nonarm_only();
+#endif
+};

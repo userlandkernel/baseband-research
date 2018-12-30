@@ -1,0 +1,15 @@
+/*
+ * Iguana IDL for dealing with userland
+ * eg. pagefaults, exceptions, syscalls.
+ *
+ */
+
+[uuid(1)]
+interface iguana_pd
+{
+	char func1(in char inarg, out char outarg);
+	short func2(in short inarg, out short outarg);
+	int func3(in int inarg, out int outarg);
+	long func4(in long inarg, out long outarg);
+	short func5(in char inarg1, in short inarg2, in int inarg3, out short outarg, out long outarg2);
+};

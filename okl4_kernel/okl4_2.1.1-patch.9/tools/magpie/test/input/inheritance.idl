@@ -1,0 +1,26 @@
+/*
+ * Iguana IDL for dealing with userland
+ * eg. pagefaults, exceptions, syscalls.
+ *
+ */
+
+[uuid(24)]
+interface mother
+{
+	void yummy_and_nutritious(in int inputarg_m, out int result_m);
+};
+ 
+
+[uuid(23)]
+interface father
+{
+	void doh(in int inputarg_f, out int result_f);
+};
+ 
+
+[uuid(22)]
+interface child : father, mother
+{
+	void eat_my_shorts(in int inputarg_c, out int result_c);
+};
+

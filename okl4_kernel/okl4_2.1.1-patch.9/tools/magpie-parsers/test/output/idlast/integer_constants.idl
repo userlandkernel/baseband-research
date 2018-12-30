@@ -1,0 +1,8 @@
+ MagpieAST  (0, ?:?)
+  type_instance intconst  (1, test/input/idlast/integer_constants.idl:1)
+   (meta_type) = ['const']
+   target  (2, <builtin>:?)
+    type int (backref)
+   expression  (2, ?:?)
+    (value) = [37]
+    type octet (backref)

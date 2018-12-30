@@ -1,0 +1,8 @@
+ MagpieAST  (0, ?:?)
+  type_instance charconst  (1, test/input/idlast/char_constants.idl:1)
+   (meta_type) = ['const']
+   target  (2, <builtin>:?)
+    type char (backref)
+   expression  (2, ?:?)
+    (value) = ['a']
+    type char (backref)

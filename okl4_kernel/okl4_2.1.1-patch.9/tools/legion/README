@@ -1,0 +1,63 @@
+/*
+ * Legion version 0.1
+ *
+ * Geoffrey Lee < glee at cse unsw edu au >
+ */
+
+BINARY
+
+There is a binary file, 'legion', distributed in this package
+to avoid building it as part of the build system. It should be portable
+to all OS X machines on which it will run.
+
+INTRODUCTION
+
+The legion(1L) program is intended to be a replacement for the Dite(1L)
+program.  The legion(1L) program is primarily intended to be a system
+administration tool that allows a system administrator or system
+developer to combine arbitary Mach-O files and raw files into a
+single image wrapped using the Mach-O file format.  In particular,
+it was written to support the L4-based Darbat project.
+
+STATUS
+
+Currently the program is being actively developed.  You are welcome to
+contribute.
+
+BUGS
+Does not work on big-endian hosts yet.  (Simple fix)
+Does not support fat binaries as inputs yet (relatively simple fix.  We
+should test the kernel to see what architecture it supports and then
+build up a matching table of the architectures that legion(1L) supports.)
+Does not output fat binaries.  This is by design, and will 
+unlikely ever be supported in legion(1L).  persons wishing to 
+create fat binaries should use the lipo(1) program to do so.
+The L4 generic boot information is layed out in such a way that
+may lead to unaligned access.  (simple fix)
+The legion(1L) program itself should work in 64-bit mode, though
+it has never been tested.  Currently, legion(1L) is unable to
+create 64-bit clean binaries, however, it is currently a moot point
+as the kernels on Mac OS X are all 32-bit.
+The ordering of the modules is significant.  The first two must
+be sigma0 and roottask.  In additional to this, the modules provided should
+not overlap.
+The program currently assumes the entry point is the first section in
+the first segment (except for the kernel, that gets looked up specially).
+This is wrong, legion(1L) should look this up using the LC_* commands and
+inspecting the program counter register.
+It would be better to modify boot.efi to support booting multiple images,
+but we cannot do that.  Having said that, boot.efi is already a partial
+multi-boot loader, since it must load the drivers bundle (and if the -x
+flag was specified, each individual Mach-O driver object file) and the
+main kernel, so it should not be too difficult.
+The legion(1L) program does not currently have the functionality to 
+dump the L4 kernel interface page (KIP).
+The legion(1L) is sometimes too trusting of the contents of the file,
+(e.g. trusting the offset of the command line when doing a dump).  This
+may or may not be a problem.  (relatively easy fix)
+
+AUTHOR
+
+Geoffrey Lee < glee at cse unsw edu au >
+Charles Gray <cgray@ok-labs.com>
+

@@ -1,0 +1,109 @@
+/*
+ * This is an simple file for generating
+ * example outputs of mig in ast-representation
+ */
+
+/* subsystem definition */
+/* every file (with routines) must contain a "subsystem" */
+
+subsystem number_of_the_beast 666;
+/* only one subsystem per file ...
+ * so if you want to test others
+ * comment the above one and take one of this:
+subsystem kerneluser back_in_black 0815;
+subsystem kernelserver dont_panic 42; 
+*/
+
+/* FIXME: no wait_time implemented */
+/* FIXME: no msg_option implemented */
+/* FIXME: no user_type_limit implemented */
+/* FIXME: no on_stack_limit implemented */
+/* FIXME: no error implemented */
+/* FIXME: no server_prefix implemented */
+/* FIXME: no user_prefix implemented */
+/* FIXME: no server_demux implemented */
+
+
+/* -- type-declarations -- */
+/* basic_type_spec */
+type number_type = 32;
+/* for list of symbolic types see MIGParser.html */
+type symbolic_type = MACH_MSG_TYPE_BOOLEAN;
+type poly_type = MACH_MSG_TYPE_BYTE | 32 ;
+type poly_type2 = polymorphic | MACH_MSG_TYPE_INTEGER_32;
+type bit_type = (MACH_MSG_TYPE_BIT, 64);
+/* with ipc-flags (see MIGParser.html for all flags) */
+type ipc_type = MACH_MSG_TYPE_REAL 
+		destructor : myDestructor(destr_identifier)
+		cservertype : c_server_type_identifier;
+
+/* prev_type_spec */
+type prev_type_type = symbolic_type;
+
+/* array type spec */
+type array_type1 = array[] of number_type;
+type array_type2 = array[*] of symbolic_type;
+type array_type3 = array[*:42] of MACH_MSG_TYPE_BIT;
+type array_type4 = array[69] of ipc_type;
+type array_type5 = array[20] of array[*:50] of struct[45] of bit_type;
+/* -> "my_type_spec" can be every type_spec!! */
+
+
+/* pointer spec
+ * it's just one or more '^' symbols before a type-spec */
+type number_type = ^MACH_MSG_TYPE_BOOLEAN;
+type pointer_type2 = ^array[] of struct[23] of ^array_type5;
+
+/* struct spec */
+type struct_type = struct[34] of MACH_MSG_TYPE_BYTE;
+type struct_type2 = struct[5+6*9/16] of array[*:45] of MACH_MSG_TYPE_BIT;
+type struct_type2 = struct[42] of MACH_MSG_TYPE_BIT;
+
+/* c-string */
+type c_string_type2 = c_string[56];
+type c_string_type2 = c_string[*:42];
+
+
+/* native_type_spec 
+type pointerTo_type = PointerTo(identifier1 identifierN);
+type pointerToIfNot_type = PointerToIfNot(identifer11 identifier1N, identifierMN);
+type valueOf_type = ValueOf(identifier1 identifierN);
+*/
+
+
+/* special trans_type_spec_extensions */
+type bit_type = number_type
+	intran : identifier1 identifier2 ( identifier3 )
+	ctype : identifier;
+	
+type array_type5 = array[20] of array[*:50] of struct[45] of bit_type;
+
+/* end of type-declaration */
+
+/* routine declaration 
+routine routine_id1(arg_id1 : type_identifier; out arg_id2 : new_type = array[10] of MACH_MSG_TYPE_BOOLEAN);
+routine routine_id2(inout arg_idl1 : type_identifier, samecount, dealloc[]; out ard_id2 : type_identifier2);*/
+simpleroutine simp_routine(in arg_id1: c_string_type2; out arg_id2 : number_type);
+routine trailer_arg(serverimpl trailer_arg : arg_type);
+/* complex arguments are: 
+routine routine_id2(inout arg_idl1 : complex_type = ^array[*] of struct[34] of MACH_MSG_TYPE_BYTE;
+		      out arg_id2 : poly_t = MACH_MSG_TYPE_BYTE | polymorphic);
+
+ end of routine-declaration */
+
+
+/* skip */
+skip;
+
+
+/* import declarations */
+import "quotedstring.h";
+uimport <angelquotedstring>;
+simport "quotedstring2.def";
+dimport <angelquotedstring2>;
+iimport "quotedstring3.h";
+/* end of routine declarations */
+
+
+
+

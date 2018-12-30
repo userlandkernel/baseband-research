@@ -1,0 +1,12 @@
+interface A {
+    enum a_color { red, green, blue };
+  };
+  interface B {
+    enum b_color { red, green, blue };
+  };
+  interface C : A, B {
+    union foo switch (a_color) {
+      /* The below 'red' is ambiguous (needs to be A::red) */
+      case red: short x;
+    };
+  };

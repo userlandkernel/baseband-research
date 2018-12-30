@@ -1,0 +1,14 @@
+usage: magpie.py [flags] <idl file>
+
+options:
+  -h, --help            show this help message and exit
+  --target=TARGET       Specify a target.
+  -c, --camkes          specify source/generation = CAmkES
+  --list-targets        List all targets.
+  --output=OUTPUT       Specify an output format.
+  --list-outputs        List all outputs for a given target.
+  -IINCLUDE_DIRS        specify additional include directories
+  --templates=TEMPLATES_DIR
+                        The base directory for templates
+  --output-filename=OUTPUT_FILENAME
+                        The output filename (or '-' for standard output)

@@ -1,0 +1,5 @@
+  interface test {
+    union foo switch (string) { /* Error: strings are not allowed as discriminators */
+      default: float x;
+    };
+  };

@@ -1,0 +1,4 @@
+test/input/syntax_error.h:3:Unexpected token "unsgnied"
+*** Magpie did not complete successfully.
+*** Exception encountered while processing ['test/input/syntax_error.h']
+Preprocessed input written to inputparser.error.out

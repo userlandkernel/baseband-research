@@ -1,0 +1,7 @@
+const short X = 3 + 4 * 5 - 6 / 2 - 20;
+const short Y = (0xf0 & 0x33) - 48;
+const short bitwise_or = 1 | 2;
+const short bitwise_xor = 1 ^ 2;
+const short left_shift = 3 << 1;
+const short right_shift = 3 >> 1;
+const short modulus = 5 % 2;

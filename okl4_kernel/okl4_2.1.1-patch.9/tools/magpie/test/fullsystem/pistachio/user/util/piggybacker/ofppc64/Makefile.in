@@ -1,0 +1,56 @@
+#########################################################################
+## 
+## Copyright (C) 2002-2003, Karlsruhe University
+##
+## File path:	util/piggybacker/Makefile.in
+##
+## @LICENSE@
+##
+## $Id: Makefile.in,v 1.1 2003/10/24 04:47:44 cvansch Exp $
+##
+#########################################################################
+
+srcdir=		@srcdir@
+top_srcdir=	@top_srcdir@
+top_builddir=	@top_builddir@
+
+include $(top_srcdir)/Mk/l4.base.mk
+include $(top_srcdir)/util/piggybacker/piggyback.mk
+
+TARGET=	$(ARCH)-loader
+PROGRAM_DEPS=	$(SIGMA0) $(ROOT_TASK) $(KERNEL)
+
+SRCS=	main.cc crt0.S io.cc ../common/ieee1275.cc ../common/kip.cc \
+	../common/string.cc ../common/1275tree.cc
+
+CFLAGS+=	-fno-builtin -I$(top_srcdir)/util/piggybacker/include
+CXXFLAGS+=	-fno-rtti
+
+LDS_powerpc64=	$(top_srcdir)/util/piggybacker/ofppc64/ofppc64.lds
+
+CFLAGS_powerpc64+=	-msoft-float -mminimal-toc
+CPPFLAGS_powerpc64+=	-msoft-float -mminimal-toc
+
+donote: donote.cc
+	g++ -o donote $(top_srcdir)/util/piggybacker/ofppc64/donote.cc
+
+pre-all: donote
+	@if test ! -d ../common; then mkdir ../common; fi
+
+include $(top_srcdir)/Mk/l4.prog.mk
+
+.INTERMEDIATE: lds.tmp
+lds.tmp: $(LDS_$(ARCH))
+#	@$(CPP) $(PPFLAGS) -P -C $< -o $@
+	cp $< lds.tmp
+
+$(TARGET): $(MODULES) $(OBJS) lds.tmp
+	@echo "Linking $(NAME) ($(TARGET))"
+	$(LD) $(LDFLAGS) -Tlds.tmp -o $@ $(OBJS) $(MODULES) $(LIBS)
+	@$(STRIP) -g $@
+	@$(OBJCOPY) -O elf32-powerpc $@ $@.32
+	@mv $@.32 $@
+	@$(OBJCOPY) -O binary $@ $@.bin
+	@./donote $@
+
+all: $(TARGET)

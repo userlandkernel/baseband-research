@@ -1,0 +1,505 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD>
+<TITLE>Grammar CPP_parser.g</TITLE>
+</HEAD>
+<BODY>
+<table summary="" border="1" cellpadding="5">
+<tr>
+<td>
+<font size="+2">Grammar CPPLexer</font><br>
+<a href="http://www.ANTLR.org">ANTLR</a>-generated HTML file from CPP_parser.g
+<p>
+Terence Parr, <a href="http://www.magelang.com">MageLang Institute</a>
+<br>ANTLR Version 2.7.5 (20050403); 1989-2005
+</td>
+</tr>
+</table>
+<PRE>
+
+Definition of lexer CPPLexer, which is a subclass of CharScanner.
+
+/** Lexer nextToken rule:
+ *  The lexer nextToken rule is synthesized from all of the user-defined
+ *  lexer rules.  It logically consists of one big alternative block with
+ *  each user-defined rule being an alternative.
+ */
+<a href="CPPLexer.html#mASSIGNEQUAL">mASSIGNEQUAL</a> 
+|	<a href="CPPLexer.html#mCOLON">mCOLON</a> 
+|	<a href="CPPLexer.html#mCOMMA">mCOMMA</a> 
+|	<a href="CPPLexer.html#mQUESTIONMARK">mQUESTIONMARK</a> 
+|	<a href="CPPLexer.html#mSEMICOLON">mSEMICOLON</a> 
+|	<a href="CPPLexer.html#mPOINTERTO">mPOINTERTO</a> 
+|	<a href="CPPLexer.html#mLPAREN">mLPAREN</a> 
+|	<a href="CPPLexer.html#mRPAREN">mRPAREN</a> 
+|	<a href="CPPLexer.html#mLSQUARE">mLSQUARE</a> 
+|	<a href="CPPLexer.html#mRSQUARE">mRSQUARE</a> 
+|	<a href="CPPLexer.html#mLCURLY">mLCURLY</a> 
+|	<a href="CPPLexer.html#mRCURLY">mRCURLY</a> 
+|	<a href="CPPLexer.html#mEQUAL">mEQUAL</a> 
+|	<a href="CPPLexer.html#mNOTEQUAL">mNOTEQUAL</a> 
+|	<a href="CPPLexer.html#mLESSTHANOREQUALTO">mLESSTHANOREQUALTO</a> 
+|	<a href="CPPLexer.html#mLESSTHAN">mLESSTHAN</a> 
+|	<a href="CPPLexer.html#mGREATERTHANOREQUALTO">mGREATERTHANOREQUALTO</a> 
+|	<a href="CPPLexer.html#mGREATERTHAN">mGREATERTHAN</a> 
+|	<a href="CPPLexer.html#mDIVIDE">mDIVIDE</a> 
+|	<a href="CPPLexer.html#mDIVIDEEQUAL">mDIVIDEEQUAL</a> 
+|	<a href="CPPLexer.html#mPLUS">mPLUS</a> 
+|	<a href="CPPLexer.html#mPLUSEQUAL">mPLUSEQUAL</a> 
+|	<a href="CPPLexer.html#mPLUSPLUS">mPLUSPLUS</a> 
+|	<a href="CPPLexer.html#mMINUS">mMINUS</a> 
+|	<a href="CPPLexer.html#mMINUSEQUAL">mMINUSEQUAL</a> 
+|	<a href="CPPLexer.html#mMINUSMINUS">mMINUSMINUS</a> 
+|	<a href="CPPLexer.html#mSTAR">mSTAR</a> 
+|	<a href="CPPLexer.html#mTIMESEQUAL">mTIMESEQUAL</a> 
+|	<a href="CPPLexer.html#mMOD">mMOD</a> 
+|	<a href="CPPLexer.html#mMODEQUAL">mMODEQUAL</a> 
+|	<a href="CPPLexer.html#mSHIFTRIGHT">mSHIFTRIGHT</a> 
+|	<a href="CPPLexer.html#mSHIFTRIGHTEQUAL">mSHIFTRIGHTEQUAL</a> 
+|	<a href="CPPLexer.html#mSHIFTLEFT">mSHIFTLEFT</a> 
+|	<a href="CPPLexer.html#mSHIFTLEFTEQUAL">mSHIFTLEFTEQUAL</a> 
+|	<a href="CPPLexer.html#mAND">mAND</a> 
+|	<a href="CPPLexer.html#mNOT">mNOT</a> 
+|	<a href="CPPLexer.html#mOR">mOR</a> 
+|	<a href="CPPLexer.html#mAMPERSAND">mAMPERSAND</a> 
+|	<a href="CPPLexer.html#mBITWISEANDEQUAL">mBITWISEANDEQUAL</a> 
+|	<a href="CPPLexer.html#mTILDE">mTILDE</a> 
+|	<a href="CPPLexer.html#mBITWISEOR">mBITWISEOR</a> 
+|	<a href="CPPLexer.html#mBITWISEOREQUAL">mBITWISEOREQUAL</a> 
+|	<a href="CPPLexer.html#mBITWISEXOR">mBITWISEXOR</a> 
+|	<a href="CPPLexer.html#mBITWISEXOREQUAL">mBITWISEXOREQUAL</a> 
+|	<a href="CPPLexer.html#mPOINTERTOMBR">mPOINTERTOMBR</a> 
+|	<a href="CPPLexer.html#mDOTMBR">mDOTMBR</a> 
+|	<a href="CPPLexer.html#mSCOPE">mSCOPE</a> 
+|	<a href="CPPLexer.html#mWhitespace">mWhitespace</a> 
+|	<a href="CPPLexer.html#mComment">mComment</a> 
+|	<a href="CPPLexer.html#mCPPComment">mCPPComment</a> 
+|	<a href="CPPLexer.html#mPREPROC_DIRECTIVE">mPREPROC_DIRECTIVE</a> 
+|	<a href="CPPLexer.html#mStringLiteral">mStringLiteral</a> 
+|	<a href="CPPLexer.html#mPragma">mPragma</a> 
+|	<a href="CPPLexer.html#mError">mError</a> 
+|	<a href="CPPLexer.html#mCharLiteral">mCharLiteral</a> 
+|	<a href="CPPLexer.html#mNumber">mNumber</a> 
+|	<a href="CPPLexer.html#mID">mID</a> 
+<a name="mASSIGNEQUAL">mASSIGNEQUAL</a>
+	:	&#039;=&#039; 
+	;
+
+<a name="mCOLON">mCOLON</a>
+	:	&#039;:&#039; 
+	;
+
+<a name="mCOMMA">mCOMMA</a>
+	:	&#039;,&#039; 
+	;
+
+<a name="mQUESTIONMARK">mQUESTIONMARK</a>
+	:	&#039;?&#039; 
+	;
+
+<a name="mSEMICOLON">mSEMICOLON</a>
+	:	&#039;;&#039; 
+	;
+
+<a name="mPOINTERTO">mPOINTERTO</a>
+	:	&quot;-&gt;&quot; 
+	;
+
+<a name="mLPAREN">mLPAREN</a>
+	:	&#039;(&#039; 
+	;
+
+<a name="mRPAREN">mRPAREN</a>
+	:	&#039;)&#039; 
+	;
+
+<a name="mLSQUARE">mLSQUARE</a>
+	:	&#039;[&#039; 
+	;
+
+<a name="mRSQUARE">mRSQUARE</a>
+	:	&#039;]&#039; 
+	;
+
+<a name="mLCURLY">mLCURLY</a>
+	:	&#039;{&#039; 
+	;
+
+<a name="mRCURLY">mRCURLY</a>
+	:	&#039;}&#039; 
+	;
+
+<a name="mEQUAL">mEQUAL</a>
+	:	&quot;==&quot; 
+	;
+
+<a name="mNOTEQUAL">mNOTEQUAL</a>
+	:	&quot;!=&quot; 
+	;
+
+<a name="mLESSTHANOREQUALTO">mLESSTHANOREQUALTO</a>
+	:	&quot;&lt;=&quot; 
+	;
+
+<a name="mLESSTHAN">mLESSTHAN</a>
+	:	&quot;&lt;&quot; 
+	;
+
+<a name="mGREATERTHANOREQUALTO">mGREATERTHANOREQUALTO</a>
+	:	&quot;&gt;=&quot; 
+	;
+
+<a name="mGREATERTHAN">mGREATERTHAN</a>
+	:	&quot;&gt;&quot; 
+	;
+
+<a name="mDIVIDE">mDIVIDE</a>
+	:	&#039;/&#039; 
+	;
+
+<a name="mDIVIDEEQUAL">mDIVIDEEQUAL</a>
+	:	&quot;/=&quot; 
+	;
+
+<a name="mPLUS">mPLUS</a>
+	:	&#039;+&#039; 
+	;
+
+<a name="mPLUSEQUAL">mPLUSEQUAL</a>
+	:	&quot;+=&quot; 
+	;
+
+<a name="mPLUSPLUS">mPLUSPLUS</a>
+	:	&quot;++&quot; 
+	;
+
+<a name="mMINUS">mMINUS</a>
+	:	&#039;-&#039; 
+	;
+
+<a name="mMINUSEQUAL">mMINUSEQUAL</a>
+	:	&quot;-=&quot; 
+	;
+
+<a name="mMINUSMINUS">mMINUSMINUS</a>
+	:	&quot;--&quot; 
+	;
+
+<a name="mSTAR">mSTAR</a>
+	:	&#039;*&#039; 
+	;
+
+<a name="mTIMESEQUAL">mTIMESEQUAL</a>
+	:	&quot;*=&quot; 
+	;
+
+<a name="mMOD">mMOD</a>
+	:	&#039;%&#039; 
+	;
+
+<a name="mMODEQUAL">mMODEQUAL</a>
+	:	&quot;%=&quot; 
+	;
+
+<a name="mSHIFTRIGHT">mSHIFTRIGHT</a>
+	:	&quot;&gt;&gt;&quot; 
+	;
+
+<a name="mSHIFTRIGHTEQUAL">mSHIFTRIGHTEQUAL</a>
+	:	&quot;&gt;&gt;=&quot; 
+	;
+
+<a name="mSHIFTLEFT">mSHIFTLEFT</a>
+	:	&quot;&lt;&lt;&quot; 
+	;
+
+<a name="mSHIFTLEFTEQUAL">mSHIFTLEFTEQUAL</a>
+	:	&quot;&lt;&lt;=&quot; 
+	;
+
+<a name="mAND">mAND</a>
+	:	&quot;&amp;&amp;&quot; 
+	;
+
+<a name="mNOT">mNOT</a>
+	:	&#039;!&#039; 
+	;
+
+<a name="mOR">mOR</a>
+	:	&quot;||&quot; 
+	;
+
+<a name="mAMPERSAND">mAMPERSAND</a>
+	:	&#039;&amp;&#039; 
+	;
+
+<a name="mBITWISEANDEQUAL">mBITWISEANDEQUAL</a>
+	:	&quot;&amp;=&quot; 
+	;
+
+<a name="mTILDE">mTILDE</a>
+	:	&#039;~&#039; 
+	;
+
+<a name="mBITWISEOR">mBITWISEOR</a>
+	:	&#039;|&#039; 
+	;
+
+<a name="mBITWISEOREQUAL">mBITWISEOREQUAL</a>
+	:	&quot;|=&quot; 
+	;
+
+<a name="mBITWISEXOR">mBITWISEXOR</a>
+	:	&#039;^&#039; 
+	;
+
+<a name="mBITWISEXOREQUAL">mBITWISEXOREQUAL</a>
+	:	&quot;^=&quot; 
+	;
+
+<a name="mPOINTERTOMBR">mPOINTERTOMBR</a>
+	:	&quot;-&gt;*&quot; 
+	;
+
+<a name="mDOTMBR">mDOTMBR</a>
+	:	&quot;.*&quot; 
+	;
+
+<a name="mSCOPE">mSCOPE</a>
+	:	&quot;::&quot; 
+	;
+
+<a name="mWhitespace">mWhitespace</a>
+	:	(	(	&#039; &#039; 
+			|	&#039;\t&#039; 
+			|	&#039;\f&#039; 
+			) 
+		|	(	&quot;\r\n&quot; 
+			|	&#039;\r&#039; 
+			|	&#039;\n&#039; 
+			) 
+			
+		|	(	&quot;\\\r\n&quot; 
+			|	&quot;\\\r&quot; 
+			|	&quot;\\\n&quot; 
+			) 
+			
+		) 
+		
+	;
+
+<a name="mComment">mComment</a>
+	:	&quot;/*&quot; 
+		(	&#039;*&#039; 
+		|	<a href="CPPLexer.html#mEndOfLine">mEndOfLine</a> 
+		|	(	&#039;*&#039; 
+			|	&#039;\r&#039; 
+			|	&#039;\n&#039; 
+			) 
+		)* 
+		&quot;*/&quot; 
+	;
+
+protected <a name="mEndOfLine">mEndOfLine</a>
+	:	(	&quot;\r\n&quot; 
+		|	&#039;\r&#039; 
+		|	&#039;\n&#039; 
+		) 
+	;
+
+<a name="mCPPComment">mCPPComment</a>
+	:	&quot;//&quot; ( (	&#039;\n&#039; 
+			|	&#039;\r&#039; 
+			) )* <a href="CPPLexer.html#mEndOfLine">mEndOfLine</a> 
+	;
+
+<a name="mPREPROC_DIRECTIVE">mPREPROC_DIRECTIVE</a>
+	:	&#039;#&#039; <a href="CPPLexer.html#mLineDirective">mLineDirective</a> 
+	;
+
+protected <a name="mLineDirective">mLineDirective</a>
+	:	(	&quot;line&quot; 
+		|	
+		) 
+		( <a href="CPPLexer.html#mSpace">mSpace</a> )+ <a href="CPPLexer.html#mDecimal">mDecimal</a> ( <a href="CPPLexer.html#mSpace">mSpace</a> )+ 
+		(	<a href="CPPLexer.html#mStringLiteral">mStringLiteral</a> 
+		|	
+		) 
+		<a href="CPPLexer.html#mEndOfLine">mEndOfLine</a> 
+	;
+
+protected <a name="mSpace">mSpace</a>
+	:	(	&#039; &#039; 
+		|	&#039;\t&#039; 
+		|	&#039;\f&#039; 
+		) 
+	;
+
+protected <a name="mDecimal">mDecimal</a>
+	:	( 			'0'..'9' )+ 
+	;
+
+<a name="mStringLiteral">mStringLiteral</a>
+	:	&#039;&quot;&#039; 
+		(	<a href="CPPLexer.html#mEscape">mEscape</a> 
+		|	(	&quot;\\\r\n&quot; 
+			|	&quot;\\\r&quot; 
+			|	&quot;\\\n&quot; 
+			) 
+			
+		|	(	&#039;&quot;&#039; 
+			|	&#039;\r&#039; 
+			|	&#039;\n&#039; 
+			|	&#039;\\&#039; 
+			) 
+		)* 
+		&#039;&quot;&#039; 
+	;
+
+<a name="mPragma">mPragma</a>
+	:	( &#039;#&#039; &quot;pragma&quot; ( (	&#039;\r&#039; 
+				|	&#039;\n&#039; 
+				) )* <a href="CPPLexer.html#mEndOfLine">mEndOfLine</a> ) 
+	;
+
+<a name="mError">mError</a>
+	:	( &#039;#&#039; &quot;error&quot; ( (	&#039;\r&#039; 
+				|	&#039;\n&#039; 
+				) )* <a href="CPPLexer.html#mEndOfLine">mEndOfLine</a> ) 
+	;
+
+<a name="mCharLiteral">mCharLiteral</a>
+	:	&#039;\&#039;&#039; 
+		(	<a href="CPPLexer.html#mEscape">mEscape</a> 
+		|	( &#039;\&#039;&#039; ) 
+		) 
+		&#039;\&#039;&#039; 
+	;
+
+protected <a name="mEscape">mEscape</a>
+	:	&#039;\\&#039; 
+		(	&#039;a&#039; 
+		|	&#039;b&#039; 
+		|	&#039;f&#039; 
+		|	&#039;n&#039; 
+		|	&#039;r&#039; 
+		|	&#039;t&#039; 
+		|	&#039;v&#039; 
+		|	&#039;&quot;&#039; 
+		|	&#039;\&#039;&#039; 
+		|	&#039;\\&#039; 
+		|	&#039;?&#039; 
+		|	( 				'0'..'3' ) 
+			(	<a href="CPPLexer.html#mDigit">mDigit</a> 
+				(	<a href="CPPLexer.html#mDigit">mDigit</a> 
+				|	
+				) 
+			|	
+			) 
+		|	( 				'4'..'7' ) 
+			(	<a href="CPPLexer.html#mDigit">mDigit</a> 
+			|	
+			) 
+		|	&#039;x&#039; 
+			(	<a href="CPPLexer.html#mDigit">mDigit</a> 
+			|					'a'..'f' 
+			|					'A'..'F' 
+			)+ 
+		) 
+	;
+
+protected <a name="mDigit">mDigit</a>
+	:			'0'..'9' 
+	;
+
+protected <a name="mLongSuffix">mLongSuffix</a>
+	:	&#039;l&#039; 
+	|	&#039;L&#039; 
+	;
+
+protected <a name="mUnsignedSuffix">mUnsignedSuffix</a>
+	:	&#039;u&#039; 
+	|	&#039;U&#039; 
+	;
+
+protected <a name="mFloatSuffix">mFloatSuffix</a>
+	:	&#039;f&#039; 
+	|	&#039;F&#039; 
+	;
+
+protected <a name="mExponent">mExponent</a>
+	:	(	&#039;e&#039; 
+		|	&#039;E&#039; 
+		) 
+		(	&#039;+&#039; 
+		|	&#039;-&#039; 
+		|	
+		) 
+		( <a href="CPPLexer.html#mDigit">mDigit</a> )+ 
+	;
+
+protected <a name="mVocabulary">mVocabulary</a>
+	:			'\3'..'\377' 
+	;
+
+<a name="mNumber">mNumber</a>
+	:	( <a href="CPPLexer.html#mDigit">mDigit</a> )+ 
+		(	&#039;.&#039; ( <a href="CPPLexer.html#mDigit">mDigit</a> )* 
+			(	<a href="CPPLexer.html#mExponent">mExponent</a> 
+			|	
+			) 
+			
+		|	<a href="CPPLexer.html#mExponent">mExponent</a> 
+		) 
+		(	<a href="CPPLexer.html#mFloatSuffix">mFloatSuffix</a> 
+		|	<a href="CPPLexer.html#mLongSuffix">mLongSuffix</a> 
+		|	
+		) 
+	|	&quot;...&quot; 
+	|	&#039;.&#039; 
+		(	( <a href="CPPLexer.html#mDigit">mDigit</a> )+ 
+			(	<a href="CPPLexer.html#mExponent">mExponent</a> 
+			|	
+			) 
+			
+			(	<a href="CPPLexer.html#mFloatSuffix">mFloatSuffix</a> 
+			|	<a href="CPPLexer.html#mLongSuffix">mLongSuffix</a> 
+			|	
+			) 
+		|	
+		) 
+	|	&#039;0&#039; ( 			'0'..'7' )* 
+		(	<a href="CPPLexer.html#mLongSuffix">mLongSuffix</a> 
+		|	<a href="CPPLexer.html#mUnsignedSuffix">mUnsignedSuffix</a> 
+		)* 
+		
+	|			'1'..'9' ( <a href="CPPLexer.html#mDigit">mDigit</a> )* 
+		(	<a href="CPPLexer.html#mLongSuffix">mLongSuffix</a> 
+		|	<a href="CPPLexer.html#mUnsignedSuffix">mUnsignedSuffix</a> 
+		)* 
+		
+	|	&#039;0&#039; 
+		(	&#039;x&#039; 
+		|	&#039;X&#039; 
+		) 
+		(				'a'..'f' 
+		|				'A'..'F' 
+		|	<a href="CPPLexer.html#mDigit">mDigit</a> 
+		)+ 
+		(	<a href="CPPLexer.html#mLongSuffix">mLongSuffix</a> 
+		|	<a href="CPPLexer.html#mUnsignedSuffix">mUnsignedSuffix</a> 
+		)* 
+		
+	;
+
+<a name="mID">mID</a>
+	:	(				'a'..'z' 
+		|				'A'..'Z' 
+		|	&#039;_&#039; 
+		) 
+		(				'a'..'z' 
+		|				'A'..'Z' 
+		|	&#039;_&#039; 
+		|				'0'..'9' 
+		)* 
+	;

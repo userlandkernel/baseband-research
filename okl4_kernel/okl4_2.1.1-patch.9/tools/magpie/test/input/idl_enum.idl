@@ -1,0 +1,2 @@
+enum testenum {item1, item2};
+

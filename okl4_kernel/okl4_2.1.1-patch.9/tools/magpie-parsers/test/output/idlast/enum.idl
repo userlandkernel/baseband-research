@@ -1,0 +1,47 @@
+ MagpieAST  (0, ?:?)
+  type test  (1, test/input/idlast/enum.idl:1)
+   (meta_type) = ['interface']
+   type foo  (2, test/input/idlast/enum.idl:2)
+    (meta_type) = ['union']
+    type color  (3, test/input/idlast/enum.idl:2)
+     (meta_type) = ['enum']
+     (enumeration) = ['red', 'green', 'blue']
+    type red  (3, test/input/idlast/enum.idl:2)
+     (meta_type) = ['enum_member']
+     (value) = [0]
+     target  (4, ?:?)
+      type color (backref)
+    type green  (3, test/input/idlast/enum.idl:2)
+     (meta_type) = ['enum_member']
+     (value) = [1]
+     target  (4, ?:?)
+      type color (backref)
+    type blue  (3, test/input/idlast/enum.idl:2)
+     (meta_type) = ['enum_member']
+     (value) = [2]
+     target  (4, ?:?)
+      type color (backref)
+    discriminator  (3, test/input/idlast/enum.idl:2)
+     type color (backref)
+    switch  (3, test/input/idlast/enum.idl:4)
+     case  (4, test/input/idlast/enum.idl:3)
+      expression scoped_name  (5, ?:?)
+       (value) = ['red']
+       target  (6, ?:?)
+        type red (backref)
+      type_instance x  (5, test/input/idlast/enum.idl:3)
+       type short (backref)
+     case  (4, test/input/idlast/enum.idl:4)
+      expression scoped_name  (5, ?:?)
+       (value) = ['green']
+       target  (6, ?:?)
+        type green (backref)
+      type_instance y  (5, test/input/idlast/enum.idl:4)
+       type long (backref)
+     case  (4, test/input/idlast/enum.idl:5)
+      expression scoped_name  (5, ?:?)
+       (value) = ['blue']
+       target  (6, ?:?)
+        type blue (backref)
+      type_instance z  (5, test/input/idlast/enum.idl:5)
+       type float (backref)

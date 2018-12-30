@@ -1,0 +1,8 @@
+interface test {
+    struct foo {
+      struct bar {
+        short x;
+      }; /* Should be a member name here */
+    };
+  };
+

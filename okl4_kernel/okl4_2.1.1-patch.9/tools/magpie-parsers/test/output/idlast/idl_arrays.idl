@@ -1,0 +1,27 @@
+ MagpieAST  (0, ?:?)
+  type arr1  (1, test/input/idlast/idl_arrays.idl:1)
+   (meta_type) = ['alias']
+   type  (2, test/input/idlast/idl_arrays.idl:1)
+    (meta_type) = ['array']
+    shape  (3, test/input/idlast/idl_arrays.idl:1)
+     expression  (4, ?:?)
+      (value) = [30]
+      type octet (backref)
+   target  (2, <builtin>:?)
+    type int (backref)
+  type arr2  (1, test/input/idlast/idl_arrays.idl:2)
+   (meta_type) = ['alias']
+   type  (2, test/input/idlast/idl_arrays.idl:2)
+    (meta_type) = ['array']
+    shape  (3, test/input/idlast/idl_arrays.idl:2)
+     expression  (4, ?:?)
+      (value) = [30]
+      type octet (backref)
+     expression  (4, ?:?)
+      (value) = [40]
+      type octet (backref)
+     expression  (4, ?:?)
+      (value) = [50]
+      type octet (backref)
+   target  (2, <builtin>:?)
+    type int (backref)

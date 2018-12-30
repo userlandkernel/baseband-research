@@ -1,0 +1,7 @@
+include TODO
+include README
+include LICENSE
+recursive-include tests *.py
+recursive-include tests/data *
+include MANIFEST.in
+include example/spec.xml

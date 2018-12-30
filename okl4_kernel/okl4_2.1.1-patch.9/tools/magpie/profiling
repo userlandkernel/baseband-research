@@ -1,0 +1,19 @@
+python2.4 -m profile -s cumulative ctester.py --profile test/input/mungi_profile.h
+
+83 CPU seconds
+-> 59
+
+method: start run, ctrl-c, restart run
+
+optimising fill
+	6.84
+
+optimising length :659
+	5.6 -> 2.5 (by caching the length)
+
+Things done:
+	* Remove elementAt and length() references, replace
+	with direct calls
+	* Cache length of buffers
+	* Rewrite syncConsume to not use a loop
+

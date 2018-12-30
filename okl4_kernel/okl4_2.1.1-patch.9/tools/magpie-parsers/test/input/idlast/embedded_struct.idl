@@ -1,0 +1,9 @@
+   interface test {
+     struct outer {
+       float w;
+       struct inner {
+         short x;
+       } y;
+       short z;
+     };
+   };

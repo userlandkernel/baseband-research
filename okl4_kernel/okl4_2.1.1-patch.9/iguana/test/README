@@ -1,0 +1,70 @@
+This is a unit tester for Iguana.
+
+To create a test suite, run scons in this way:
+
+scons config=test
+
+Then run build/test/test_all.
+
+To add a test, the best thing to do is to copy the circular buffer test. Have a look at the following files:
+	libs/circular_buffer/test/test_libs_circular_buffer.c
+	libs/circular_buffer/test/test_libs_circular_buffer.h
+	libs/circular_buffer/SConstruct
+
+This should give you enough to go on. The two major caveats are:
+	1. If you are not testing a library, you must add your test to the TEST_SCONSCRIPS list in configs/test.sconf (top of the file). If you are testing a library (IE, your code is somewhere in libs/), then your test should be picked up automatically.
+	2. Whatever your test is named in the SConstruct (first param of TestLibrary) must also be what the .h and .c files are named (without the extensions, of course!). Your suite generator must be named "make_$testname_suite(void)".
+
+The library generator, tools/mklib.py, produces test code that follows these conventions, so if you used that to generate your library you should be fine.
+
+More information
+~~~~~~~~~~~~~~~~
+
+We use Check, which is an open source (LGPL) C unit testing framework available at http://check.sourceforge.net. Check divides the unit testing task into "suites" and suites into "test cases". When the test is run, each suite is tested in sequence. This gives us the flexibility for each library to define its own test suite. You define a test suite in the following way:
+
+Suite *
+make_test_libs_circular_buffer_suite(void)
+{
+	Suite *suite;
+	TCase *tc;
+
+	suite = suite_create("CB tests");
+	tc = tcase_create("Core");
+	tcase_add_test(tc, test_cb_basic);
+	suite_add_tcase(suite, tc);
+	return suite;
+}
+
+This suite generator creates a suite named "CB tests, and adds the "test_cb_basic" test to it. You can add as many tests as you like.
+
+Individual tests are defined like this:
+
+START_TEST(test_cb_basic)
+{
+	... actual testing code
+}
+END_TEST
+
+When scons is run to build the test suite, it automatically generates the main test program from the list of test names defined in individual test SConstructs. This is why you must keep your naming consistent when creating tests. The main function template is in test/src/main.template.c and the generated output is in build/test/main.generated.c. The purpose of the main function is basically to run each suite in turn.
+
+Writing tests
+~~~~
+Try to split suites into test cases logically. Check has two assert-like functions that can be used to indicate success or failure in your tests:
+	fail_unless(expr, char *message) : exit and display "message" if "expr" is false
+	fail_if(expr, char *message) : exit and display "message" if "expr" is true
+fail_unless(x,...) is equivalent to "assert(x)". fail_if(x,...) is equivalent to assert(!x). Sometimes it's more readable to use the fail_if form, rather than negating the check.
+
+Check forks and runs the tester in one process, and the tests in the other. So don't use assert() directly, or you'll mess with its head.
+
+Adding test suites 
+~~~~
+First you must modify your SConstruct to support the test environment. Something like this:
+
+# Stuff for testing
+Import('tests_env')
+tests_env.TestLibrary('test_libs_circular_buffer', 'libs/circular_buffer/', ['src/*.c', 'test/*.c'])
+
+You must then add the path to this SConstruct to configs/test/sconf, unless you're making a library:
+
+TEST_SCONSCRIPTS = [ other tests, your test here ]
+

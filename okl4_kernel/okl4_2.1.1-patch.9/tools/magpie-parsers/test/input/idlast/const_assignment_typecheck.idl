@@ -1,0 +1,5 @@
+/* Error: cannot coerce wchar to char */
+
+interface test {
+	const char ch = L'a';
+};

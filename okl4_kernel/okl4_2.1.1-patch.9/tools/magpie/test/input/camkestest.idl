@@ -1,0 +1,21 @@
+/*
+ * Iguana IDL for dealing with userland
+ * eg. pagefaults, exceptions, syscalls.
+ *
+ */
+import "simple.h"; 
+
+
+typedef int array_t[42];
+
+[uuid(22), newanno, hello(world)]
+interface iguana_pd
+{
+
+	
+	typedef sequence<sequence<array_t ,10>,30> complex[3];
+
+	[func_anno(value)]
+	int create_memsection([anno(tation)] in int**** inputarg, out int result);
+};
+

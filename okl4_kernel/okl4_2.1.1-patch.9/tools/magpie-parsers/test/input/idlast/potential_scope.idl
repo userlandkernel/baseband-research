@@ -1,0 +1,11 @@
+  module M {
+    typedef long  ArgType;
+    interface A {
+      struct S {
+        struct T {
+          ArgType x; /* ArgType introduced */
+        } m;
+      };
+      typedef string ArgType; /* Error: name clash */
+    }; /* Potential scope of ArgType ends here */
+  };

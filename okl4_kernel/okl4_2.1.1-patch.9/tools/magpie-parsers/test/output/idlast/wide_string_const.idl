@@ -1,0 +1,13 @@
+ MagpieAST  (0, ?:?)
+  type test  (1, test/input/idlast/wide_string_const.idl:1)
+   (meta_type) = ['interface']
+   type_instance s  (2, test/input/idlast/wide_string_const.idl:2)
+    (meta_type) = ['const']
+    type  (3, test/input/idlast/wide_string_const.idl:2)
+     customised  (4, ?:?)
+      type wstring (backref)
+    target  (3, test/input/idlast/wide_string_const.idl:2)
+     type None (backref)
+    expression  (3, ?:?)
+     (value) = ['Test']
+     type wstring (backref)

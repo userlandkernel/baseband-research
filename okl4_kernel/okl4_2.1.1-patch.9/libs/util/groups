@@ -1,0 +1,6 @@
+
+/**
+  @defgroup util Utilities
+  @ingroup libraries
+  @brief Assorted "helper" code
+*/

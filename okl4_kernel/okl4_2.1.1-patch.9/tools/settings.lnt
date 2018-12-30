@@ -1,0 +1,32 @@
+/******************************************************************************
+ *  General options
+ *****************************************************************************/
++fdi                                    // Unix convention for include path
++fll                                    // Enable use of "long long"
+
+/******************************************************************************
+ *  Warning level settings
+ *****************************************************************************/
+-w1                                     // Check for errors only at the moment
+
+/******************************************************************************
+ *  Output settings
+ *****************************************************************************/
+-b                                      // Suppress the banner
+-h1                                     // One-line error messages
+-format=lint:%(%f:%l:%c\s%)%t\s%n:\s%m  // Make output more compact
+-width(0,0)                             // Do not break long lines
+
+
+/******************************************************************************
+ *  Warning customisation that we want across the whole source tree.
+ *****************************************************************************/
+// We allow bitfields on non integer size. This idiom is used extensively through
+// the code base at the moment. In the future this might change, however that will
+// be quite an extensive change.
+-e46                                 
+
+-d__asm__=_to_semi                      // Eat up __asm__
++rw(_to_semi)                           // Activate magic for __asm__
++rw(__asm__)
++rw(__volatile__)                    // Allow __volatile__

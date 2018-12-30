@@ -1,0 +1,19 @@
+ MagpieAST  (0, ?:?)
+  type test  (1, test/input/idlast/unary_minus.idl:1)
+   (meta_type) = ['interface']
+   type_instance result  (2, test/input/idlast/unary_minus.idl:2)
+    (meta_type) = ['const']
+    target  (3, <builtin>:?)
+     type short (backref)
+    expression add  (3, ?:?)
+     (value) = [0]
+     expression unary_minus  (4, ?:?)
+      (value) = [-5]
+      expression  (5, ?:?)
+       (value) = [5]
+       type octet (backref)
+      type short (backref)
+     expression  (4, ?:?)
+      (value) = [5]
+      type octet (backref)
+     type short (backref)

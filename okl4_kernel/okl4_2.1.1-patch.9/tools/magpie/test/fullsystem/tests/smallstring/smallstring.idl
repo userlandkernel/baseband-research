@@ -1,0 +1,8 @@
+[uuid(16)]
+interface naming
+{
+	void set(in smallstring name, in int val);
+	int get(in smallstring name);
+	/* FIXME: Returning non-POD types not supported yet */
+	/* smallstring get_byval(in int val); */
+};

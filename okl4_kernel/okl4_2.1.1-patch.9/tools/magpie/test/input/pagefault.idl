@@ -1,0 +1,8 @@
+[uuid(21)]
+interface faulter
+{
+	/* a pagefault (from iguana userland) */
+	[kernelmsg(idl4::pagefault)]
+	void pagefault(in int addr, in int ip, in int priv, out fpage fp);
+};
+

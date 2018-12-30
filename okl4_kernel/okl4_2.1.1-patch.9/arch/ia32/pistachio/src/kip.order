@@ -1,0 +1,39 @@
+# Mach-O KIP order file
+# This replaces the linker script for the KIP ordering
+# on the darwin compilers.
+
+# The kernel_interface_t
+kernelinterface.o:kip
+kernelinterface.o:processor_descriptors
+kernelinterface.o:kdesc
+kernelinterface.o:kver_string_pad
+
+# kernelinterface.o:kernel_version_string
+
+# XXX: this one should be aligned to 16-bytes
+kernelinterface.o:memory_descriptors
+
+# Now dump in the entry points (necessary?)
+user.o:user_ipc
+user.o:entry_ipc
+user.o:user_lipc
+user.o:entry_lipc
+user.o:user_exchange_registers
+user.o:entry_exchange_registers
+user.o:user_thread_control
+user.o:entry_thread_control
+user.o:user_system_clock
+user.o:entry_system_clock
+user.o:user_thread_switch
+user.o:entry_thread_switch
+user.o:user_schedule
+user.o:entry_schedule
+user.o:user_unmap
+user.o:entry_unmap
+user.o:user_space_control
+user.o:entry_space_control
+user.o:user_processor_control
+user.o:entry_processor_control
+user.o:user_memory_control
+user.o:entry_memory_control
+

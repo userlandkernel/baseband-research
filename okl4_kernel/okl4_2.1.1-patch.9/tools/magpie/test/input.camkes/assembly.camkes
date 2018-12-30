@@ -1,0 +1,14 @@
+import "simple.camkes";
+import "component_def.camkes";
+import "std_connector.camkes";
+
+assembly {
+	composition {
+		component simple_component si;
+		component component_def cdi;
+		
+		connection IguanaRPC conn1(from si.simp2, to cdi.simp2);
+		connection IguanaRPC conn2(from cdi.simp1, to si.simp1);
+	};
+	
+}

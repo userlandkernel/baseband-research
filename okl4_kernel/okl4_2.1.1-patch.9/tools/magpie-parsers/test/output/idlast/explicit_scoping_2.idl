@@ -1,0 +1,16 @@
+ MagpieAST  (0, ?:?)
+  module A  (1, test/input/idlast/explicit_scoping_2.idl:1)
+   type foo  (2, test/input/idlast/explicit_scoping_2.idl:2)
+    (meta_type) = ['interface']
+    function op  (3, test/input/idlast/explicit_scoping_2.idl:2)
+     return_type  (4, test/input/idlast/explicit_scoping_2.idl:2)
+      target  (5, <builtin>:?)
+       type void (backref)
+  type A_foo_seq  (1, test/input/idlast/explicit_scoping_2.idl:4)
+   (meta_type) = ['alias']
+   type  (2, test/input/idlast/explicit_scoping_2.idl:4)
+    (meta_type) = ['sequence']
+    target  (3, test/input/idlast/explicit_scoping_2.idl:2)
+     type foo (backref)
+   target  (2, test/input/idlast/explicit_scoping_2.idl:4)
+    type None (backref)

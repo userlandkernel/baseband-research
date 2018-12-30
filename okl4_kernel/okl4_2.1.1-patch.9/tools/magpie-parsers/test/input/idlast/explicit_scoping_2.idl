@@ -1,0 +1,4 @@
+module A { 
+	interface foo { void op(); };
+};
+typedef sequence<A::foo> A_foo_seq;

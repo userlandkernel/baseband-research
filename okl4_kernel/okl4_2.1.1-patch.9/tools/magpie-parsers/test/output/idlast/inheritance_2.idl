@@ -1,0 +1,3 @@
+* Semantic error *
+test/input/idlast/inheritance_2.idl:5:Name "op" defined twice in same scope
+test/input/idlast/inheritance_2.idl:2:Name "op" was previously defined here.

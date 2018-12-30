@@ -1,0 +1,7 @@
+[uuid(22)]
+interface simple
+{
+	int first_function(in int inputarg, out int result);
+	int second_function(in int inputarg, out int result);
+	int third_function(in int inputarg, out int result);
+};

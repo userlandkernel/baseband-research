@@ -1,0 +1,11 @@
+/*
+ * Iguana IDL for dealing with userland
+ * eg. pagefaults, exceptions, syscalls.
+ *
+ */
+
+[uuid(1)]
+interface iguana_pd
+{
+	char func1(in unsigned char inarg, out signed char outarg);
+};

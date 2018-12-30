@@ -1,0 +1,6 @@
+module c {
+	declare: type_name withname: name :- #'piracy# ;
+}
+
+root :- c.declare: 'int named: 'hello_world ;
+

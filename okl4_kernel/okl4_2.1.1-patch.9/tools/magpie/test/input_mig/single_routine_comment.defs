@@ -1,0 +1,12 @@
+/* This is a c-style comment */
+
+subsystem unholy 1000;
+
+type mach_port_t = MACH_MSG_TYPE_COPY_SEND;
+
+/* Another C-style comment */
+routine unholyalliance(
+	    server  : mach_port_t;
+	in  inarg	: int32_t; /* And another one */
+	out outarg  : int32_t);
+

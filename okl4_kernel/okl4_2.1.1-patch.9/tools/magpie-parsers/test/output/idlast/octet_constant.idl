@@ -1,0 +1,10 @@
+ MagpieAST  (0, ?:?)
+  type test  (1, test/input/idlast/octet_constant.idl:1)
+   (meta_type) = ['interface']
+   type_instance byte  (2, test/input/idlast/octet_constant.idl:2)
+    (meta_type) = ['const']
+    target  (3, <builtin>:?)
+     type octet (backref)
+    expression  (3, ?:?)
+     (value) = [251]
+     type octet (backref)

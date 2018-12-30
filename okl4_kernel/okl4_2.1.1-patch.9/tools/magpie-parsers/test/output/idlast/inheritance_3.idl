@@ -1,0 +1,2 @@
+* Semantic error *
+test/input/idlast/inheritance_3.idl:2:Can't directly inherit from the same parent more than once

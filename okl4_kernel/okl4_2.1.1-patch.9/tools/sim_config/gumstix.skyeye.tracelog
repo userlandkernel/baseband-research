@@ -1,0 +1,7 @@
+cpu: pxa25x
+mach: pxa_lubbock
+
+mem_bank: map=M, type=RW, addr=0xA0000000, size=0x4000000
+mem_bank: map=I, type=RW, addr=0x40000000, size=0x4C000000
+
+log: logon=1, logfile=/tmp/sk1.log, start=0, end=20000000000

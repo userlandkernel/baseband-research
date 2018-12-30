@@ -1,0 +1,10 @@
+Some ideas of what to do next:
+
+     Use 2.7.0's non-greedy loops.
+     Optimize the rules--I'm sure I missed some simple optimizations.
+     Examples which actually do a transformation.
+     Verify and improve #line handling
+     Better source code emitting scheme--email Monty (jamz@cdsnet.net) about his ideas.  Should be able to preserve comments, etc.
+     Maybe re-organize the tree structure to be easier to manipulate.
+     Add some helper methods for tree transformations for adding or removing code, etc.
+     

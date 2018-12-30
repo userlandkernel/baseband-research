@@ -1,0 +1,8 @@
+[uuid(22)]
+interface test
+{
+
+	int func2(in string stringin);
+	int func3(in wstring stringin);
+};
+

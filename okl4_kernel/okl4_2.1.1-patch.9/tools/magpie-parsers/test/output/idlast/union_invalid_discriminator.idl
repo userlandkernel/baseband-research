@@ -1,0 +1,2 @@
+* Semantic error *
+test/input/idlast/union_invalid_discriminator.idl:3:Invalid type for discriminated union

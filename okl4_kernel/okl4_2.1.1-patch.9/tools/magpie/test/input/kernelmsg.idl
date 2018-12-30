@@ -1,0 +1,9 @@
+[uuid(37)]
+interface with_kernelmsg
+{
+	/* a pagefault (from iguana userland) */
+	[kernelmsg(idl4::pagefault)]
+	void pagefault(in int addr, in int ip, in int priv, out fpage fp);
+	void fake_pagefault(in int addr, in int ip, in int priv, out fpage fp);
+};
+

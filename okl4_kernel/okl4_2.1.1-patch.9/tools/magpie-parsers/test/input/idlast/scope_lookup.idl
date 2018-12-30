@@ -1,0 +1,18 @@
+   module M {
+     typedef string ArgType;
+     typedef ArgType AType;
+     interface B {
+       ArgType op(in AType i);
+     };
+   };
+
+   module N {
+     typedef short ArgType;
+     interface Y : M::B {
+       /* 'ArgType' should resolve to 'short' */
+       union test switch (ArgType) {
+         case 1:
+           float foo;
+       };
+     };
+   };

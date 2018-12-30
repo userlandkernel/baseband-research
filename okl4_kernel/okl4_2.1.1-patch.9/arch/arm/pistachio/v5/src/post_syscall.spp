@@ -1,0 +1,180 @@
+/*
+ * Copyright (c) 2003-2006, National ICT Australia (NICTA)
+ */
+/*
+ * Copyright (c) 2007-2008 Open Kernel Labs, Inc. (Copyright Holder).
+ * All rights reserved.
+ *
+ * 1. Redistribution and use of OKL4 (Software) in source and binary
+ * forms, with or without modification, are permitted provided that the
+ * following conditions are met:
+ *
+ *     (a) Redistributions of source code must retain this clause 1
+ *         (including paragraphs (a), (b) and (c)), clause 2 and clause 3
+ *         (Licence Terms) and the above copyright notice.
+ *
+ *     (b) Redistributions in binary form must reproduce the above
+ *         copyright notice and the Licence Terms in the documentation and/or
+ *         other materials provided with the distribution.
+ *
+ *     (c) Redistributions in any form must be accompanied by information on
+ *         how to obtain complete source code for:
+ *        (i) the Software; and
+ *        (ii) all accompanying software that uses (or is intended to
+ *        use) the Software whether directly or indirectly.  Such source
+ *        code must:
+ *        (iii) either be included in the distribution or be available
+ *        for no more than the cost of distribution plus a nominal fee;
+ *        and
+ *        (iv) be licensed by each relevant holder of copyright under
+ *        either the Licence Terms (with an appropriate copyright notice)
+ *        or the terms of a licence which is approved by the Open Source
+ *        Initative.  For an executable file, "complete source code"
+ *        means the source code for all modules it contains and includes
+ *        associated build and other files reasonably required to produce
+ *        the executable.
+ *
+ * 2. THIS SOFTWARE IS PROVIDED ``AS IS'' AND, TO THE EXTENT PERMITTED BY
+ * LAW, ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE, OR NON-INFRINGEMENT, ARE DISCLAIMED.  WHERE ANY WARRANTY IS
+ * IMPLIED AND IS PREVENTED BY LAW FROM BEING DISCLAIMED THEN TO THE
+ * EXTENT PERMISSIBLE BY LAW: (A) THE WARRANTY IS READ DOWN IN FAVOUR OF
+ * THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+ * PARTICIPANT) AND (B) ANY LIMITATIONS PERMITTED BY LAW (INCLUDING AS TO
+ * THE EXTENT OF THE WARRANTY AND THE REMEDIES AVAILABLE IN THE EVENT OF
+ * BREACH) ARE DEEMED PART OF THIS LICENCE IN A FORM MOST FAVOURABLE TO
+ * THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+ * PARTICIPANT). IN THE LICENCE TERMS, "PARTICIPANT" INCLUDES EVERY
+ * PERSON WHO HAS CONTRIBUTED TO THE SOFTWARE OR WHO HAS BEEN INVOLVED IN
+ * THE DISTRIBUTION OR DISSEMINATION OF THE SOFTWARE.
+ *
+ * 3. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR ANY OTHER PARTICIPANT BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+/*
+ * ARM Exception Vectors and IPC /Exception Fastpaths
+ */
+
+#include <l4.h>
+#include <tcb_layout.h>
+#include <ktcb_layout.h>
+#include <context_layout.h>
+#include <asmsyms.h>
+#include <arch/globals.h>
+#include <arch/thread.h>
+#include <arch/syscalls.h>
+#include <arch/asm.h>
+#include <l4/arch/vregs.h>
+#include <arch/fass.h>
+
+#if defined(__RVCT_GNU__)
+        PRESERVE8
+        AREA    |.post_syscall.data|, ALIGN=12, CODE, READWRITE
+#endif
+        IMPORT  start_post_syscall_callback
+        IMPORT  __stack
+        IMPORT  vector_kernel_access
+        IMPORT  vector_stack_top
+/*
+ * Call an arbitrary C function prior to returning back to userspace
+ * from a syscall.
+ *
+ * At this point, we expect:
+ *   - CURRENT_TCB is correct
+ *   - r0 - r14 have precious userspace values that need to be saved
+ *     (for instance, the return paramters of a syscall that just
+ *     finished).
+ *   - The user SPSR needs to be saved.
+ *   - User PC is stored in kernel LR
+ */
+        ALIGN   32
+        BEGIN_PROC(arm_perform_callback_saveregs)
+        /* Load current TCB's context frame. */
+        mov     sp,     #ARM_GLOBAL_BASE
+        ldr     sp,     [sp, #OFS_GLOBAL_CURRENT_TCB]
+        add     sp,     sp, #OFS_TCB_ARCH_CONTEXT
+
+        /* Save all user registers */
+        stmib   sp,     {r0-r14}^   /* Save user registers r0 - r7 */
+        nop
+
+        /* Save user PC / CPSR */
+        str     lr,     [sp, #PT_PC]
+        mrs     lr,    spsr
+        nop
+        str     lr,    [sp, #PT_CPSR] /* Save tmp1(r11) to CPSR */
+
+        /* Setup FASS for kernel. Macro clobbers register r12 (ip) */
+        ldr     ip,     =vector_kernel_access
+        ldr     ip,     [ip]
+        mcr     p15,    0,  ip, c3, c0
+
+        /* Call 'start_post_syscall_callback' */
+        ldr     r1,     =start_post_syscall_callback
+        ldr     sp,     =vector_stack_top
+        ldr     sp,     [sp]
+        adr     lr,     arm_finish_callback_restoreregs
+        jump    r1
+        END_PROC(arm_perform_callback_saveregs)
+
+        BEGIN_PROC(arm_finish_callback_restoreregs)
+        /* Return back to userspace after doing some post-syscall work. */
+        SET_USER_DACR
+        RESTORE_ALL
+        movs    pc,     lr
+        END_PROC(arm_finish_callback_restoreregs)
+
+/*
+ * Call an arbitrary C function prior to returning back to userspace
+ * from an exception.
+ *
+ * At this point, we expect:
+ *   - CURRENT_TCB is correct
+ *   - All user registers have been saved in the TCB.
+ */
+        ALIGN   32
+        BEGIN_PROC(arm_perform_callback_from_interrupt)
+        /* Setup FASS for kernel. Macro clobbers register r12 (ip) */
+        ldr     ip,     =vector_kernel_access
+        ldr     ip,     [ip]
+        mcr     p15,    0,  ip, c3, c0
+
+        /* Call 'start_post_syscall_callback' */
+        ldr     r1,     =start_post_syscall_callback
+        ldr     sp,     =vector_stack_top
+        ldr     sp,     [sp]
+        adr     lr,     arm_finish_callback_from_interrupt
+        jump    r1
+
+        END_PROC(arm_perform_callback_from_interrupt)
+
+        BEGIN_PROC(arm_finish_callback_from_interrupt)
+        /* Return back to userspace after doing some post-exception work. */
+        SET_USER_DACR
+        RESTORE_ALL
+        subs    pc,     lr,     #1
+        END_PROC(arm_finish_callback_from_interrupt)
+#if 0
+#if defined(__GNUC__)
+        ALIGN   32
+kernel_access:
+        .word   0x55555555
+stack_top:
+        .word   __stack + STACK_TOP
+#elif defined(__RVCT_GNU__)
+        ALIGN   32
+kernel_access
+        DCDU    0x55555555
+stack_top
+        DCDU    __stack + STACK_TOP
+#endif
+#endif
+        LTORG
+        END

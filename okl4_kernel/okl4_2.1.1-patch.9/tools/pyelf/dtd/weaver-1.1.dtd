@@ -1,0 +1,179 @@
+<!--
+  @LICENCE("Open Kernel Labs, Inc.", "2007")@
+
+  DTD of the elfweaver spec file.
+
+  Author: Malcolm Purvis <malcolmp@ok-labs.com>
+-->
+
+<!ELEMENT image (machine, (virtual_pool|physical_pool)*, kernel, rootprogram, (pd|program)*)>
+<!ELEMENT machine ((page_size+|word_size|kernel_heap_attrs|cache_policy+|virtual_memory+|physical_memory+)*)>
+<!ELEMENT page_size EMPTY >
+<!ELEMENT word_size EMPTY >
+<!ELEMENT cache_policy EMPTY >
+<!ELEMENT kernel_heap_attrs EMPTY >
+<!ELEMENT virtual_memory (region+) >
+<!ELEMENT physical_memory (region+) >
+<!ELEMENT region EMPTY >
+<!ELEMENT kernel ((segment*|patch*|heap?|config?)*) >
+<!ELEMENT segment (cap)* >
+<!ELEMENT patch EMPTY >
+<!ELEMENT config (option+) >
+<!ELEMENT option EMPTY >
+<!ELEMENT rootprogram ((segment*|patch*|extension*|environment?)*) >
+<!ELEMENT extension ((segment*|patch*)*) >
+<!ELEMENT virtual_pool (memory+) >
+<!ELEMENT physical_pool (memory+) >
+<!ELEMENT memory EMPTY >
+<!ELEMENT program (stack?|heap?|commandline?|memsection*|environment?|segment*|patch*|thread*|zone*)+ >
+<!ELEMENT pd (memsection*|environment?|segment*|patch*|thread*|zone*)+ >
+<!ELEMENT zone ((memsection|segment)+) >
+<!ELEMENT stack (cap)* >
+<!ELEMENT heap (cap)* >
+<!ELEMENT memsection (cap)* >
+<!ELEMENT cap (right)+ >
+<!ELEMENT right EMPTY >
+<!ELEMENT thread (stack?|commandline?)* >
+<!ELEMENT commandline (arg)* >
+<!ELEMENT arg EMPTY >
+<!ELEMENT environment (entry)* >
+<!ELEMENT entry EMPTY >
+
+<!ATTLIST machine file CDATA #IMPLIED >
+
+<!ATTLIST word_size size CDATA #REQUIRED >
+<!ATTLIST page_size size CDATA #REQUIRED >
+<!ATTLIST kernel_heap_attrs distance CDATA #IMPLIED >
+<!ATTLIST kernel_heap_attrs align CDATA #IMPLIED >
+
+<!ATTLIST cache_policy name CDATA #REQUIRED >
+<!ATTLIST cache_policy value CDATA #REQUIRED >
+
+<!ATTLIST virtual_memory name CDATA #REQUIRED >
+
+<!ATTLIST physical_memory name CDATA #REQUIRED >
+
+<!ATTLIST region base CDATA #REQUIRED >
+<!ATTLIST region size CDATA #REQUIRED >
+<!ATTLIST region type CDATA #IMPLIED >
+
+<!ATTLIST kernel file CDATA #REQUIRED >
+<!ATTLIST kernel xip (true|false) #IMPLIED >
+<!ATTLIST kernel physpool CDATA #IMPLIED >
+
+<!ATTLIST segment name      CDATA #REQUIRED >
+<!ATTLIST segment phys_addr CDATA #IMPLIED >
+<!ATTLIST segment physpool  CDATA #IMPLIED >
+<!ATTLIST segment align     CDATA #IMPLIED >
+<!ATTLIST segment attach    (r|w|x|rw|rx|wx|rwx) #IMPLIED >
+<!ATTLIST segment pager     CDATA #IMPLIED >
+<!ATTLIST segment direct    (true|false) #IMPLIED >
+<!ATTLIST segment protected (true|false) #IMPLIED >
+<!ATTLIST segment cache_policy CDATA #IMPLIED >
+
+<!ATTLIST patch address CDATA #REQUIRED >
+<!ATTLIST patch value CDATA #REQUIRED >
+<!ATTLIST patch bytes CDATA #IMPLIED >
+
+<!ATTLIST stack size      CDATA #IMPLIED >
+<!ATTLIST stack virt_addr CDATA #IMPLIED >
+<!ATTLIST stack phys_addr CDATA #IMPLIED >
+<!ATTLIST stack physpool  CDATA #IMPLIED >
+<!ATTLIST stack virtpool  CDATA #IMPLIED >
+<!ATTLIST stack align     CDATA #IMPLIED >
+<!ATTLIST stack attach    (r|w|x|rw|rx|wx|rwx) #IMPLIED >
+<!ATTLIST stack pager     CDATA #IMPLIED >
+<!ATTLIST stack direct    (true|false) #IMPLIED >
+<!ATTLIST stack zero      (true|false) #IMPLIED >
+<!ATTLIST stack cache_policy CDATA #IMPLIED >
+
+<!ATTLIST heap size      CDATA #IMPLIED >
+<!ATTLIST heap virt_addr CDATA #IMPLIED >
+<!ATTLIST heap phys_addr CDATA #IMPLIED >
+<!ATTLIST heap physpool  CDATA #IMPLIED >
+<!ATTLIST heap virtpool  CDATA #IMPLIED >
+<!ATTLIST heap align     CDATA #IMPLIED >
+<!ATTLIST heap attach    (r|w|x|rw|rx|wx|rwx) #IMPLIED >
+<!ATTLIST heap pager     CDATA #IMPLIED >
+<!ATTLIST heap direct    (true|false) #IMPLIED >
+<!ATTLIST heap zero      (true|false) #IMPLIED >
+<!ATTLIST heap cache_policy CDATA #IMPLIED >
+<!ATTLIST heap user_map  (true|false) #IMPLIED >
+
+<!ATTLIST option key   CDATA #REQUIRED >
+<!ATTLIST option value CDATA #REQUIRED >
+
+<!ATTLIST rootprogram file     CDATA #REQUIRED >
+<!ATTLIST rootprogram physpool CDATA #REQUIRED >
+<!ATTLIST rootprogram virtpool CDATA #REQUIRED >
+<!ATTLIST rootprogram pager    CDATA #IMPLIED >
+<!ATTLIST rootprogram direct   (true|false) #IMPLIED >
+
+<!ATTLIST extension name     CDATA #REQUIRED >
+<!ATTLIST extension file     CDATA #IMPLIED >
+<!ATTLIST extension start    CDATA #IMPLIED >
+<!ATTLIST extension physpool CDATA #IMPLIED >
+<!ATTLIST extension pager    CDATA #IMPLIED >
+<!ATTLIST extension direct   (true|false) #IMPLIED >
+
+<!ATTLIST virtual_pool name CDATA #REQUIRED >
+
+<!ATTLIST physical_pool name CDATA #REQUIRED >
+<!ATTLIST physical_pool direct (true|false) #IMPLIED >
+
+<!ATTLIST memory src  CDATA #IMPLIED >
+<!ATTLIST memory base CDATA #IMPLIED >
+<!ATTLIST memory size CDATA #IMPLIED >
+
+<!ATTLIST zone name CDATA #REQUIRED >
+<!ATTLIST zone physpool CDATA #IMPLIED >
+<!ATTLIST zone virtpool CDATA #IMPLIED >
+
+<!ATTLIST program name     CDATA #REQUIRED >
+<!ATTLIST program file     CDATA #REQUIRED >
+<!ATTLIST program priority CDATA #IMPLIED >
+<!ATTLIST program physpool CDATA #IMPLIED >
+<!ATTLIST program virtpool CDATA #IMPLIED >
+<!ATTLIST program pager    CDATA #IMPLIED >
+<!ATTLIST program direct   (true|false) #IMPLIED >
+<!ATTLIST program server   CDATA #IMPLIED >
+<!ATTLIST program platfrom_control (true|false) #IMPLIED >
+
+<!ATTLIST pd name     CDATA #REQUIRED >
+<!ATTLIST pd file     CDATA #IMPLIED >
+<!ATTLIST pd physpool CDATA #IMPLIED >
+<!ATTLIST pd virtpool CDATA #IMPLIED >
+<!ATTLIST pd pager    CDATA #IMPLIED >
+<!ATTLIST pd direct   (true|false) #IMPLIED >
+<!ATTLIST pd platfrom_control (true|false) #IMPLIED >
+
+<!ATTLIST memsection name      CDATA #REQUIRED >
+<!ATTLIST memsection file      CDATA #IMPLIED >
+<!ATTLIST memsection size      CDATA #IMPLIED >
+<!ATTLIST memsection direct    (true|false) #IMPLIED >
+<!ATTLIST memsection virt_addr CDATA #IMPLIED >
+<!ATTLIST memsection phys_addr CDATA #IMPLIED >
+<!ATTLIST memsection physpool  CDATA #IMPLIED >
+<!ATTLIST memsection virtpool  CDATA #IMPLIED >
+<!ATTLIST memsection align     CDATA #IMPLIED >
+<!ATTLIST memsection attach    (r|w|x|rw|rx|wx|rwx) #IMPLIED >
+<!ATTLIST memsection pager     CDATA #IMPLIED >
+<!ATTLIST memsection zero      (true|false) #IMPLIED >
+<!ATTLIST memsection cache_policy CDATA #IMPLIED >
+
+<!ATTLIST cap name CDATA #REQUIRED >
+
+<!ATTLIST right value CDATA #REQUIRED >
+
+<!ATTLIST thread name     CDATA #REQUIRED >
+<!ATTLIST thread start    CDATA #REQUIRED >
+<!ATTLIST thread priority CDATA #IMPLIED >
+<!ATTLIST thread physpool CDATA #IMPLIED >
+<!ATTLIST thread virtpool CDATA #IMPLIED >
+
+<!ATTLIST arg value CDATA #REQUIRED >
+
+<!ATTLIST entry key    CDATA #REQUIRED >
+<!ATTLIST entry value  CDATA #IMPLIED >
+<!ATTLIST entry cap    CDATA #IMPLIED >
+<!ATTLIST entry attach CDATA #IMPLIED >

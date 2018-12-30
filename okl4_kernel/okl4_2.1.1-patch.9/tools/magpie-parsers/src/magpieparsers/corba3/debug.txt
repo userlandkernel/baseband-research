@@ -1,0 +1,1094 @@
+making root with:   struct
+name =  struct_type root =  struct  currentAST.root =  None  currentAST.child =  None
+
+in  name =  identifier child =  bar  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  struct_type child =  bar  currentAST.root =   struct  currentAST.child =  None
+>child.node =  identifier (bar) = []
+setting the first child of  struct_type (  struct  ) =  identifier    bar   ??   bar   currentChildren are:  []
+making root with:   long
+name =  floating_pt_type root =  long  currentAST.root =  None  currentAST.child =  None
+
+in  name =  floating_pt_type child =  b1  currentAST.root =   long  currentAST.child =  None
+>child.node =  None (None) = []
+setting the first child of  floating_pt_type (  long  ) =  None    None   ??   b1   currentChildren are:  []
+
+in  name =  signed_long_int child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  signed_int child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  signed_long_int (long) = []
+
+in  name =  integer_type child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  signed_int (long) = []
+
+in  name =  base_type_spec child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  integer_type (long) = []
+
+in  name =  simple_type_spec child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  base_type_spec (long) = []
+
+in  name =  type_spec child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (long) = []
+
+in  name =  member child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (long) = []
+
+in  name =  identifier child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (b1) = []
+
+in  name =  declarator child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (b1) = []
+
+in  name =  declarators child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (b1) = []
+
+in  name =  member child =  b1  currentAST.root =   long  currentAST.child =   long
+>child.node =  declarators (b1) = []
+root =  member (long) = []
+child.node =  declarators (b1) = []
+setting the next child of  member (  long  ) =  declarators    b1   ??   b1   currentChildren are:  [declarators (b1) = []]
+
+in  name =  member_list child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  member (long) = [declarators (b1) = []]
+making root with:   int
+name =  scoped_name root =  int  currentAST.root =  None  currentAST.child =  None
+
+in  name =  simple_type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  scoped_name (int) = []
+
+in  name =  type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (int) = []
+
+in  name =  member child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (int) = []
+
+in  name =  identifier child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (b2) = []
+
+in  name =  declarator child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (b2) = []
+
+in  name =  declarators child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (b2) = []
+
+in  name =  member child =  b2  currentAST.root =   int  currentAST.child =   int
+>child.node =  declarators (b2) = []
+root =  member (int) = []
+child.node =  declarators (b2) = []
+setting the next child of  member (  int  ) =  declarators    b2   ??   b2   currentChildren are:  [declarators (b2) = []]
+
+in  name =  member_list child =  int  currentAST.root =   long b1  currentAST.child =   b1
+>child.node =  member (int) = [declarators (b2) = []]
+root =  member_list (long) = [declarators (b1) = []]
+child.node =  member (int) = [declarators (b2) = []]
+setting the next child of  declarators (  b1  ) =  member    int   ??   int b2   currentChildren are:  []
+making root with:   string
+name =  string_type root =  string  currentAST.root =  None  currentAST.child =  None
+
+in  name =  template_type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  string_type (string) = []
+
+in  name =  simple_type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  template_type_spec (string) = []
+
+in  name =  type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (string) = []
+
+in  name =  member child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (string) = []
+
+in  name =  identifier child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (b3) = []
+
+in  name =  declarator child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (b3) = []
+
+in  name =  declarators child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (b3) = []
+
+in  name =  member child =  b3  currentAST.root =   string  currentAST.child =   string
+>child.node =  declarators (b3) = []
+root =  member (string) = []
+child.node =  declarators (b3) = []
+setting the next child of  member (  string  ) =  declarators    b3   ??   b3   currentChildren are:  [declarators (b3) = []]
+
+in  name =  member_list child =  string  currentAST.root =   long b1 int b2  currentAST.child =   b2
+>child.node =  member (string) = [declarators (b3) = []]
+root =  member_list (long) = [declarators (b1) = [], member (int) = [declarators (b2) = []]]
+child.node =  member (string) = [declarators (b3) = []]
+setting the next child of  declarators (  b2  ) =  member    string   ??   string b3   currentChildren are:  []
+
+in  name =  struct_type child =  long  currentAST.root =   ( struct bar )  currentAST.child =   bar
+>child.node =  member_list (long) = [declarators (b1) = [], member (int) = [declarators (b2) = []], member (string) = [declarators (b3) = []]]
+root =  struct_type (struct) = [identifier (bar) = []]
+child.node =  member_list (long) = [declarators (b1) = [], member (int) = [declarators (b2) = []], member (string) = [declarators (b3) = []]]
+setting the next child of  identifier (  bar  ) =  member_list    long   ??   long b1 int b2 string b3   currentChildren are:  []
+making root with:   struct
+name =  struct_type root =  struct  currentAST.root =  None  currentAST.child =  None
+
+in  name =  identifier child =  bar  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  struct_type child =  bar  currentAST.root =   struct  currentAST.child =  None
+>child.node =  identifier (bar) = []
+setting the first child of  struct_type (  struct  ) =  identifier    bar   ??   bar   currentChildren are:  []
+making root with:   long
+name =  floating_pt_type root =  long  currentAST.root =  None  currentAST.child =  None
+
+in  name =  floating_pt_type child =  b1  currentAST.root =   long  currentAST.child =  None
+>child.node =  None (None) = []
+setting the first child of  floating_pt_type (  long  ) =  None    None   ??   b1   currentChildren are:  []
+
+in  name =  signed_long_int child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  signed_int child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  signed_long_int (long) = []
+
+in  name =  integer_type child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  signed_int (long) = []
+
+in  name =  base_type_spec child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  integer_type (long) = []
+
+in  name =  simple_type_spec child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  base_type_spec (long) = []
+
+in  name =  type_spec child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (long) = []
+
+in  name =  member child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (long) = []
+
+in  name =  identifier child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (b1) = []
+
+in  name =  declarator child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (b1) = []
+
+in  name =  declarators child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (b1) = []
+
+in  name =  member child =  b1  currentAST.root =   long  currentAST.child =   long
+>child.node =  declarators (b1) = []
+root =  member (long) = []
+child.node =  declarators (b1) = []
+setting the next child of  member (  long  ) =  declarators    b1   ??   b1   currentChildren are:  [declarators (b1) = []]
+
+in  name =  member_list child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  member (long) = [declarators (b1) = []]
+making root with:   int
+name =  scoped_name root =  int  currentAST.root =  None  currentAST.child =  None
+
+in  name =  simple_type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  scoped_name (int) = []
+
+in  name =  type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (int) = []
+
+in  name =  member child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (int) = []
+
+in  name =  identifier child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (b2) = []
+
+in  name =  declarator child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (b2) = []
+
+in  name =  declarators child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (b2) = []
+
+in  name =  member child =  b2  currentAST.root =   int  currentAST.child =   int
+>child.node =  declarators (b2) = []
+root =  member (int) = []
+child.node =  declarators (b2) = []
+setting the next child of  member (  int  ) =  declarators    b2   ??   b2   currentChildren are:  [declarators (b2) = []]
+
+in  name =  member_list child =  int  currentAST.root =   long b1  currentAST.child =   b1
+>child.node =  member (int) = [declarators (b2) = []]
+root =  member_list (long) = [declarators (b1) = []]
+child.node =  member (int) = [declarators (b2) = []]
+setting the next child of  declarators (  b1  ) =  member    int   ??   int b2   currentChildren are:  []
+making root with:   string
+name =  string_type root =  string  currentAST.root =  None  currentAST.child =  None
+
+in  name =  template_type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  string_type (string) = []
+
+in  name =  simple_type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  template_type_spec (string) = []
+
+in  name =  type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (string) = []
+
+in  name =  member child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (string) = []
+
+in  name =  identifier child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (b3) = []
+
+in  name =  declarator child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (b3) = []
+
+in  name =  declarators child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (b3) = []
+
+in  name =  member child =  b3  currentAST.root =   string  currentAST.child =   string
+>child.node =  declarators (b3) = []
+root =  member (string) = []
+child.node =  declarators (b3) = []
+setting the next child of  member (  string  ) =  declarators    b3   ??   b3   currentChildren are:  [declarators (b3) = []]
+
+in  name =  member_list child =  string  currentAST.root =   long b1 int b2  currentAST.child =   b2
+>child.node =  member (string) = [declarators (b3) = []]
+root =  member_list (long) = [declarators (b1) = [], member (int) = [declarators (b2) = []]]
+child.node =  member (string) = [declarators (b3) = []]
+setting the next child of  declarators (  b2  ) =  member    string   ??   string b3   currentChildren are:  []
+
+in  name =  struct_type child =  long  currentAST.root =   ( struct bar )  currentAST.child =   bar
+>child.node =  member_list (long) = [declarators (b1) = [], member (int) = [declarators (b2) = []], member (string) = [declarators (b3) = []]]
+root =  struct_type (struct) = [identifier (bar) = []]
+child.node =  member_list (long) = [declarators (b1) = [], member (int) = [declarators (b2) = []], member (string) = [declarators (b3) = []]]
+setting the next child of  identifier (  bar  ) =  member_list    long   ??   long b1 int b2 string b3   currentChildren are:  []
+
+in  name =  type_dcl child =  struct  currentAST.root =  None  currentAST.child =  None
+>child.node =  struct_type (struct) = [identifier (bar) = [], member_list (long) = [declarators (b1) = [], member (int) = [declarators (b2) = []], member (string) = [declarators (b3) = []]]]
+
+in  name =  definition child =  struct  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_dcl (struct) = [identifier (bar) = [], member_list (long) = [declarators (b1) = [], member (int) = [declarators (b2) = []], member (string) = [declarators (b3) = []]]]
+
+in  name =  specification child =  struct  currentAST.root =  None  currentAST.child =  None
+>child.node =  definition (struct) = [identifier (bar) = [], member_list (long) = [declarators (b1) = [], member (int) = [declarators (b2) = []], member (string) = [declarators (b3) = []]]]
+making root with:   struct
+name =  struct_type root =  struct  currentAST.root =  None  currentAST.child =  None
+
+in  name =  identifier child =  bar2  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  struct_type child =  bar2  currentAST.root =   struct  currentAST.child =  None
+>child.node =  identifier (bar2) = []
+setting the first child of  struct_type (  struct  ) =  identifier    bar2   ??   bar2   currentChildren are:  []
+making root with:   int
+name =  scoped_name root =  int  currentAST.root =  None  currentAST.child =  None
+
+in  name =  simple_type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  scoped_name (int) = []
+
+in  name =  type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (int) = []
+
+in  name =  member child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (int) = []
+
+in  name =  identifier child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (b1) = []
+
+in  name =  declarator child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (b1) = []
+
+in  name =  declarators child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (b1) = []
+
+in  name =  member child =  b1  currentAST.root =   int  currentAST.child =   int
+>child.node =  declarators (b1) = []
+root =  member (int) = []
+child.node =  declarators (b1) = []
+setting the next child of  member (  int  ) =  declarators    b1   ??   b1   currentChildren are:  [declarators (b1) = []]
+
+in  name =  member_list child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  member (int) = [declarators (b1) = []]
+making root with:   int
+name =  scoped_name root =  int  currentAST.root =  None  currentAST.child =  None
+
+in  name =  simple_type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  scoped_name (int) = []
+
+in  name =  type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (int) = []
+
+in  name =  member child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (int) = []
+
+in  name =  identifier child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (b2) = []
+
+in  name =  declarator child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (b2) = []
+
+in  name =  declarators child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (b2) = []
+
+in  name =  member child =  b2  currentAST.root =   int  currentAST.child =   int
+>child.node =  declarators (b2) = []
+root =  member (int) = []
+child.node =  declarators (b2) = []
+setting the next child of  member (  int  ) =  declarators    b2   ??   b2   currentChildren are:  [declarators (b2) = []]
+
+in  name =  member_list child =  int  currentAST.root =   int b1  currentAST.child =   b1
+>child.node =  member (int) = [declarators (b2) = []]
+root =  member_list (int) = [declarators (b1) = []]
+child.node =  member (int) = [declarators (b2) = []]
+setting the next child of  declarators (  b1  ) =  member    int   ??   int b2   currentChildren are:  []
+making root with:   string
+name =  string_type root =  string  currentAST.root =  None  currentAST.child =  None
+
+in  name =  template_type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  string_type (string) = []
+
+in  name =  simple_type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  template_type_spec (string) = []
+
+in  name =  type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (string) = []
+
+in  name =  member child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (string) = []
+
+in  name =  identifier child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (b3) = []
+
+in  name =  declarator child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (b3) = []
+
+in  name =  declarators child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (b3) = []
+
+in  name =  member child =  b3  currentAST.root =   string  currentAST.child =   string
+>child.node =  declarators (b3) = []
+root =  member (string) = []
+child.node =  declarators (b3) = []
+setting the next child of  member (  string  ) =  declarators    b3   ??   b3   currentChildren are:  [declarators (b3) = []]
+
+in  name =  member_list child =  string  currentAST.root =   int b1 int b2  currentAST.child =   b2
+>child.node =  member (string) = [declarators (b3) = []]
+root =  member_list (int) = [declarators (b1) = [], member (int) = [declarators (b2) = []]]
+child.node =  member (string) = [declarators (b3) = []]
+setting the next child of  declarators (  b2  ) =  member    string   ??   string b3   currentChildren are:  []
+
+in  name =  struct_type child =  int  currentAST.root =   ( struct bar2 )  currentAST.child =   bar2
+>child.node =  member_list (int) = [declarators (b1) = [], member (int) = [declarators (b2) = []], member (string) = [declarators (b3) = []]]
+root =  struct_type (struct) = [identifier (bar2) = []]
+child.node =  member_list (int) = [declarators (b1) = [], member (int) = [declarators (b2) = []], member (string) = [declarators (b3) = []]]
+setting the next child of  identifier (  bar2  ) =  member_list    int   ??   int b1 int b2 string b3   currentChildren are:  []
+making root with:   struct
+name =  struct_type root =  struct  currentAST.root =  None  currentAST.child =  None
+
+in  name =  identifier child =  bar2  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  struct_type child =  bar2  currentAST.root =   struct  currentAST.child =  None
+>child.node =  identifier (bar2) = []
+setting the first child of  struct_type (  struct  ) =  identifier    bar2   ??   bar2   currentChildren are:  []
+making root with:   int
+name =  scoped_name root =  int  currentAST.root =  None  currentAST.child =  None
+
+in  name =  simple_type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  scoped_name (int) = []
+
+in  name =  type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (int) = []
+
+in  name =  member child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (int) = []
+
+in  name =  identifier child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (b1) = []
+
+in  name =  declarator child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (b1) = []
+
+in  name =  declarators child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (b1) = []
+
+in  name =  member child =  b1  currentAST.root =   int  currentAST.child =   int
+>child.node =  declarators (b1) = []
+root =  member (int) = []
+child.node =  declarators (b1) = []
+setting the next child of  member (  int  ) =  declarators    b1   ??   b1   currentChildren are:  [declarators (b1) = []]
+
+in  name =  member_list child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  member (int) = [declarators (b1) = []]
+making root with:   int
+name =  scoped_name root =  int  currentAST.root =  None  currentAST.child =  None
+
+in  name =  simple_type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  scoped_name (int) = []
+
+in  name =  type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (int) = []
+
+in  name =  member child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (int) = []
+
+in  name =  identifier child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (b2) = []
+
+in  name =  declarator child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (b2) = []
+
+in  name =  declarators child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (b2) = []
+
+in  name =  member child =  b2  currentAST.root =   int  currentAST.child =   int
+>child.node =  declarators (b2) = []
+root =  member (int) = []
+child.node =  declarators (b2) = []
+setting the next child of  member (  int  ) =  declarators    b2   ??   b2   currentChildren are:  [declarators (b2) = []]
+
+in  name =  member_list child =  int  currentAST.root =   int b1  currentAST.child =   b1
+>child.node =  member (int) = [declarators (b2) = []]
+root =  member_list (int) = [declarators (b1) = []]
+child.node =  member (int) = [declarators (b2) = []]
+setting the next child of  declarators (  b1  ) =  member    int   ??   int b2   currentChildren are:  []
+making root with:   string
+name =  string_type root =  string  currentAST.root =  None  currentAST.child =  None
+
+in  name =  template_type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  string_type (string) = []
+
+in  name =  simple_type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  template_type_spec (string) = []
+
+in  name =  type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (string) = []
+
+in  name =  member child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (string) = []
+
+in  name =  identifier child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (b3) = []
+
+in  name =  declarator child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (b3) = []
+
+in  name =  declarators child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (b3) = []
+
+in  name =  member child =  b3  currentAST.root =   string  currentAST.child =   string
+>child.node =  declarators (b3) = []
+root =  member (string) = []
+child.node =  declarators (b3) = []
+setting the next child of  member (  string  ) =  declarators    b3   ??   b3   currentChildren are:  [declarators (b3) = []]
+
+in  name =  member_list child =  string  currentAST.root =   int b1 int b2  currentAST.child =   b2
+>child.node =  member (string) = [declarators (b3) = []]
+root =  member_list (int) = [declarators (b1) = [], member (int) = [declarators (b2) = []]]
+child.node =  member (string) = [declarators (b3) = []]
+setting the next child of  declarators (  b2  ) =  member    string   ??   string b3   currentChildren are:  []
+
+in  name =  struct_type child =  int  currentAST.root =   ( struct bar2 )  currentAST.child =   bar2
+>child.node =  member_list (int) = [declarators (b1) = [], member (int) = [declarators (b2) = []], member (string) = [declarators (b3) = []]]
+root =  struct_type (struct) = [identifier (bar2) = []]
+child.node =  member_list (int) = [declarators (b1) = [], member (int) = [declarators (b2) = []], member (string) = [declarators (b3) = []]]
+setting the next child of  identifier (  bar2  ) =  member_list    int   ??   int b1 int b2 string b3   currentChildren are:  []
+
+in  name =  type_dcl child =  struct  currentAST.root =  None  currentAST.child =  None
+>child.node =  struct_type (struct) = [identifier (bar2) = [], member_list (int) = [declarators (b1) = [], member (int) = [declarators (b2) = []], member (string) = [declarators (b3) = []]]]
+
+in  name =  definition child =  struct  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_dcl (struct) = [identifier (bar2) = [], member_list (int) = [declarators (b1) = [], member (int) = [declarators (b2) = []], member (string) = [declarators (b3) = []]]]
+
+in  name =  specification child =  struct  currentAST.root =   ( struct bar long b1 int b2 string b3 )  currentAST.child =   ( struct bar long b1 int b2 string b3 )
+>child.node =  definition (struct) = [identifier (bar2) = [], member_list (int) = [declarators (b1) = [], member (int) = [declarators (b2) = []], member (string) = [declarators (b3) = []]]]
+root =  specification (struct) = [identifier (bar) = [], member_list (long) = [declarators (b1) = [], member (int) = [declarators (b2) = []], member (string) = [declarators (b3) = []]]]
+child.node =  definition (struct) = [identifier (bar2) = [], member_list (int) = [declarators (b1) = [], member (int) = [declarators (b2) = []], member (string) = [declarators (b3) = []]]]
+setting the next child of  specification (  struct  ) =  definition    struct   ??   ( struct bar2 int b1 int b2 string b3 )   currentChildren are:  [identifier (bar) = [], member_list (long) = [declarators (b1) = [], member (int) = [declarators (b2) = []], member (string) = [declarators (b3) = []]], definition (struct) = [identifier (bar2) = [], member_list (int) = [declarators (b1) = [], member (int) = [declarators (b2) = []], member (string) = [declarators (b3) = []]]]]
+ specification struct  (0)
+  identifier bar  (1)
+  member_list long  (1)
+   declarators b1  (2)
+   member int  (2)
+    declarators b2  (3)
+   member string  (2)
+    declarators b3  (3)
+  definition struct  (1)
+   identifier bar2  (2)
+   member_list int  (2)
+    declarators b1  (3)
+    member int  (3)
+     declarators b2  (4)
+    member string  (3)
+     declarators b3  (4)
+
+
+
+
+ ( struct bar long b1 int b2 string b3 ) ( struct bar2 int b1 int b2 string b3 )
+making root with:   struct
+name =  struct_type root =  struct  currentAST.root =  None  currentAST.child =  None
+
+in  name =  identifier child =  bar  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  struct_type child =  bar  currentAST.root =   struct  currentAST.child =  None
+>child.node =  identifier (None) = []
+setting the first child of  struct_type (  struct  ) =  identifier    None   ??   bar   currentChildren are:  []
+making root with:   long
+name =  floating_pt_type root =  long  currentAST.root =  None  currentAST.child =  None
+
+in  name =  floating_pt_type child =  b1  currentAST.root =   long  currentAST.child =  None
+>child.node =  None (None) = []
+setting the first child of  floating_pt_type (  long  ) =  None    None   ??   b1   currentChildren are:  []
+
+in  name =  signed_long_int child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  signed_int child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  signed_long_int (None) = []
+
+in  name =  integer_type child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  signed_int (None) = []
+
+in  name =  base_type_spec child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  integer_type (None) = []
+
+in  name =  simple_type_spec child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  base_type_spec (None) = []
+
+in  name =  type_spec child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (None) = []
+
+in  name =  member child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (None) = []
+
+in  name =  identifier child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (None) = []
+
+in  name =  declarator child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (None) = []
+
+in  name =  declarators child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (None) = []
+
+in  name =  member child =  b1  currentAST.root =   long  currentAST.child =   long
+>child.node =  declarators (None) = []
+root =  member (None) = []
+child.node =  declarators (None) = []
+setting the next child of  member (  None  ) =  declarators    None   ??   b1   currentChildren are:  [declarators (None) = []]
+
+in  name =  member_list child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  member (None) = [declarators (None) = []]
+making root with:   int
+name =  scoped_name root =  int  currentAST.root =  None  currentAST.child =  None
+
+in  name =  simple_type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  scoped_name (int) = []
+
+in  name =  type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (None) = []
+
+in  name =  member child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (None) = []
+
+in  name =  identifier child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (None) = []
+
+in  name =  declarator child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (None) = []
+
+in  name =  declarators child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (None) = []
+
+in  name =  member child =  b2  currentAST.root =   int  currentAST.child =   int
+>child.node =  declarators (None) = []
+root =  member (None) = []
+child.node =  declarators (None) = []
+setting the next child of  member (  None  ) =  declarators    None   ??   b2   currentChildren are:  [declarators (None) = []]
+
+in  name =  member_list child =  int  currentAST.root =   long b1  currentAST.child =   b1
+>child.node =  member (None) = [declarators (None) = []]
+root =  member_list (None) = []
+child.node =  member (None) = [declarators (None) = []]
+setting the next child of  declarators (  None  ) =  member    None   ??   int b2   currentChildren are:  []
+making root with:   string
+name =  string_type root =  string  currentAST.root =  None  currentAST.child =  None
+
+in  name =  template_type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  string_type (string) = []
+
+in  name =  simple_type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  template_type_spec (None) = []
+
+in  name =  type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (None) = []
+
+in  name =  member child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (None) = []
+
+in  name =  identifier child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (None) = []
+
+in  name =  declarator child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (None) = []
+
+in  name =  declarators child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (None) = []
+
+in  name =  member child =  b3  currentAST.root =   string  currentAST.child =   string
+>child.node =  declarators (None) = []
+root =  member (None) = []
+child.node =  declarators (None) = []
+setting the next child of  member (  None  ) =  declarators    None   ??   b3   currentChildren are:  [declarators (None) = []]
+
+in  name =  member_list child =  string  currentAST.root =   long b1 int b2  currentAST.child =   b2
+>child.node =  member (None) = [declarators (None) = []]
+root =  member_list (None) = [member (None) = [declarators (None) = []]]
+child.node =  member (None) = [declarators (None) = []]
+setting the next child of  declarators (  None  ) =  member    None   ??   string b3   currentChildren are:  []
+
+in  name =  struct_type child =  long  currentAST.root =   ( struct bar )  currentAST.child =   bar
+>child.node =  member_list (None) = [member (None) = [declarators (None) = []], member (None) = [declarators (None) = []]]
+root =  struct_type (struct) = [identifier (None) = []]
+child.node =  member_list (None) = [member (None) = [declarators (None) = []], member (None) = [declarators (None) = []]]
+setting the next child of  identifier (  None  ) =  member_list    None   ??   long b1 int b2 string b3   currentChildren are:  []
+making root with:   struct
+name =  struct_type root =  struct  currentAST.root =  None  currentAST.child =  None
+
+in  name =  identifier child =  bar  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  struct_type child =  bar  currentAST.root =   struct  currentAST.child =  None
+>child.node =  identifier (None) = []
+setting the first child of  struct_type (  struct  ) =  identifier    None   ??   bar   currentChildren are:  []
+making root with:   long
+name =  floating_pt_type root =  long  currentAST.root =  None  currentAST.child =  None
+
+in  name =  floating_pt_type child =  b1  currentAST.root =   long  currentAST.child =  None
+>child.node =  None (None) = []
+setting the first child of  floating_pt_type (  long  ) =  None    None   ??   b1   currentChildren are:  []
+
+in  name =  signed_long_int child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  signed_int child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  signed_long_int (None) = []
+
+in  name =  integer_type child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  signed_int (None) = []
+
+in  name =  base_type_spec child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  integer_type (None) = []
+
+in  name =  simple_type_spec child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  base_type_spec (None) = []
+
+in  name =  type_spec child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (None) = []
+
+in  name =  member child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (None) = []
+
+in  name =  identifier child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (None) = []
+
+in  name =  declarator child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (None) = []
+
+in  name =  declarators child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (None) = []
+
+in  name =  member child =  b1  currentAST.root =   long  currentAST.child =   long
+>child.node =  declarators (None) = []
+root =  member (None) = []
+child.node =  declarators (None) = []
+setting the next child of  member (  None  ) =  declarators    None   ??   b1   currentChildren are:  [declarators (None) = []]
+
+in  name =  member_list child =  long  currentAST.root =  None  currentAST.child =  None
+>child.node =  member (None) = [declarators (None) = []]
+making root with:   int
+name =  scoped_name root =  int  currentAST.root =  None  currentAST.child =  None
+
+in  name =  simple_type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  scoped_name (int) = []
+
+in  name =  type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (None) = []
+
+in  name =  member child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (None) = []
+
+in  name =  identifier child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (None) = []
+
+in  name =  declarator child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (None) = []
+
+in  name =  declarators child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (None) = []
+
+in  name =  member child =  b2  currentAST.root =   int  currentAST.child =   int
+>child.node =  declarators (None) = []
+root =  member (None) = []
+child.node =  declarators (None) = []
+setting the next child of  member (  None  ) =  declarators    None   ??   b2   currentChildren are:  [declarators (None) = []]
+
+in  name =  member_list child =  int  currentAST.root =   long b1  currentAST.child =   b1
+>child.node =  member (None) = [declarators (None) = []]
+root =  member_list (None) = []
+child.node =  member (None) = [declarators (None) = []]
+setting the next child of  declarators (  None  ) =  member    None   ??   int b2   currentChildren are:  []
+making root with:   string
+name =  string_type root =  string  currentAST.root =  None  currentAST.child =  None
+
+in  name =  template_type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  string_type (string) = []
+
+in  name =  simple_type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  template_type_spec (None) = []
+
+in  name =  type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (None) = []
+
+in  name =  member child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (None) = []
+
+in  name =  identifier child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (None) = []
+
+in  name =  declarator child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (None) = []
+
+in  name =  declarators child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (None) = []
+
+in  name =  member child =  b3  currentAST.root =   string  currentAST.child =   string
+>child.node =  declarators (None) = []
+root =  member (None) = []
+child.node =  declarators (None) = []
+setting the next child of  member (  None  ) =  declarators    None   ??   b3   currentChildren are:  [declarators (None) = []]
+
+in  name =  member_list child =  string  currentAST.root =   long b1 int b2  currentAST.child =   b2
+>child.node =  member (None) = [declarators (None) = []]
+root =  member_list (None) = [member (None) = [declarators (None) = []]]
+child.node =  member (None) = [declarators (None) = []]
+setting the next child of  declarators (  None  ) =  member    None   ??   string b3   currentChildren are:  []
+
+in  name =  struct_type child =  long  currentAST.root =   ( struct bar )  currentAST.child =   bar
+>child.node =  member_list (None) = [member (None) = [declarators (None) = []], member (None) = [declarators (None) = []]]
+root =  struct_type (struct) = [identifier (None) = []]
+child.node =  member_list (None) = [member (None) = [declarators (None) = []], member (None) = [declarators (None) = []]]
+setting the next child of  identifier (  None  ) =  member_list    None   ??   long b1 int b2 string b3   currentChildren are:  []
+
+in  name =  type_dcl child =  struct  currentAST.root =  None  currentAST.child =  None
+>child.node =  struct_type (struct) = [identifier (None) = [], member_list (None) = [member (None) = [declarators (None) = []], member (None) = [declarators (None) = []]]]
+
+in  name =  definition child =  struct  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_dcl (None) = []
+
+in  name =  specification child =  struct  currentAST.root =  None  currentAST.child =  None
+>child.node =  definition (None) = []
+making root with:   struct
+name =  struct_type root =  struct  currentAST.root =  None  currentAST.child =  None
+
+in  name =  identifier child =  bar2  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  struct_type child =  bar2  currentAST.root =   struct  currentAST.child =  None
+>child.node =  identifier (None) = []
+setting the first child of  struct_type (  struct  ) =  identifier    None   ??   bar2   currentChildren are:  []
+making root with:   int
+name =  scoped_name root =  int  currentAST.root =  None  currentAST.child =  None
+
+in  name =  simple_type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  scoped_name (int) = []
+
+in  name =  type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (None) = []
+
+in  name =  member child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (None) = []
+
+in  name =  identifier child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (None) = []
+
+in  name =  declarator child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (None) = []
+
+in  name =  declarators child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (None) = []
+
+in  name =  member child =  b1  currentAST.root =   int  currentAST.child =   int
+>child.node =  declarators (None) = []
+root =  member (None) = []
+child.node =  declarators (None) = []
+setting the next child of  member (  None  ) =  declarators    None   ??   b1   currentChildren are:  [declarators (None) = []]
+
+in  name =  member_list child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  member (None) = [declarators (None) = []]
+making root with:   int
+name =  scoped_name root =  int  currentAST.root =  None  currentAST.child =  None
+
+in  name =  simple_type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  scoped_name (int) = []
+
+in  name =  type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (None) = []
+
+in  name =  member child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (None) = []
+
+in  name =  identifier child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (None) = []
+
+in  name =  declarator child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (None) = []
+
+in  name =  declarators child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (None) = []
+
+in  name =  member child =  b2  currentAST.root =   int  currentAST.child =   int
+>child.node =  declarators (None) = []
+root =  member (None) = []
+child.node =  declarators (None) = []
+setting the next child of  member (  None  ) =  declarators    None   ??   b2   currentChildren are:  [declarators (None) = []]
+
+in  name =  member_list child =  int  currentAST.root =   int b1  currentAST.child =   b1
+>child.node =  member (None) = [declarators (None) = []]
+root =  member_list (None) = []
+child.node =  member (None) = [declarators (None) = []]
+setting the next child of  declarators (  None  ) =  member    None   ??   int b2   currentChildren are:  []
+making root with:   string
+name =  string_type root =  string  currentAST.root =  None  currentAST.child =  None
+
+in  name =  template_type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  string_type (string) = []
+
+in  name =  simple_type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  template_type_spec (None) = []
+
+in  name =  type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (None) = []
+
+in  name =  member child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (None) = []
+
+in  name =  identifier child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (None) = []
+
+in  name =  declarator child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (None) = []
+
+in  name =  declarators child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (None) = []
+
+in  name =  member child =  b3  currentAST.root =   string  currentAST.child =   string
+>child.node =  declarators (None) = []
+root =  member (None) = []
+child.node =  declarators (None) = []
+setting the next child of  member (  None  ) =  declarators    None   ??   b3   currentChildren are:  [declarators (None) = []]
+
+in  name =  member_list child =  string  currentAST.root =   int b1 int b2  currentAST.child =   b2
+>child.node =  member (None) = [declarators (None) = []]
+root =  member_list (None) = [member (None) = [declarators (None) = []]]
+child.node =  member (None) = [declarators (None) = []]
+setting the next child of  declarators (  None  ) =  member    None   ??   string b3   currentChildren are:  []
+
+in  name =  struct_type child =  int  currentAST.root =   ( struct bar2 )  currentAST.child =   bar2
+>child.node =  member_list (None) = [member (None) = [declarators (None) = []], member (None) = [declarators (None) = []]]
+root =  struct_type (struct) = [identifier (None) = []]
+child.node =  member_list (None) = [member (None) = [declarators (None) = []], member (None) = [declarators (None) = []]]
+setting the next child of  identifier (  None  ) =  member_list    None   ??   int b1 int b2 string b3   currentChildren are:  []
+making root with:   struct
+name =  struct_type root =  struct  currentAST.root =  None  currentAST.child =  None
+
+in  name =  identifier child =  bar2  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  struct_type child =  bar2  currentAST.root =   struct  currentAST.child =  None
+>child.node =  identifier (None) = []
+setting the first child of  struct_type (  struct  ) =  identifier    None   ??   bar2   currentChildren are:  []
+making root with:   int
+name =  scoped_name root =  int  currentAST.root =  None  currentAST.child =  None
+
+in  name =  simple_type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  scoped_name (int) = []
+
+in  name =  type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (None) = []
+
+in  name =  member child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (None) = []
+
+in  name =  identifier child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (None) = []
+
+in  name =  declarator child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (None) = []
+
+in  name =  declarators child =  b1  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (None) = []
+
+in  name =  member child =  b1  currentAST.root =   int  currentAST.child =   int
+>child.node =  declarators (None) = []
+root =  member (None) = []
+child.node =  declarators (None) = []
+setting the next child of  member (  None  ) =  declarators    None   ??   b1   currentChildren are:  [declarators (None) = []]
+
+in  name =  member_list child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  member (None) = [declarators (None) = []]
+making root with:   int
+name =  scoped_name root =  int  currentAST.root =  None  currentAST.child =  None
+
+in  name =  simple_type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  scoped_name (int) = []
+
+in  name =  type_spec child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (None) = []
+
+in  name =  member child =  int  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (None) = []
+
+in  name =  identifier child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (None) = []
+
+in  name =  declarator child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (None) = []
+
+in  name =  declarators child =  b2  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (None) = []
+
+in  name =  member child =  b2  currentAST.root =   int  currentAST.child =   int
+>child.node =  declarators (None) = []
+root =  member (None) = []
+child.node =  declarators (None) = []
+setting the next child of  member (  None  ) =  declarators    None   ??   b2   currentChildren are:  [declarators (None) = []]
+
+in  name =  member_list child =  int  currentAST.root =   int b1  currentAST.child =   b1
+>child.node =  member (None) = [declarators (None) = []]
+root =  member_list (None) = []
+child.node =  member (None) = [declarators (None) = []]
+setting the next child of  declarators (  None  ) =  member    None   ??   int b2   currentChildren are:  []
+making root with:   string
+name =  string_type root =  string  currentAST.root =  None  currentAST.child =  None
+
+in  name =  template_type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  string_type (string) = []
+
+in  name =  simple_type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  template_type_spec (None) = []
+
+in  name =  type_spec child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_type_spec (None) = []
+
+in  name =  member child =  string  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_spec (None) = []
+
+in  name =  identifier child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  None (None) = []
+
+in  name =  simple_declarator child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  identifier (None) = []
+
+in  name =  declarator child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  simple_declarator (None) = []
+
+in  name =  declarators child =  b3  currentAST.root =  None  currentAST.child =  None
+>child.node =  declarator (None) = []
+
+in  name =  member child =  b3  currentAST.root =   string  currentAST.child =   string
+>child.node =  declarators (None) = []
+root =  member (None) = []
+child.node =  declarators (None) = []
+setting the next child of  member (  None  ) =  declarators    None   ??   b3   currentChildren are:  [declarators (None) = []]
+
+in  name =  member_list child =  string  currentAST.root =   int b1 int b2  currentAST.child =   b2
+>child.node =  member (None) = [declarators (None) = []]
+root =  member_list (None) = [member (None) = [declarators (None) = []]]
+child.node =  member (None) = [declarators (None) = []]
+setting the next child of  declarators (  None  ) =  member    None   ??   string b3   currentChildren are:  []
+
+in  name =  struct_type child =  int  currentAST.root =   ( struct bar2 )  currentAST.child =   bar2
+>child.node =  member_list (None) = [member (None) = [declarators (None) = []], member (None) = [declarators (None) = []]]
+root =  struct_type (struct) = [identifier (None) = []]
+child.node =  member_list (None) = [member (None) = [declarators (None) = []], member (None) = [declarators (None) = []]]
+setting the next child of  identifier (  None  ) =  member_list    None   ??   int b1 int b2 string b3   currentChildren are:  []
+
+in  name =  type_dcl child =  struct  currentAST.root =  None  currentAST.child =  None
+>child.node =  struct_type (struct) = [identifier (None) = [], member_list (None) = [member (None) = [declarators (None) = []], member (None) = [declarators (None) = []]]]
+
+in  name =  definition child =  struct  currentAST.root =  None  currentAST.child =  None
+>child.node =  type_dcl (None) = []
+
+in  name =  specification child =  struct  currentAST.root =   ( struct bar long b1 int b2 string b3 )  currentAST.child =   ( struct bar long b1 int b2 string b3 )
+>child.node =  definition (None) = []
+root =  specification (None) = []
+child.node =  definition (None) = []
+setting the next child of  specification (  None  ) =  definition    None   ??   ( struct bar2 int b1 int b2 string b3 )   currentChildren are:  [definition (None) = []]
+ specification  (0)
+  definition  (1)
+
+
+
+
+ ( struct bar long b1 int b2 string b3 ) ( struct bar2 int b1 int b2 string b3 )

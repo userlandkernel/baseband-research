@@ -1,0 +1,121 @@
+Kenge C Library Status
+======================
+
+The references in this document correspond to those in Annex B of
+ISO/IEC 9899:1999 (E).
+
+Note: Several headers include other headers, e.g. <stddef.h> and
+<stdint.h>, this is probably wrong.
+
+B.1 Diagnostics <assert.h>
+--------------------------
+All functionality is implemented.
+
+B.2 Complex <complex.h>
+-----------------------
+Only the declarations for this header are present.  None of the
+functions are defined.
+
+B.3 Character handling <ctype.h>
+--------------------------------
+All functionality is implemented, excluding the isblank function.
+
+B.4 Errors <errno.h>
+--------------------
+All functionality is implemented.
+
+B.5 Floating-point environment <fenv.h>
+---------------------------------------
+This header is not present.
+
+B.6 Characteristics of floating types <float.h>
+-----------------------------------------------
+This header is not present.
+
+B.7 Format conversion of integer types <inttypes.h>
+---------------------------------------------------
+Some functionality is implemented.  The following are missing:
+ - imaxdiv_t.
+ - imaxabs, imaxdiv, strtoimax, strtoumax, wcstoimax and wcstoumax.
+ - All of the scanf format strings (prefix SCN).
+
+B.8 Alternative spellings <iso646.h>
+------------------------------------
+All functionality is implemented, excluding the and_eq macro.
+
+B.9 Sizes of integer types <limits.h>
+-------------------------------------
+All functionality is implemented.
+
+B.10 Localization <locale.h>
+----------------------------
+All functionality is implemented.
+
+B.11 Mathematics <math.h>
+-------------------------
+This header is not present.
+
+B.12 Nonlocal jumps <setjmp.h>
+------------------------------
+Functionality is implemented only on certain architectures.  ARM, IA32
+and MIPS64 are fully implemented.  PowerPC64 is implemented but returns
+incorrect values from longjmp.
+
+B.13 Signal handling <signal.h>
+-------------------------------
+This header is not present.
+
+B.14 Variable arguments <stdarg.h>
+----------------------------------
+All functionality is supported when using appropriate GCC builtins.
+
+B.15 Boolean type and values <stdbool.h>
+----------------------------------------
+All functionality is implemented.
+
+B.16 Common definitions <stddef.h>
+----------------------------------
+All functionality is supported when using appropriate GCC builtins.
+
+B.17 Integer types <stdint.h>
+-----------------------------
+FIXME: check status
+
+B.18 Input/output <stdio.h>
+---------------------------
+FIXME: check status
+
+B.19 General utilities <stdlib.h>
+---------------------------------
+Some functionality is implemented.  The following are missing or not
+fully implemented:
+ - strtod is present, but only as a stub.
+ - strtof, strtold, strtoll and strtoull are only declared.
+ - abort is partially implemented.
+ - atexit is only declared.
+ - exit is partially implemented.
+ - getenv and system are present, but only as stubs.
+ - bsearch is missing.
+ - abs, labs and llabs are only declared.
+ - div, ldiv and lldiv are missing.
+ - mblen, mbtowc, wctomb, mbstowcs and wcstombs are missing.
+
+B.20 String handling <string.h>
+-------------------------------
+FIXME: check status
+
+B.21 Type-generic math <tgmath.h>
+---------------------------------
+This header is not present.
+
+B.22 Date and time <time.h>
+---------------------------
+FIXME: check status
+
+B.23 Extended multibyte/wide character utilities <wchar.h>
+----------------------------------------------------------
+This header is not present.
+
+B.24 Wide character classification and mapping utilities <wctype.h>
+-------------------------------------------------------------------
+This header is not present.

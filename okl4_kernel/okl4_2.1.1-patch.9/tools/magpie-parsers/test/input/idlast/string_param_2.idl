@@ -1,0 +1,4 @@
+   interface test {
+     void string_op(in string arg);
+     void wstring_op(in wstring arg);
+   };

@@ -1,0 +1,15 @@
+const int KEYPAD_UUID_DEVICE = 42;
+const int KEYPAD_UUID_DEVICE2 = KEYPAD_UUID_DEVICE + 1;
+
+[uuid(KEYPAD_UUID_DEVICE)]
+interface keypad_interface_device
+{
+	const long magic_number_fifteen = 15;
+    long create(in long driver);
+};
+
+[uuid(KEYPAD_UUID_DEVICE2)]
+interface keypad_interface_device2
+{
+    long create(in long driver);
+};

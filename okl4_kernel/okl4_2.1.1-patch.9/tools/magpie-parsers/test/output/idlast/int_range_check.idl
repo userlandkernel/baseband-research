@@ -1,0 +1,2 @@
+* Semantic error *
+test/input/idlast/int_range_check.idl:2:Cannot coerce "short" to "unsigned short"

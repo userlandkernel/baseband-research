@@ -1,0 +1,8 @@
+cpu: pxa25x
+mach: pxa_lubbock
+
+# RAM map http://www.disy.cse.unsw.edu.au/Hardware/PLEB/other/PLEB2_HowTo.pml
+mem_bank: map=M, type=RW, addr=0xA0000000, size=0x1FFFFFFF
+
+# IO map from Intel PXA255 Processor Developer's Manual p 2-20
+mem_bank: map=I, type=RW, addr=0x40000000, size=0x4BFFFFFF

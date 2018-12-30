@@ -1,0 +1,5 @@
+   #pragma foo bar
+   interface test {
+   #pragma baz
+   };
+   #pragma some meaningless text (that should be ignored)

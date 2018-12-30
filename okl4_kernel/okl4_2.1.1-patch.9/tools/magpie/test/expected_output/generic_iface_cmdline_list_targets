@@ -1,0 +1,13 @@
+Available targets:
+ * CAmkES/generic
+ * idl4/generic_biguuid_l4v4
+ * idl4/generic_biguuid_optimised
+ * idl4/generic_l4v4
+ * magpie/corba_tester
+ * magpie/generic
+ * mig/generic_l4v4
+ * nicta/generic_biguuid_n2_noabi
+ * nicta/generic_biguuid_n2
+ * nicta/generic_biguuid_q1
+ * nicta/generic_n2
+ * nicta/generic_q1

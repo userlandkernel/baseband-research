@@ -1,0 +1,2 @@
+const int KEYPAD_UUID_DEVICE = 2;
+static const int KEYPAD_UUID_DEVICE2 = KEYPAD_UUID_DEVICE + 1;

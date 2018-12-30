@@ -1,0 +1,6 @@
+[uuid(32)]
+interface pingpong
+{
+	int adder(in int val);
+}
+

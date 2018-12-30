@@ -1,0 +1,11 @@
+ MagpieAST  (0, ?:?)
+  type_instance strconst  (1, test/input/idlast/string_constants.idl:1)
+   (meta_type) = ['const']
+   type  (2, test/input/idlast/string_constants.idl:1)
+    customised  (3, ?:?)
+     type string (backref)
+   target  (2, test/input/idlast/string_constants.idl:1)
+    type None (backref)
+   expression  (2, ?:?)
+    (value) = ['blah!']
+    type string (backref)

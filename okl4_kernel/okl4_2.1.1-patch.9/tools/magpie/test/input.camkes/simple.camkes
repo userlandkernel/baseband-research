@@ -1,0 +1,8 @@
+include "simple_interface.idl4";
+include "very_simple_interface.idl4";
+
+component simple_component {
+	active;
+	uses simple simp1;
+	provides very_simple simp2;
+};

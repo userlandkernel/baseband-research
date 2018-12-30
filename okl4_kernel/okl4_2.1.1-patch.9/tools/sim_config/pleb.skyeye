@@ -1,0 +1,11 @@
+#PLEB1 skyeye.conf
+#
+cpu: sa1100, speed=100000000
+dbct: state=off
+mach: sa1100
+mem_bank: map=I, type=RW, addr=0x80000000, size=0x40000000
+mem_bank: map=M, type=RW, addr=0xc0000000, size=0x04000000
+mem_bank: map=M, type=RW, addr=0xc8000000, size=0x04000000
+mem_bank: map=I, type=RW, addr=0xe0000000, size=0x08000000
+
+#log: logon=2, logfile=/tmp/sk1.log, start=0, end=2000000

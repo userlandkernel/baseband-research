@@ -1,0 +1,5 @@
+ interface test {
+    struct foo {
+      short x /* missing semicolon here */
+    };
+  };

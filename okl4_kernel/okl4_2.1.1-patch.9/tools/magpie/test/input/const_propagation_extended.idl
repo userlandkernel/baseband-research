@@ -1,0 +1,4 @@
+const int const_int = 1;
+const unsigned int const_unsigned_int = 2;
+const bool const_bool = TRUE;
+const float const_float = 3.7;

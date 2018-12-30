@@ -1,0 +1,25 @@
+interface FS {
+    int create(in char *name, in int attrib);
+    int del(in int fd);
+    int mkdir(in char *path);
+    int open(in char *name, in int flag);
+    void close(in int fd);
+    int position(in int fd);
+    int seek(in int fd, in int offset, in int mode);
+    char read(in int fd);
+    int readn(in int fd, in char* buf, in int n);
+    int write(in int fd, in char c);
+    int writen(in int fd, in char* buf, in int n);
+    void setattribs(in int fd, in char attrib);
+    char getattribs(in int fd);
+    void ren(in int fd, in char *name);
+}
+
+interface FSUtil {
+    int copy(in char* src, in char* dest);
+}
+
+interface BlockDevice {
+    int readBlock(in char* buf);
+    int writeBlock(in char* buf);
+}

@@ -1,0 +1,394 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD>
+<TITLE>Grammar idl.g</TITLE>
+</HEAD>
+<BODY>
+<table summary="" border="1" cellpadding="5">
+<tr>
+<td>
+<font size="+2">Grammar IDLLexer</font><br>
+<a href="http://www.ANTLR.org">ANTLR</a>-generated HTML file from idl.g
+<p>
+Terence Parr, <a href="http://www.magelang.com">MageLang Institute</a>
+<br>ANTLR Version 2.7.5 (20050403); 1989-2005
+</td>
+</tr>
+</table>
+<PRE>
+
+Definition of lexer IDLLexer, which is a subclass of CharScanner.
+
+/** Lexer nextToken rule:
+ *  The lexer nextToken rule is synthesized from all of the user-defined
+ *  lexer rules.  It logically consists of one big alternative block with
+ *  each user-defined rule being an alternative.
+ */
+<a href="IDLLexer.html#mSEMI">mSEMI</a> 
+|	<a href="IDLLexer.html#mQUESTION">mQUESTION</a> 
+|	<a href="IDLLexer.html#mLPAREN">mLPAREN</a> 
+|	<a href="IDLLexer.html#mRPAREN">mRPAREN</a> 
+|	<a href="IDLLexer.html#mLBRACK">mLBRACK</a> 
+|	<a href="IDLLexer.html#mRBRACK">mRBRACK</a> 
+|	<a href="IDLLexer.html#mLCURLY">mLCURLY</a> 
+|	<a href="IDLLexer.html#mRCURLY">mRCURLY</a> 
+|	<a href="IDLLexer.html#mOR">mOR</a> 
+|	<a href="IDLLexer.html#mXOR">mXOR</a> 
+|	<a href="IDLLexer.html#mAND">mAND</a> 
+|	<a href="IDLLexer.html#mCOLON">mCOLON</a> 
+|	<a href="IDLLexer.html#mCOMMA">mCOMMA</a> 
+|	<a href="IDLLexer.html#mDOT">mDOT</a> 
+|	<a href="IDLLexer.html#mASSIGN">mASSIGN</a> 
+|	<a href="IDLLexer.html#mNOT">mNOT</a> 
+|	<a href="IDLLexer.html#mLT">mLT</a> 
+|	<a href="IDLLexer.html#mLSHIFT">mLSHIFT</a> 
+|	<a href="IDLLexer.html#mGT">mGT</a> 
+|	<a href="IDLLexer.html#mRSHIFT">mRSHIFT</a> 
+|	<a href="IDLLexer.html#mDIV">mDIV</a> 
+|	<a href="IDLLexer.html#mPLUS">mPLUS</a> 
+|	<a href="IDLLexer.html#mMINUS">mMINUS</a> 
+|	<a href="IDLLexer.html#mTILDE">mTILDE</a> 
+|	<a href="IDLLexer.html#mSTAR">mSTAR</a> 
+|	<a href="IDLLexer.html#mMOD">mMOD</a> 
+|	<a href="IDLLexer.html#mSCOPEOP">mSCOPEOP</a> 
+|	<a href="IDLLexer.html#mUNDERLINE">mUNDERLINE</a> 
+|	<a href="IDLLexer.html#mWS">mWS</a> 
+|	<a href="IDLLexer.html#mPREPROC_DIRECTIVE">mPREPROC_DIRECTIVE</a> 
+|	<a href="IDLLexer.html#mSL_COMMENT">mSL_COMMENT</a> 
+|	<a href="IDLLexer.html#mML_COMMENT">mML_COMMENT</a> 
+|	<a href="IDLLexer.html#mCHAR_LITERAL">mCHAR_LITERAL</a> 
+|	<a href="IDLLexer.html#mWIDE_CHAR_LITERAL">mWIDE_CHAR_LITERAL</a> 
+|	<a href="IDLLexer.html#mSTRING_LITERAL">mSTRING_LITERAL</a> 
+|	<a href="IDLLexer.html#mWIDE_STRING_LITERAL">mWIDE_STRING_LITERAL</a> 
+|	<a href="IDLLexer.html#mHEX">mHEX</a> 
+|	<a href="IDLLexer.html#mINT">mINT</a> 
+|	<a href="IDLLexer.html#mOCTAL">mOCTAL</a> 
+|	<a href="IDLLexer.html#mFLOAT">mFLOAT</a> 
+|	<a href="IDLLexer.html#mIDENT">mIDENT</a> 
+|	<a href="IDLLexer.html#mESCAPED_IDENT">mESCAPED_IDENT</a> 
+<a name="mSEMI">mSEMI</a>
+	:	&#039;;&#039; 
+	;
+
+<a name="mQUESTION">mQUESTION</a>
+	:	&#039;?&#039; 
+	;
+
+<a name="mLPAREN">mLPAREN</a>
+	:	&#039;(&#039; 
+	;
+
+<a name="mRPAREN">mRPAREN</a>
+	:	&#039;)&#039; 
+	;
+
+<a name="mLBRACK">mLBRACK</a>
+	:	&#039;[&#039; 
+	;
+
+<a name="mRBRACK">mRBRACK</a>
+	:	&#039;]&#039; 
+	;
+
+<a name="mLCURLY">mLCURLY</a>
+	:	&#039;{&#039; 
+	;
+
+<a name="mRCURLY">mRCURLY</a>
+	:	&#039;}&#039; 
+	;
+
+<a name="mOR">mOR</a>
+	:	&#039;|&#039; 
+	;
+
+<a name="mXOR">mXOR</a>
+	:	&#039;^&#039; 
+	;
+
+<a name="mAND">mAND</a>
+	:	&#039;&amp;&#039; 
+	;
+
+<a name="mCOLON">mCOLON</a>
+	:	&#039;:&#039; 
+	;
+
+<a name="mCOMMA">mCOMMA</a>
+	:	&#039;,&#039; 
+	;
+
+<a name="mDOT">mDOT</a>
+	:	&#039;.&#039; 
+	;
+
+<a name="mASSIGN">mASSIGN</a>
+	:	&#039;=&#039; 
+	;
+
+<a name="mNOT">mNOT</a>
+	:	&#039;!&#039; 
+	;
+
+<a name="mLT">mLT</a>
+	:	&#039;&lt;&#039; 
+	;
+
+<a name="mLSHIFT">mLSHIFT</a>
+	:	&quot;&lt;&lt;&quot; 
+	;
+
+<a name="mGT">mGT</a>
+	:	&#039;&gt;&#039; 
+	;
+
+<a name="mRSHIFT">mRSHIFT</a>
+	:	&quot;&gt;&gt;&quot; 
+	;
+
+<a name="mDIV">mDIV</a>
+	:	&#039;/&#039; 
+	;
+
+<a name="mPLUS">mPLUS</a>
+	:	&#039;+&#039; 
+	;
+
+<a name="mMINUS">mMINUS</a>
+	:	&#039;-&#039; 
+	;
+
+<a name="mTILDE">mTILDE</a>
+	:	&#039;~&#039; 
+	;
+
+<a name="mSTAR">mSTAR</a>
+	:	&#039;*&#039; 
+	;
+
+<a name="mMOD">mMOD</a>
+	:	&#039;%&#039; 
+	;
+
+<a name="mSCOPEOP">mSCOPEOP</a>
+	:	&quot;::&quot; 
+	;
+
+<a name="mUNDERLINE">mUNDERLINE</a>
+	:	&quot;_&quot; 
+	;
+
+<a name="mWS">mWS</a>
+	:	(	&#039; &#039; 
+		|	&#039;\t&#039; 
+		|	&#039;\n&#039; 
+		|	&#039;\r&#039; 
+		) 
+		
+	;
+
+<a name="mPREPROC_DIRECTIVE">mPREPROC_DIRECTIVE</a>
+	:	&#039;#&#039; ( ~&#039;\n&#039; )* &#039;\n&#039; 
+	;
+
+<a name="mSL_COMMENT">mSL_COMMENT</a>
+	:	&quot;//&quot; ( ~&#039;\n&#039; )* &#039;\n&#039; 
+	;
+
+<a name="mML_COMMENT">mML_COMMENT</a>
+	:	&quot;/*&quot; 
+		(	&#039;\n&#039; 
+		|	( &#039;*&#039; )+ 
+			(	&#039;\n&#039; 
+			|	(	&#039;*&#039; 
+				|	&#039;/&#039; 
+				|	&#039;\n&#039; 
+				) 
+			) 
+		|	(	&#039;*&#039; 
+			|	&#039;\n&#039; 
+			) 
+		)* 
+		&quot;*/&quot; 
+	;
+
+<a name="mCHAR_LITERAL">mCHAR_LITERAL</a>
+	:	&#039;\&#039;&#039; 
+		(	<a href="IDLLexer.html#mESC">mESC</a> 
+		|	~&#039;\&#039;&#039; 
+		) 
+		&#039;\&#039;&#039; 
+	;
+
+protected <a name="mESC">mESC</a>
+	:	&#039;\\&#039; 
+		(	&#039;n&#039; 
+		|	&#039;t&#039; 
+		|	&#039;v&#039; 
+		|	&#039;b&#039; 
+		|	&#039;r&#039; 
+		|	&#039;f&#039; 
+		|	&#039;a&#039; 
+		|	&#039;\\&#039; 
+		|	&#039;?&#039; 
+		|	&#039;\&#039;&#039; 
+		|	&#039;&quot;&#039; 
+		|	<a href="IDLLexer.html#mOCTDIGIT">mOCTDIGIT</a> 
+			(	<a href="IDLLexer.html#mOCTDIGIT">mOCTDIGIT</a> 
+				(	<a href="IDLLexer.html#mOCTDIGIT">mOCTDIGIT</a> 
+				|	
+				) 
+			|	
+			) 
+			
+		|	&#039;x&#039; <a href="IDLLexer.html#mHEXDIGIT">mHEXDIGIT</a> 
+			(	<a href="IDLLexer.html#mHEXDIGIT">mHEXDIGIT</a> 
+			|	
+			) 
+			
+		|	&#039;u&#039; <a href="IDLLexer.html#mHEXDIGIT">mHEXDIGIT</a> 
+			(	<a href="IDLLexer.html#mHEXDIGIT">mHEXDIGIT</a> 
+				(	<a href="IDLLexer.html#mHEXDIGIT">mHEXDIGIT</a> 
+					(	<a href="IDLLexer.html#mHEXDIGIT">mHEXDIGIT</a> 
+					|	
+					) 
+				|	
+				) 
+			|	
+			) 
+			
+		) 
+	;
+
+<a name="mWIDE_CHAR_LITERAL">mWIDE_CHAR_LITERAL</a>
+	:	&#039;L&#039; <a href="IDLLexer.html#mCHAR_LITERAL">mCHAR_LITERAL</a> 
+	;
+
+<a name="mSTRING_LITERAL">mSTRING_LITERAL</a>
+	:	&#039;&quot;&#039; 
+		(	<a href="IDLLexer.html#mESC">mESC</a> 
+		|	~&#039;&quot;&#039; 
+		)* 
+		&#039;&quot;&#039; 
+	;
+
+<a name="mWIDE_STRING_LITERAL">mWIDE_STRING_LITERAL</a>
+	:	&#039;L&#039; <a href="IDLLexer.html#mSTRING_LITERAL">mSTRING_LITERAL</a> 
+	;
+
+protected <a name="mOCTDIGIT">mOCTDIGIT</a>
+	:			'0'..'7' 
+	;
+
+protected <a name="mHEXDIGIT">mHEXDIGIT</a>
+	:	(				'0'..'9' 
+		|				'a'..'f' 
+		|				'A'..'F' 
+		) 
+	;
+
+protected <a name="mVOCAB">mVOCAB</a>
+	:			'\3'..'\377' 
+	;
+
+protected <a name="mDIGIT">mDIGIT</a>
+	:			'0'..'9' 
+	;
+
+protected <a name="mNONZERODIGIT">mNONZERODIGIT</a>
+	:			'1'..'9' 
+	;
+
+<a name="mHEX">mHEX</a>
+	:	(	&quot;0x&quot; 
+		|	&quot;0X&quot; 
+		) 
+		( <a href="IDLLexer.html#mHEXDIGIT">mHEXDIGIT</a> )+ 
+	;
+
+<a name="mINT">mINT</a>
+	:	<a href="IDLLexer.html#mNONZERODIGIT">mNONZERODIGIT</a> ( <a href="IDLLexer.html#mDIGIT">mDIGIT</a> )* 
+		(	&#039;.&#039; ( <a href="IDLLexer.html#mDIGIT">mDIGIT</a> )* 
+			(	( (	&#039;e&#039; 
+					|	&#039;E&#039; 
+					) 
+					(	&#039;+&#039; 
+					|	&#039;-&#039; 
+					|	
+					) 
+					( <a href="IDLLexer.html#mDIGIT">mDIGIT</a> )+ ) 
+			|	(	&#039;d&#039; 
+				|	&#039;D&#039; 
+				) 
+				
+			|	
+			) 
+		|	(	&#039;e&#039; 
+			|	&#039;E&#039; 
+			) 
+			(	&#039;+&#039; 
+			|	&#039;-&#039; 
+			|	
+			) 
+			( <a href="IDLLexer.html#mDIGIT">mDIGIT</a> )+ 
+		|	(	&#039;d&#039; 
+			|	&#039;D&#039; 
+			) 
+			
+		|	
+		) 
+	;
+
+<a name="mOCTAL">mOCTAL</a>
+	:	&#039;0&#039; 
+		(	( <a href="IDLLexer.html#mDIGIT">mDIGIT</a> )+ 
+		|	<a href="IDLLexer.html#mFLOAT">mFLOAT</a> 
+		|	(	&#039;d&#039; 
+			|	&#039;D&#039; 
+			) 
+			
+		|	
+		) 
+	;
+
+<a name="mFLOAT">mFLOAT</a>
+	:	&#039;.&#039; ( <a href="IDLLexer.html#mDIGIT">mDIGIT</a> )+ 
+		(	(	&#039;e&#039; 
+			|	&#039;E&#039; 
+			) 
+			(	&#039;+&#039; 
+			|	&#039;-&#039; 
+			|	
+			) 
+			( <a href="IDLLexer.html#mDIGIT">mDIGIT</a> )+ 
+		|	(	&#039;d&#039; 
+			|	&#039;D&#039; 
+			) 
+			
+		|	
+		) 
+	;
+
+<a name="mIDENT">mIDENT</a>
+	:	(				'a'..'z' 
+		|				'A'..'Z' 
+		) 
+		(				'a'..'z' 
+		|				'A'..'Z' 
+		|	&#039;_&#039; 
+		|				'0'..'9' 
+		)* 
+	;
+
+<a name="mESCAPED_IDENT">mESCAPED_IDENT</a>
+	:	&#039;_&#039; 
+		(				'a'..'z' 
+		|				'A'..'Z' 
+		) 
+		(				'a'..'z' 
+		|				'A'..'Z' 
+		|	&#039;_&#039; 
+		|				'0'..'9' 
+		)* 
+		
+	;

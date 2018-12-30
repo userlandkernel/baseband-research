@@ -1,0 +1,4 @@
+   interface test {
+     const unsigned short SIZE=0;
+     typedef short short_array[SIZE];
+   };

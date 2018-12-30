@@ -1,0 +1,22 @@
+This file contains a grab-bag of requirements for elfweaver. Ideally
+elfweaver will support all of these.
+
+1. Alignment specification. Default and per object.
+
+2. Produce the same output from identical input across systems.
+(Problems with old dite which had uninitialised data in the final
+image, which could be different on different runs or different
+operating systems.)
+
+3. Order of segments in output file must be possible.
+
+4. Able to manipulate segment flags.
+
+5. Support the latest ELF standard.
+
+6. Allow specification of arbitrary regions of memory.
+
+7. Provide  a memory usage report when building an image.
+
+8. Ideally XML parsing should be extensible and allow easy adding of
+new tags and features, without needing in-depth parsing knowledge.

@@ -1,0 +1,7 @@
+ MagpieAST  (0, ?:?)
+  type test  (1, test/input/idlast/duplicate_forward_decl.idl:1)
+   (meta_type) = ['interface']
+   function op  (2, test/input/idlast/duplicate_forward_decl.idl:4)
+    return_type  (3, test/input/idlast/duplicate_forward_decl.idl:4)
+     target  (4, <builtin>:?)
+      type void (backref)

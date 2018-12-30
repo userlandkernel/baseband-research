@@ -1,0 +1,3 @@
+ MagpieAST  (0, ?:?)
+  type simple  (1, test/input/idlast/simple.idl:1)
+   (meta_type) = ['interface']

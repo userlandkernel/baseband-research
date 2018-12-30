@@ -1,0 +1,19 @@
+<image loader_offset="0" physical_entry="true">
+ <virtualmemory>
+   <region base="0x00000000" size="0xcfffffff" />
+ </virtualmemory>
+
+ <physicalmemory> 
+    <region base="0xc0000000" size="0x01000000" />
+    <region base="0xc8000000" size="0x01000000" />
+ </physicalmemory> 
+ 
+ <kernel file="build/pistachio/bin/l4kernel">
+   <heap>
+    <region base="0xc0600000" size="0x00009900" />
+   </heap>
+ </kernel>
+
+ <rootserver file="build/l4_rootserver/bin/hello" />
+
+</image>

@@ -1,0 +1,19 @@
+import "char_ptr_arg_2.h";
+
+[uuid(24)]
+interface iguana_thread
+{
+   /* This is another `magic' method */
+   thread_ref_t id(in L4_ThreadId_t thread);
+   L4_ThreadId_t l4id(in thread_ref_t thread);
+   void set_handle(in L4_ThreadId_t thrd_id, in char *handle);
+   L4_ThreadId_t getId_from_handle(in char *handle);
+   int clr_handle(in L4_ThreadId_t thrd_id);
+
+   void start(in thread_ref_t thread, in uintptr_t ip, in uintptr_t sp);
+/*  pd_ref_t domain(in thread_ref_t thread);*/
+
+   void delete(in thread_ref_t thread);
+};
+
+

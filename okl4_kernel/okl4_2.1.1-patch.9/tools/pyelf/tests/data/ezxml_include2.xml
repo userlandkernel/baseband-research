@@ -1,0 +1,8 @@
+    <child name="included1" />
+    <child name="included2" />
+    <child name="included3" />
+    <child name="included4" />
+    <child name="included5" />
+    <child name="included6" />
+    <!-- Recursive include -->
+    <include file="data/ezxml_include.xml" />

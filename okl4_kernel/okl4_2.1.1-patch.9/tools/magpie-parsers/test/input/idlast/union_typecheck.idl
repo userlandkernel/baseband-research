@@ -1,0 +1,6 @@
+interface test {
+    enum color { red, green };
+    union broken switch (short) {
+      case red: short x;
+    };
+  };

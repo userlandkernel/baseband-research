@@ -1,0 +1,16 @@
+ MagpieAST  (0, ?:?)
+  module A  (1, test/input/idlast/reopened_scope.idl:1)
+   type Base  (2, test/input/idlast/reopened_scope.idl:2)
+    (meta_type) = ['interface']
+    function foo  (3, test/input/idlast/reopened_scope.idl:2)
+     return_type  (4, test/input/idlast/reopened_scope.idl:2)
+      target  (5, <builtin>:?)
+       type void (backref)
+   type Derived  (2, test/input/idlast/reopened_scope.idl:5)
+    (meta_type) = ['interface']
+    inherits Base  (3, test/input/idlast/reopened_scope.idl:5)
+     type Base (backref)
+    function bar  (3, test/input/idlast/reopened_scope.idl:5)
+     return_type  (4, test/input/idlast/reopened_scope.idl:5)
+      target  (5, <builtin>:?)
+       type void (backref)

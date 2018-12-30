@@ -1,0 +1,4 @@
+[uuid(32)]
+interface foo {
+	void op(in unsigned long long x);
+};

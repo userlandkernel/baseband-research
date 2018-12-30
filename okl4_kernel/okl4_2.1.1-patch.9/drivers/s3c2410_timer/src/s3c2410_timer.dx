@@ -1,0 +1,128 @@
+<device name="s3c2410_timer">
+<!--
+Copyright (c) 2007 Open Kernel Labs, Inc. (Copyright Holder).
+All rights reserved.
+
+1. Redistribution and use of OKL4 (Software) in source and binary
+forms, with or without modification, are permitted provided that the
+following conditions are met:
+
+    (a) Redistributions of source code must retain this clause 1
+        (including paragraphs (a), (b) and (c)), clause 2 and clause 3
+        (Licence Terms) and the above copyright notice.
+
+    (b) Redistributions in binary form must reproduce the above
+        copyright notice and the Licence Terms in the documentation and/or
+        other materials provided with the distribution.
+
+    (c) Redistributions in any form must be accompanied by information on
+        how to obtain complete source code for:
+       (i) the Software; and
+       (ii) all accompanying software that uses (or is intended to
+       use) the Software whether directly or indirectly.  Such source
+       code must:
+       (iii) either be included in the distribution or be available
+       for no more than the cost of distribution plus a nominal fee;
+       and
+       (iv) be licensed by each relevant holder of copyright under
+       either the Licence Terms (with an appropriate copyright notice)
+       or the terms of a licence which is approved by the Open Source
+       Initative.  For an executable file, "complete source code"
+       means the source code for all modules it contains and includes
+       associated build and other files reasonably required to produce
+       the executable.
+
+2. THIS SOFTWARE IS PROVIDED ``AS IS'' AND, TO THE EXTENT PERMITTED BY
+LAW, ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE, OR NON-INFRINGEMENT, ARE DISCLAIMED.  WHERE ANY WARRANTY IS
+IMPLIED AND IS PREVENTED BY LAW FROM BEING DISCLAIMED THEN TO THE
+EXTENT PERMISSIBLE BY LAW: (A) THE WARRANTY IS READ DOWN IN FAVOUR OF
+THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+PARTICIPANT) AND (B) ANY LIMITATIONS PERMITTED BY LAW (INCLUDING AS TO
+THE EXTENT OF THE WARRANTY AND THE REMEDIES AVAILABLE IN THE EVENT OF
+BREACH) ARE DEEMED PART OF THIS LICENCE IN A FORM MOST FAVOURABLE TO
+THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+PARTICIPANT). IN THE LICENCE TERMS, "PARTICIPANT" INCLUDES EVERY
+PERSON WHO HAS CONTRIBUTED TO THE SOFTWARE OR WHO HAS BEEN INVOLVED IN
+THE DISTRIBUTION OR DISSEMINATION OF THE SOFTWARE.
+
+3. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR ANY OTHER PARTICIPANT BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+
+<interface interface_type="timer" name="timer" />
+
+<state name="disabled" />
+<state name="timekeep" />
+<state name="periodic" />
+<state name="shot_long" />
+<state name="shot_short" />
+
+<datafield ftype="uint64_t" name="xtal_freq" />
+<datafield ftype="uint64_t" name="pll_freq" />
+<datafield ftype="uint64_t" name="remaining_ticks" />
+<datafield ftype="uint64_t" name="next_timeout" />
+<datafield ftype="uint64_t" name="ticks" />
+<datafield ftype="uint64_t" name="tick_frequency" />
+<datafield ftype="uint32_t" name="compare" />
+
+<resource name="main" rtype="mem_space_t" />
+
+<block name="main" space_type="mem" space="main" register_size="32">
+
+ <register name="tcfg0" offset="0x00" type="rw">
+  <field name="dzlen" bits="16:23" />
+  <field name="prescaler1" bits="8:15" />
+  <field name="prescaler0" bits="0:7" />
+ </register>
+
+ <register name="tcfg1" offset="0x04" type="rw">
+  <field name="dma_mode" bits="20:23" />
+  <field name="mux4" bits="16:19" />
+  <field name="mux3" bits="12:15" />
+  <field name="mux2" bits="8:11" />
+  <field name="mux1" bits="4:7" />
+  <field name="mux0" bits="0:3" />
+ </register>
+
+ <!-- XXX Currently only has timer1 -->
+ <register name="tcon" offset="0x08" type="rw">
+  <field name="timer2_autoreload" bits="15" />
+  <field name="timer2_output_inverter" bits="14" />
+  <field name="timer2_manual_update" bits="13" />
+  <field name="timer2_enable" bits="12" />
+  <field name="timer1_autoreload" bits="11" />
+  <field name="timer1_output_inverter" bits="10" />
+  <field name="timer1_manual_update" bits="9" />
+  <field name="timer1_enable" bits="8" />
+ </register>
+
+ <register name="tcntb0" offset="0x0c" type="rw"/>
+ <register name="tcmpb0" offset="0x10" type="rw"/>
+ <register name="tcnto0" offset="0x14" type="ro"/>
+
+ <register name="tcntb1" offset="0x18" type="rw"/>
+ <register name="tcmpb1" offset="0x1c" type="rw"/>
+ <register name="tcnto1" offset="0x20" type="ro"/>
+
+ <register name="tcntb2" offset="0x24" type="rw"/>
+ <register name="tcmpb2" offset="0x28" type="rw"/>
+ <register name="tcnto2" offset="0x2c" type="ro"/>
+
+ <register name="tcntb3" offset="0x30" type="rw"/>
+ <register name="tcmpb3" offset="0x34" type="rw"/>
+ <register name="tcnto3" offset="0x38" type="ro"/>
+
+ <register name="tcntb4" offset="0x3c" type="rw"/>
+ <register name="tcnto4" offset="0x40" type="ro"/>
+
+</block>
+</device>

@@ -1,0 +1,23 @@
+Magpie
+~~~~~~
+Thanks for looking at Magpie, an interface generator for L4-based systems. For information on Magpie, refer to the Magpie Web site:
+
+http://wiki.nyloncactus.com/magpie:start
+
+License
+~~~~~~~
+Development of Magpie was partially funded by National ICT Australia. As such, Magpie is released under the OZ-PLB license. I am told (by lawyers) that this is essentially the BSD license without advertising clause but with special provisions added to comply with Australian law. More information on the license is available here:
+
+http://nicta.com.au/director/commercialisation/open_source_licence.cfm
+
+Parts of Magpie use other licenses; see below.
+
+Pexpect
+~~~~~~~
+Magpie includes Pexpect for testing. Pexpect is licensed under the very cool MIT license. Homepage: http://pexpect.sourceforge.net/
+
+L4KA Pistachio
+~~~~~~~~~~~~~~
+Magpie includes L4KA Pistachio for testing. Pistachio is licensed under the (also very cool) two-clause BSD license. Homepage: http://l4ka.org/projects/pistachio/
+
+

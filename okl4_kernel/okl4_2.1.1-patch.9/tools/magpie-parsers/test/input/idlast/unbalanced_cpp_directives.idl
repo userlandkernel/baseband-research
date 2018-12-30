@@ -1,0 +1,4 @@
+#ifndef FOO
+#ifndef BAR
+interface test{};
+#endif

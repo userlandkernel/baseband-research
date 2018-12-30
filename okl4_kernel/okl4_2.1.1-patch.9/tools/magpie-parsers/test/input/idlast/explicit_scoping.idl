@@ -1,0 +1,6 @@
+module A { 
+	interface foo { void op(); }; 
+};
+interface B { 
+	void op(in A::foo arg); 
+};

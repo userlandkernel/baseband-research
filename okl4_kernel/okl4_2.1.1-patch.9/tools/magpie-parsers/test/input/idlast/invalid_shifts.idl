@@ -1,0 +1,3 @@
+interface test {
+    const short VALUE = 1 << 64;
+  };

@@ -1,0 +1,5 @@
+[uuid(65534)]
+interface foo {
+	struct duplicate { long x; };
+	void duplicate();
+};

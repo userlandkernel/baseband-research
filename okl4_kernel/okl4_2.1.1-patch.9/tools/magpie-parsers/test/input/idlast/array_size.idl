@@ -1,0 +1,3 @@
+interface test {
+    typedef short array[-5];
+  };

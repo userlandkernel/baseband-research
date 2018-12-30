@@ -1,0 +1,2 @@
+* Parser error *
+test/input/idlast/string_as_discriminator.idl:2:Unexpected token "string"

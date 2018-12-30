@@ -1,0 +1,143 @@
+#!/usr/bin/python
+
+#
+# Script to extract memory usage information from build objects
+#
+# Invocation: "memory-usage {build}" where {build} directory of the build
+#             tree (by default "build/")
+#
+
+import commands
+import re
+import sys
+import os.path
+
+class NoObjectFile(Exception): pass
+
+targets = (('pistachio', '%s/pistachio/bin/kernel'),
+           ('ig_server', '%s/iguana_server/bin/ig_server'),
+           ('devicecore', '%s/iguana/bin/devicecore'),
+           ('ig_naming', '%s/iguana/bin/ig_naming'),
+           ('event', '%s/iguana/bin/event'),
+           ('vrtc', '%s/iguana/bin/vrtc'),
+           ('vserial', '%s/iguana/bin/vserial'),
+           ('vtimer', '%s/iguana/bin/vtimer'))
+
+
+class obj_parser(object):
+    expr = re.compile(r".*([0-9]+)\s+(\.[_a-z0-9]+)\s+([0-9a-f]+).*")
+    func = re.compile(r"^[0-9a-f]+.*F\s+\.text\s+([0-9a-f]+)\s+([^$].+)$")
+    data = re.compile(r"^[0-9a-f]+.*O\s+\.(data|bss)\s+([0-9a-f]+)\s+(\S+)$")
+    drops = re.compile(r".*(debug|segment_names|comment).*")
+
+    elfHeaders = re.compile(r"^\s+LOAD\s+0x[0-9a-f]+\s+0x[0-9a-f]+\s+0x[0-9a-f]+\s+0x[0-9a-f]+\s+(0x[0-9a-f]+\s+).*$")
+    section = "SYMBOL TABLE"
+
+    def __init__(self, name, filename):
+        self.static_total = 0
+        self.sections = []
+        self.functions = []
+        self.function_count = 0
+        self.segment_count = 0
+        self.segment_size = 0
+        self.elements = []
+        self.element_count = 0
+        self.name = name
+        self.filename = filename
+        
+    def parse(self):
+        self.readfile(self.filename)
+        print "%s - taken from %s\n" % (self.name, self.filename)
+        print "\tSections (with debug and empty sections dropped):\n"
+        for (sec, sz) in self.sections:
+            if sz != 0:
+                pad = ' ' * (24 - len(sec))
+                print "\t%s:%s%d Bytes" % (sec, pad, sz)
+        print "\n\tTotal static size by sections (unrounded) is %.2f KB" % (self.static_total / 1024.0)
+
+        print "\n\tSize by rounded segments (%d total) is %.2f KB" % (self.segment_count, (self.segment_size / 1024.0))
+
+        print "\n\tTop 10 functions (from %d) by size:\n" % self.function_count
+        self.functions.sort(lambda x, y: cmp(y[1], x[1]))
+        i = 0
+        while i < 10:
+            nxt = self.functions[i]
+            pad = ' ' * (40 - len(nxt[0]))
+            print "\t%s: %s%d Bytes" % (nxt[0], pad, nxt[1])
+            i = i + 1
+        print "\n\tTop 10 global data elements (from %d) by size:\n" % self.element_count
+        self.elements.sort(lambda x, y: cmp(y[1], x[1]))
+        i = 0
+        if (self.element_count < 10):
+            range = self.element_count
+        else:
+            range = 10
+        while i < range:
+            nxt = self.elements[i]
+            pad = ' ' * (40 - len(nxt[0]))
+            print "\t%s: %s%d Bytes" % (nxt[0], pad, nxt[1])
+            i = i + 1
+        print "\n\n"
+
+    def objdump(self, filename):
+        file_section = "sections"
+        for line in commands.getoutput("objdump -Cx %s" % filename).split('\n'):
+            if (file_section == "symbols") or (line.find(obj_parser.section) != -1):
+                file_section = "symbols"
+                self.process_symbol(line)
+            else:
+                self.process_section(line)
+
+    def readelf(self, filename):
+        for line in commands.getoutput("readelf --program-headers %s" % filename).split('\n'):
+            m = obj_parser.elfHeaders.match(line)
+            if m:
+                self.segment_count = self.segment_count + 1
+                sz = int(m.group(1), 16) # Convert to decimal
+                self.segment_size = self.segment_size + sz + (4096 - (sz % 4096))
+
+    def readfile(self, filename):
+        if not os.path.exists(filename):
+            x = NoObjectFile()
+            raise x
+        self.objdump(filename)
+        self.readelf(filename)
+
+    def process_section(self, line):
+        m = obj_parser.expr.match(line)
+        if m:
+            if not obj_parser.drops.match(m.group(2)):
+                sz = int(m.group(3), 16) # Convert to decimal
+                self.static_total = self.static_total + sz
+                self.sections.append((m.group(2), sz))
+                #
+                # Kludge for KIP - need to round up to 4K
+                #
+                if m.group(2) == ".kip":
+                    round_sz = 4096 - (sz % 4096)
+                    self.static_total = self.static_total + round_sz
+                    self.sections.append((".kip-rounding", round_sz))
+
+    def process_symbol(self, line):
+        m = obj_parser.func.match(line)
+        if m:
+            sz = int(m.group(1), 16) # Convert to decimal
+            self.functions.append((m.group(2), sz))
+            self.function_count = self.function_count + 1
+        else:
+            m = obj_parser.data.match(line)
+            if m:
+                sz = int(m.group(2), 16) # Convert to decimal
+                self.elements.append((m.group(3), sz))
+                self.element_count = self.element_count + 1
+                
+    
+
+
+for (name, filename) in targets:
+    try:
+        ps = obj_parser(name, filename % sys.argv[1])
+        ps.parse()
+    except NoObjectFile:
+        pass
+

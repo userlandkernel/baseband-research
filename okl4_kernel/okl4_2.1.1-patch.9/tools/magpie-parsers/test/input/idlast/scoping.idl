@@ -1,0 +1,9 @@
+module A {
+	typedef unsigned long uint32;
+};
+
+module B {
+	interface test {
+		uint32 op();
+	};
+};

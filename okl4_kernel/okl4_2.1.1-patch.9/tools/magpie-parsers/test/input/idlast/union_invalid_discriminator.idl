@@ -1,0 +1,6 @@
+  interface test {
+    typedef sequence<short> discriminator;
+    union foo switch (discriminator) {
+      default: float x;
+    };
+  };

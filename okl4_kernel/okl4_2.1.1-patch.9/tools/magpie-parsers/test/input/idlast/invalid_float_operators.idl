@@ -1,0 +1,4 @@
+interface test {
+    const float VALUE = 3.4 & 2;
+  };
+

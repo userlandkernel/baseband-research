@@ -1,0 +1,2 @@
+GENERATOR = 'broken'
+OUTPUT = 'broken'

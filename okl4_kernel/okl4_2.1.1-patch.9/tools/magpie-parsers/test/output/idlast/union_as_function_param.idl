@@ -1,0 +1,22 @@
+ MagpieAST  (0, ?:?)
+  type test  (1, test/input/idlast/union_as_function_param.idl:1)
+   (meta_type) = ['interface']
+   type short_optional  (2, test/input/idlast/union_as_function_param.idl:2)
+    (meta_type) = ['union']
+    discriminator  (3, <builtin>:?)
+     type boolean (backref)
+    switch  (3, test/input/idlast/union_as_function_param.idl:4)
+     case  (4, test/input/idlast/union_as_function_param.idl:3)
+      expression  (5, ?:?)
+       (value) = [True]
+       type bool (backref)
+      type_instance value  (5, test/input/idlast/union_as_function_param.idl:3)
+       type short (backref)
+   function op  (2, test/input/idlast/union_as_function_param.idl:5)
+    return_type  (3, test/input/idlast/union_as_function_param.idl:5)
+     target  (4, <builtin>:?)
+      type void (backref)
+    parameter arg  (3, test/input/idlast/union_as_function_param.idl:5)
+     (direction) = ['in']
+     target  (4, test/input/idlast/union_as_function_param.idl:2)
+      type short_optional (backref)

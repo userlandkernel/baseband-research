@@ -1,0 +1,6 @@
+module A {
+	interface Base { void foo(); }; 
+};
+module A { 
+	interface Derived : Base { void bar(); };
+};

@@ -1,0 +1,9 @@
+[uuid(1)]
+interface nic
+{
+	int init(out unsigned nic_base, out int total_nics);
+	int open(in int nic_num);
+	int close(in int nic_num);
+	int transmit(in int nic_num);
+};
+

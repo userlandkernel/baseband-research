@@ -1,0 +1,8 @@
+import "test/input/syntax_error.h";
+
+[uuid(22)]
+interface iguana_pd
+{
+	int create_memsection(in int inputarg, out int result);
+};
+

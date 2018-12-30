@@ -1,0 +1,18 @@
+# --------------------------------------------------------
+# iBox skyeye.conf
+#0x40000 -- 0x13ffff    Kernel Image in Flash
+#0x140000 -- 0x800000   Compressed Root Image
+#Unmapped Memory
+#0xa0000 0000 -- 0xa1FF FFFF    Ram
+#
+ 
+cpu: pxa27x
+mach: pxa_lubbock
+# pxa_lubbock is the only xscale 'machine' definition
+# listed in in sim/arm/skyeye_options.c:85
+
+mem_bank: map=M, type=RW, addr=0xA0000000, size=0x03FFFFFF
+
+mem_bank: map=I, type=RW, addr=0x40000000, size=0x4BFFFFFF
+
+log: logon=1, logfile=/tmp/sk1.log, start=0, end=20000000000

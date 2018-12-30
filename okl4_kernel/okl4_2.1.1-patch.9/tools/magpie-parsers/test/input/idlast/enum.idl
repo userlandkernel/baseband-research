@@ -1,0 +1,7 @@
+interface test { 
+	union foo switch (enum color { red, green, blue }) {
+		case red: short x; 
+		case green: long y; 
+		case blue: float z; 
+	};
+};

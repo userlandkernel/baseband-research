@@ -1,0 +1,8 @@
+   module outer {
+     module inner1 {
+       typedef string S1;
+     };
+     module inner2 {
+       typedef string inner1;
+     };
+   };

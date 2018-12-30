@@ -1,0 +1,9 @@
+interface test {
+	union foo switch (short) {
+		case 1:
+		case 2:
+			short x;
+		case 3:
+			float y;
+	};
+};

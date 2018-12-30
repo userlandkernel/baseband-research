@@ -1,0 +1,22 @@
+   typedef long ArgType;
+
+   module M {
+     union U switch (ArgType) {
+       case 1:
+         short x;
+       default:
+         float y;
+     }; /* Potential scope of ArgType ends here, since enclosing scope
+           is a module */
+     enum color { red, green, blue };
+     /* This redefinition is legal, since ArgType is not in this scope
+*/
+     typedef color ArgType;
+
+     union T switch (ArgType) {
+       case red:
+         short x;
+       default:
+         float y;
+     };
+   };

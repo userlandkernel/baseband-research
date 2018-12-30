@@ -1,0 +1,6 @@
+   interface test {
+     const long               l   = -2147483648;
+     const unsigned long      ul  = 4294967295;
+     const long long          ll  = -9223372036854775808;
+     const unsigned long long ull = 18446744073709551615;
+   };

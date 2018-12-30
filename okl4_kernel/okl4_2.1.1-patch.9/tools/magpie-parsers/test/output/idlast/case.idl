@@ -1,0 +1,23 @@
+ MagpieAST  (0, ?:?)
+  type test  (1, test/input/idlast/case.idl:1)
+   (meta_type) = ['interface']
+   type foo  (2, test/input/idlast/case.idl:2)
+    (meta_type) = ['union']
+    discriminator  (3, <builtin>:?)
+     type short (backref)
+    switch  (3, test/input/idlast/case.idl:6)
+     case  (4, test/input/idlast/case.idl:3)
+      expression  (5, ?:?)
+       (value) = [1]
+       type octet (backref)
+      expression  (5, ?:?)
+       (value) = [2]
+       type octet (backref)
+      type_instance x  (5, test/input/idlast/case.idl:5)
+       type short (backref)
+     case  (4, test/input/idlast/case.idl:6)
+      expression  (5, ?:?)
+       (value) = [3]
+       type octet (backref)
+      type_instance y  (5, test/input/idlast/case.idl:7)
+       type float (backref)

@@ -1,0 +1,212 @@
+/*
+ * This is an simple file for generating
+ * example-outputs of the idl ast-generator
+ */
+ 
+/* import declarations */
+import STRINGLITERAL;
+import ::name1::name2::name;
+import name1::name;
+
+/* -- decorated definitions -- */
+
+/* decorator(s) */
+[identifier1(), identifier2(42, 23), identifier3(const_exp)]
+
+/* -- type_spec - examples -- */
+/* -- simple_type_spec -- */
+
+/* -- base_type_spec -- */
+
+/* floating point types [float, double, long double]*/
+typedef float float_type;
+/* signed integer [short, long, long long]*/
+typedef short short_type;
+/* unsigned integer [short, long, long long]*/
+typedef unsigned long unsigned_long_type;
+/* char, wchar type */
+typedef char char_type;
+typedef wchar wchar_type;
+/* boolean type */
+typedef boolean boolean_type;
+/* octet type */
+typedef octet octet_type;
+/* any, object, value_based type */
+typedef any any_type;
+typedef Object obj_type;
+typedef ValueBase valuebase_type;
+
+
+/* -- template_type_spec -- */
+/* sequence_type */
+typedef sequence<short> seq_type1;
+typedef sequence<short, 23> seq_type2;
+typedef sequence<::scope::name> seq_type1;
+
+/* string, wstring type */
+typedef string string_type1;
+typedef string<253> string_type2;
+typedef wstring string_type1;
+typedef wstring<254> wstring_type2;
+
+/* fixed pt type */
+typedef fixed<12, 34> fixed_type;
+
+/* -- scoped name -- */
+typedef scope::name scope_name;
+typedef ::scope2::name scope_name2;
+typedef no_scope new_name;
+
+
+/* -- constr_type_spec -- */
+
+struct forward_struct;
+
+/* struct_type */
+typedef struct myStruct {
+		int myInt[45];
+		long myLong;
+} struct_type;
+
+typdef myStruct Bar;
+
+/* union_type */
+typedef union Foo switch (long) {
+	case 1: long x;
+	case 2: Bar y;
+	default: char z;
+} union_type;
+
+typedef union Foo2 switch (char) {
+  	case 'a': long x;
+  	case 'b': Foo y;
+} union_type2;
+
+/* enum_type */
+typedef enum types {type1, type2, type3 } enum_type;
+
+/* -- declarator - examples -- */
+typedef char str22[22][2];
+typedef boolean boolarray[3][40];
+typedef long long_const_array[CONST1][CONST2][666][42];
+
+
+
+/* -- typedeclaration without typedef: -- *
+ * you just create types without creating *
+ * declarators (aliases) for the type!    */
+ 
+ struct only_struct{
+ 	int member;
+ };
+ 
+ union only_union switch (char) {
+ 	case 'a': long x;
+	case 'b': int y;
+ };
+ 
+ enum only_enum {one, two, three};
+ 
+ /* special types [native, const_forward] */
+ native simple_declarator;
+ struct forward_struct;
+ union forward_union;
+ 
+ /* -- end of type declaration -- */
+ 
+ /* -- const declaration -- */
+ const char CONST1 = 876;
+ const scope::name const2 = x;
+ const scope1::type_name cOnSt3 = scope2::CONST_NAME;
+ 
+ /* -- end of const declaration -- */
+ 
+ /* -- exception declaration -- */
+ /* same as struct! just replace "struct" with "exception" 
+    difference: members are optional! */
+ exception my_exception {
+	/* member_list is the same as for struct-defs */
+	short a;
+        string<20> d;
+ };
+ exception empty_exception{};
+ 
+ /* -- interface declaration -- */
+ /* optional keywords = (abstract, local)*/
+ interface my_interface{
+ 	/* -- export(s) -- */
+	
+	/* type-declaration (see above) */
+	typedef char myChar;
+	
+	/* const-declaration (see above) */
+	const int CONST = 42;
+	
+	/* exception-declaration (see above)*/
+	exception empty_exception{};
+	
+	/* attribute specification, attributes with exceptions */
+	attribute float myAttribute_float;
+	attribute scope::name  scope_name_attribute;
+	readonly attribute int readonly_attribute;
+	attribute int int_attr1, int_attr2;
+	attribute int int_attr getraises(scope::name, scope2::name) ;
+	attribute boolean boolattr setraises(::name);
+	
+	/* operation/function declaration */
+	[decorator_def(see::above), optional] 
+	int my_op1(in long long_param, out int *pointer_int, inout scope::name scope_name_param);
+	
+	void my_op2([decorator(see, above)] in string string_param);
+	oneway scope::name oneway_scoped_name();
+	void fcn_with_exception() raises(scope::name, scope2::name);
+	long fcn_with_context() context("context1", "context2");
+	
+	/* typeid declaration */
+	typeid scope::name "string_literal";
+	
+	/* typeprefix declaration */
+	typeprefix scope::name "string_literal";
+
+ };
+
+ interface interface_inheritance : scope1, scope::scope2, ::scop3::scope {
+ 	void export_as_above();
+ };
+ 
+ abstract interface abs_interface{
+ 	void export_as_above();
+ };
+ 
+ local interface loc_interface{
+ 	void export_as_above();
+ };
+ 
+ /* module definition */
+ /* just put everything (except import declarations) in a container (new scope) */
+ module my_module{
+ 	
+	/* you can put all decorated definitions in here!! */
+ 	typedef int my_int;
+	interface mod_interf{
+		void dummy();
+	};
+ };
+ 
+ /* value-definition */
+ /* FIXME: create value examples!! */
+ 
+/* typeid declaration definition */
+typeid scope::name "string_literal";
+	
+/* typeprefix declaration definition */
+typeprefix scope::name "string_literal";
+  
+/* event definition */
+/* FIXME: create event examples!! */
+
+/* component definition */
+/* FIXME: create component examples */
+
+/* home definition */
+/* FIXME: create home examples */

@@ -1,0 +1,2 @@
+* Parser error *
+test/input/idlast/missing_semicolon.idl:3:Unexpected token "x"

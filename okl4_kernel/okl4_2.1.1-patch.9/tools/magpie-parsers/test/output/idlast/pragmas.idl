@@ -1,0 +1,3 @@
+ MagpieAST  (0, ?:?)
+  type test  (1, test/input/idlast/pragmas.idl:2)
+   (meta_type) = ['interface']

@@ -1,0 +1,9 @@
+import "simple.camkes";
+import "component_def.camkes";
+import "std_connector.camkes";
+
+assembly {
+	component simple simple_instance;
+	component component_def
+	
+};

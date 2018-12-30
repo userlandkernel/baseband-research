@@ -1,0 +1,2139 @@
+/*
+ * Copyright (c) 2003-2006, National ICT Australia (NICTA)
+ */
+/*
+ * Copyright (c) 2007-2008 Open Kernel Labs, Inc. (Copyright Holder).
+ * All rights reserved.
+ *
+ * 1. Redistribution and use of OKL4 (Software) in source and binary
+ * forms, with or without modification, are permitted provided that the
+ * following conditions are met:
+ *
+ *     (a) Redistributions of source code must retain this clause 1
+ *         (including paragraphs (a), (b) and (c)), clause 2 and clause 3
+ *         (Licence Terms) and the above copyright notice.
+ *
+ *     (b) Redistributions in binary form must reproduce the above
+ *         copyright notice and the Licence Terms in the documentation and/or
+ *         other materials provided with the distribution.
+ *
+ *     (c) Redistributions in any form must be accompanied by information on
+ *         how to obtain complete source code for:
+ *        (i) the Software; and
+ *        (ii) all accompanying software that uses (or is intended to
+ *        use) the Software whether directly or indirectly.  Such source
+ *        code must:
+ *        (iii) either be included in the distribution or be available
+ *        for no more than the cost of distribution plus a nominal fee;
+ *        and
+ *        (iv) be licensed by each relevant holder of copyright under
+ *        either the Licence Terms (with an appropriate copyright notice)
+ *        or the terms of a licence which is approved by the Open Source
+ *        Initative.  For an executable file, "complete source code"
+ *        means the source code for all modules it contains and includes
+ *        associated build and other files reasonably required to produce
+ *        the executable.
+ *
+ * 2. THIS SOFTWARE IS PROVIDED ``AS IS'' AND, TO THE EXTENT PERMITTED BY
+ * LAW, ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE, OR NON-INFRINGEMENT, ARE DISCLAIMED.  WHERE ANY WARRANTY IS
+ * IMPLIED AND IS PREVENTED BY LAW FROM BEING DISCLAIMED THEN TO THE
+ * EXTENT PERMISSIBLE BY LAW: (A) THE WARRANTY IS READ DOWN IN FAVOUR OF
+ * THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+ * PARTICIPANT) AND (B) ANY LIMITATIONS PERMITTED BY LAW (INCLUDING AS TO
+ * THE EXTENT OF THE WARRANTY AND THE REMEDIES AVAILABLE IN THE EVENT OF
+ * BREACH) ARE DEEMED PART OF THIS LICENCE IN A FORM MOST FAVOURABLE TO
+ * THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+ * PARTICIPANT). IN THE LICENCE TERMS, "PARTICIPANT" INCLUDES EVERY
+ * PERSON WHO HAS CONTRIBUTED TO THE SOFTWARE OR WHO HAS BEEN INVOLVED IN
+ * THE DISTRIBUTION OR DISSEMINATION OF THE SOFTWARE.
+ *
+ * 3. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR ANY OTHER PARTICIPANT BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+/*
+ * ARM Exception Vectors and IPC /Exception Fastpaths
+ */
+
+#include <l4.h>
+#include <tcb_layout.h>
+#include <ktcb_layout.h>
+#include <context_layout.h>
+#include <asmsyms.h>
+#include <arch/globals.h>
+#include <arch/thread.h>
+#include <arch/syscalls.h>
+#include <arch/asm.h>
+#include <l4/arch/vregs.h>
+
+        TRAPS_BEGIN_MARKER  /* Do not remove */
+
+/* Relative branches, loads and stores to locations outside this 4K page are
+ * broken, as this is remapped to the high interrupt vector 0xFFFF0000
+ */
+        BEGIN_PROC_TRAPS(arm_high_vector)
+        b       arm_reset_exception
+        b       arm_undefined_inst_exception
+        b       arm_swi_syscall
+        b       arm_prefetch_abort_exception
+        b       arm_data_abort_exception
+        nop
+        b       arm_irq_exception
+        /* FIQ exception vectors here */
+        END_PROC_TRAPS(arm_high_vector)
+
+LABEL(fiq_vec)
+        /* R8-R14 are banked */
+        mrs     r8,     spsr
+        ands    r9,     r8,     #0xf    /* Test if user mode */
+        tstne   r8,     #0x80           /* Check if IRQ enabled in kernel mode */
+        beq     arm_fiq_exception
+
+        /* FIQ from kernel mode with IRQs disabled */
+        orr     r8,     r8,     #0xc0   /* Disable IRQ+FIQ */
+        msr     spsr_c, r8
+        subs    pc,     r14,    #4      /* Continue kernel execution */
+
+/*
+ * ARM Reset Exception
+ */
+        BEGIN_PROC_TRAPS(arm_reset_exception)
+        /* Not currently handled under ARMv6. */
+        b       arm_reset_exception
+        END_PROC_TRAPS(arm_reset_exception)
+
+/*
+ * ARM Undefined Instruction Exception.
+ */
+        ALIGN   32
+        BEGIN_PROC_TRAPS(arm_undefined_inst_exception)
+        /* Save R14, SPSR */
+        mrs     r13,    spsr
+        sub     lr,     lr,     #4
+
+        /* Fixup for thumb */
+        tst     r13,    #CPSR_THUMB_BIT
+        addne   lr,     lr,     #2
+
+        srsdb   r13_svc!
+        /* Enter supervisor mode */
+        cps     svc_mode
+        sub     sp,     sp,     #PT_SIZE-8
+        stmib   sp,     {r0-r14}^           /* save user - banked regs */
+        ldr     r4,     =check_coproc_fault /* r4 not banked */
+        ldr     r3,     [sp, #PT_CPSR]      /* Get faulting CPSR    */
+        ldr     r2,     [sp, #PT_PC]        /* Get faulting address */
+
+        str     lr,     [sp, #PT_KLR]       /* save kernel R14 */
+
+        /* Save current sp as context_t* */
+        mov     r0,     sp
+        mov     r5,     sp
+
+        /* Check for kernel / user exception - test stored SPSR */
+        ands    r1,     r3,     #CPSR_SYS_MODE_TEST /* User mode CPSR bits 3:0 = 0 */
+#if defined(CONFIG_DEBUG_SYSMODE)
+        subnes  r1,     r1,     #0xF        /* Also check if from SYSTEM mode */
+#endif
+        ldreq   sp,     stack_top           /* Use kernel stack if from USER mode */
+
+        tst     r3,     #CPSR_THUMB_BIT     /* Check if faulting in thumb code  */
+        ldreq   r1,     [r2]                /* Get faulting instruction         */
+
+        /* Call check_coproc_fault() */
+        blxeq   r4
+
+        ldr     r1,     =undefined_exception
+
+        /* Get context_t* back from r5 */
+        mov     r0,     r5
+
+        /* Call C function undefined_exception(arm_irq_context_t *) */
+        adr     lr,     arm_common_return
+        jump    r1
+        END_PROC_TRAPS(arm_undefined_inst_exception)
+
+/*
+ * ARM Common Return
+ */
+        ALIGN   32
+        /* Return from a data/prefetch abort or irq */
+        BEGIN_PROC_TRAPS(arm_memory_abort_return)
+        /* Drain write buffer so that pagetable updates are
+           visible to the pt walk hardware */
+        mov     r0,     #0
+        mcr     p15, 0, r0, c7, c10, 4
+        BEGIN_PROC_TRAPS(arm_abort_return)
+        BEGIN_PROC_TRAPS(arm_common_return)
+        LOAD_CONTEXT_INTO_SP
+
+        /* LOAD_CONTEXT_INTO_SP loads CURRENT_TCB into r0.
+         * If we are going back to userspace, determine if
+         * we have any post-syscall work. */
+        ldreq   r0,     [r0, #OFS_TCB_POST_SYSCALL_CALLBACK]
+
+        /* restore kernel R14 */
+        ldrne   lr,     [sp, #PT_KLR]
+
+        /* Determine if there is a callback function in the register. */
+        movne   r0,     #0
+        cmp     r0,     #0
+
+        ldmib   sp,     {r0-r14}^
+        nop
+
+        /* If there is any post-exception work to do, do it now. */
+        bne     arm_perform_callback_from_interrupt
+
+        add     sp,     sp,     #PT_SIZE-8
+
+        rfeia   sp!
+        END_PROC_TRAPS(arm_common_return)
+        END_PROC_TRAPS(arm_abort_return)
+
+/*
+ * ARM Software Interrupt Syscall
+ */
+        ALIGN   32
+        BEGIN_PROC_TRAPS(arm_swi_syscall)
+        orr     lr,     lr,     #1
+        srsdb   r13_svc!                /* Save user PC and CPSR */
+        stmdb   sp,     {sp, lr}^       /* Save user LR, SP [syscall no] */
+        nop
+
+        ldr     lr,     [sp, #-8]!      /* Get user's SP [syscall no] */
+        str     r12,    [sp, #SC_SP]    /* Save r12 to SP (user SP was in r12) - for sys_ipc */
+        /* BUBBLE */
+
+        /* Check whether this is an IPC syscall */
+        cmp     lr,     #(0xffffff00 + SYSCALL_ipc)
+        /* Not IPC syscall? */
+        bne     check_other_syscalls
+
+        /* ---- SYS_IPC starts here ---- */
+
+#ifdef CONFIG_IPC_FASTPATH
+#define to_tid          r0
+#define from_tid        r1
+#define mr0             r3
+#define mr1             r4
+#define mr2             r5
+#define mr3             r6
+#define mr4             r7
+#define mr5             r8
+
+#define to_tcb          r2
+#define current         r9
+#define tmp1            r10
+
+#define tmp2            r11
+#define tmp3            r12
+#define tmp6            lr
+
+#if ((USER_UTCB_PAGE) != 0xff000000)
+#error UTCB_AREA moved
+#endif
+
+/* Constants */
+#define L4_ANYTHREAD    (-1)
+
+        /***** Fast path IPC *****/
+
+        /*
+         * Notes about scheduling:
+         *
+         * The scheduler contains a two-level bitmap indicating which
+         * priorities have runnable threads on them. We read this bitmap
+         * to determine if we can perform our send without inadvertantly
+         * sending down-priority over a runnable thread, hence causing
+         * priority inversion.
+         *
+         * As long as the destination has a higher priority than the next
+         * waiting thread, we are good.
+         *
+         * The steps that are taken are as follows:
+         *
+         * SCHED1 - Get the index bitmap
+         *
+         * SCHED2 - Determine the bit that was set in the index bitmap.
+         *          If not bits are set, this will end up as (-1).
+         *
+         * SCHED3 - Determine the second-level priority bitmap to use.
+         *          If the results of SCHED2 was (-1), this will end up
+         *          pointing back to the index bitmap, which is zero.
+         *
+         * SCHED4 - Determine the bit set in the second-level bitmap. This
+         *          will end up as (-1) if the output of SCHED2 was (-1).
+         *
+         * SCHED5 - Calculate the priority based on the results of
+         *          SCHED2 and SCHED4. The result of this will be priority
+         *          of the highest runnable thread in the system, or
+         *          (((0xffffffff) << 5) + (0xffffffff)) == 0xffffffdf == (-33)
+         *          if no bits were set in the bitmap.
+         *
+         * SCHED6 - Get the effective priority of the destination thread.
+         *
+         * SCHED7 - Determine if there is an intermediate thread we need to
+         *          worry about, and if so, jump to the slowpath. If no threads
+         *          are on the queue, we compare against (-33), which any
+         *          destination thread will beat.
+         *
+         * For schedule inheritance, the story is more complex. In particular,
+         * we must perform the following logic:
+         *
+         * // Determine if our destination has a dependency on us. (SI-CHECK1)
+         * if (to_tcb->waiting_for->donatee == current) {
+         *
+         *     // Dequeue the destination from our endpoint receive queue.
+         *     // (SI-DEQ)
+         *     current->end_point->receive_queue->dequeue(to_tcb);
+         *
+         *     // If our effective priority potentially was inherited
+         *     // from the dependency just removed, recalculate it.
+         *     // (SI-CHECK2)
+         *     if (to_tcb->effective_prio == current->effective_prio) {
+         *         // (SI-RECALC)
+         *         current->calc_effective_priority();
+         *     }
+         * }
+         *
+         * // Determine if we are doing a call. (SI-CALLTST)
+         * if (to_tid == from_tid) {
+         *
+         *     // If the destination already has other threads on their
+         *     // receive queue, abort. We don't want to perform a sorted
+         *     // insert in the fastpath. (SI-CHECK3)
+         *     if (to_tcb->end_point->receive_queue->has_waiters()) {
+         *         SLOWPATH();
+         *     }
+         *
+         *     // Enqueue ourselves on the destination's end-point receive
+         *     // queue. (SI-ENQ)
+         *     to_tcb->end_point->receive_queue->enqueue(current);
+         *
+         *     // Update the destination's effective priority, as they have
+         *     // now inherited our priority. (SI-UPDATE)
+         *     to_tcb->effective_prio
+         *             = max(to_tcb->effective_prio, current->effective_prio);
+         * } else {
+         *     // Ensure that the destination of the send has a priority
+         *     // higher than other thread ready to run. (SCHED)
+         *     if (get_highest_priority_thread() > to_tcb->effective_prio) {
+         *         SLOWPATH();
+         *     }
+         * }
+         */
+#if (OFS_SCHED_PRIO_BITMAP - OFS_SCHED_INDEX_BITMAP != 4)
+#error "ARM fastpath assumes that the 'prio_queue_t.index_bitmap' preceeds " \
+        "'prio_queue_t.prio_bitmap'. Please review."
+#endif
+
+        /* Calculate current tcb. (CALC2) */
+        sub     current, sp, #(OFS_TCB_ARCH_CONTEXT + PT_SIZE - ARM_SYSCALL_STACK_SIZE) /* CALC2 */
+
+        /* Load the kernel's stack pointer in 'sp'. */
+        ldr     sp,     stack_top
+
+#if (IPC_NUM_MR != 32)
+#error Fastpath is Heavily Optimized for 32MRs - fixme
+#endif
+
+        /*
+         * With the introduction of reply caps, the thread names used by the
+         * caller may either be CapIds or ThreadIds. We currently distinguish
+         * the two by looking at the top bit of the word.
+         *
+         * If this next triggers, it might also be because the user is trying
+         * to send to ASM_MYSELF_RAW (0xfffffffd). That is fine, because it
+         * will not correspond to a valid ThreadId, and we will drop to the
+         * slowpath. Similarly, if the from_tid is ASM_MYSELF_RAW, we will fail
+         * the check ensuring that we are either doing a L4_Call() or L4_Wait()
+         * as our receive phase.
+         */
+        adds    tmp1,   to_tid, #0x80000000
+
+        /* If we overflowed, we know the top bit was set, so we have an IPC
+         * reply cap. Additionally, 'tmp' contains the ThreadId of the
+         * destination thread. */
+        bvs     decode_reply_cap
+
+        /*
+         * Otherwise, we have a cap.
+         *
+         * Load our clist pointer.
+         */
+        mov     tmp2,   #ARM_GLOBAL_BASE                        /* CALC1 */
+        ldr     tmp2,   [tmp2, #OFS_GLOBAL_CURRENT_CLIST]       /* CALC1 */
+
+        /* Shift away the version bits. */
+        mov     tmp1,   to_tid, LSR #L4_GLOBAL_VERSION_BITS     /* CALC1 */
+
+        /*
+         * Do we have at least one version bit set in the to_tid?
+         * Caps require that version != 0. This also checks for niltid.
+         * (TEST15)
+         */
+        mov     tmp6,   to_tid, LSL #(32 - L4_GLOBAL_VERSION_BITS) /* TEST15 */
+
+        /* Ensure that we have a valid cap number.                    TEST16 */
+        ldr     tmp3,   [tmp2, #OFS_CLIST_MAX_ID]                  /* TEST16 */
+
+        /* Version bit set?                                           TEST15 */
+        cmp     tmp6,   #0                                         /* TEST15 */
+        beq     ipc_slowpath                                       /* TEST15 */
+
+        /* Ensure that we have a valid cap number. */
+        cmp     tmp1,   tmp3                                       /* TEST16 */
+        bhi     ipc_slowpath                                       /* TEST16 */
+
+        /* Find the cap entry. */
+        add     tmp2,   tmp2,  tmp1, LSL #LOG2_SIZEOF_CAP_T
+        ldr     to_tcb, [tmp2, #OFS_CLIST_ENTRIES + OFS_CAP_RAW]
+
+LABEL(to_tcb_decoded)
+
+        /* Test if any of mr0 bits 12:5 are set                    TEST3 */
+        mvn     tmp2,   mr0,  LSL #19                           /* TEST3 - shift bits to top and invert: 0x**000000 */
+        adds    tmp2,   tmp2, #0x01000000                       /* TEST3 - will set C if mr0 bits 12:5 were 0 */
+
+        /* Kill the bottom bit of TCB pointer (which may be set if it is a
+         * cap). */
+        and     to_tcb, to_tcb, #0xfffffffe
+
+        /* Check for NULL tcb - non existant                       TEST0 */
+        cmpcs   to_tcb, #0       /* if C set then do compare */ /* TEST3 */
+        bls     ipc_slowpath     /* C clear or Z set */         /* TEST0/3 */
+
+        /* Load the scheduler. */
+        ldr     tmp1,   scheduler_ptr                           /* SCHED1 */
+
+        /* Load send-head. */
+        ldr     tmp2,   [current, #(OFS_TCB_END_POINT \
+                                + OFS_ENDPOINT_SEND_QUEUE \
+                                + OFS_SYNCPOINT_BLOCKED_HEAD)]  /* TEST8 */
+
+
+        movs    tmp6,   mr0,    LSL #(32-(12+2))                /* TEST1 */
+        /* Check if (N-bit) is set                                 TEST1a */
+        bmi     check_async_ipc                                 /* TEST1a */
+        /* Check if (R-bit) is clear                               TEST1b */
+        bcc     ipc_slowpath                                    /* TEST1a */
+
+        /* Check if IPC is a Call                                  TEST12 */
+#if defined(CONFIG_SCHEDULE_INHERITANCE)
+        cmp     from_tid, #L4_ANYTHREAD                         /* TEST12 */
+        /* Under schedule inheritance, if we are performing a call
+         * the destination always inherits our priority, so we don't
+         * need to do a priority check. */
+        bne     ipc_fastpath_check_inheritance_call            /* SI-CALLTST */
+#else
+        cmp     to_tid, from_tid                                /* TEST12 */
+#endif
+
+        /* Get first-level bitmap index. */
+        ldr     tmp3,   [tmp1, #OFS_SCHED_INDEX_BITMAP]         /* SCHED1 */
+
+#if defined(CONFIG_SCHEDULE_INHERITANCE)
+        /* Require send_head to be empty.                          TEST8 */
+        cmp     tmp2,   #0                                      /* TEST8 */
+#else
+        /* Require send_head to be empty (if not Call)             TEST8 */
+        cmpne   tmp2,   #0                                      /* TEST8 */
+#endif
+        /* Get first-level bitmap index. */
+        clz     tmp3,   tmp3                                    /* SCHED2 */
+        rsb     tmp3,   tmp3, #31                               /* SCHED2 */
+
+        /* Get second-level bitmap index. */
+        add     tmp1,   tmp1, tmp3, LSL #2                      /* SCHED3 */
+        ldr     tmp1,   [tmp1, #OFS_SCHED_PRIO_BITMAP]          /* SCHED3 */
+
+        /* Get the destination's effective priority. */
+        ldr     tmp6,   [to_tcb, #OFS_TCB_EFFECTIVE_PRIO]       /* SCHED6 */
+
+        /* Require send_head to be empty.                          TEST8 */
+        bne     ipc_slowpath
+
+        /* Get second-level bitmap index. */
+        clz     tmp1,   tmp1                                    /* SCHED4 */
+        rsb     tmp1,   tmp1, #31                               /* SCHED4 */
+
+        /* Calculate highest priority runnable thread. */
+        add     tmp1,   tmp1, tmp3, LSL #5                      /* SCHED5 */
+
+        /* Ensure that the destination matches/beats it. */
+        cmp     tmp1,   tmp6                                    /* SCHED7 */
+        bgt     ipc_slowpath                                    /* SCHED7 */
+
+#if defined(CONFIG_SCHEDULE_INHERITANCE)
+        /* Set 'eq' flag. */
+        cmp     tmp1,   tmp1                                    /* SI-CHECK3 */
+
+LABEL(ipc_fastpath_check_inheritance_call)
+        /* We will need to be enqueued on the destination's
+         * receive queue. Make sure that we are the highest
+         * priority thread on the queue. Note that at this
+         * point, we know that 'from_tcb' == 'to_tcb'. */
+        ldrne   tmp1,    [to_tcb, #(OFS_TCB_END_POINT \
+                                + OFS_ENDPOINT_RECV_QUEUE \
+                                + OFS_SYNCPOINT_BLOCKED_HEAD) ] /* SI-CHECK3 */
+#endif
+
+        /* Load destination/current's resource bits. */
+        ldr     tmp3,   [to_tcb, #OFS_TCB_RESOURCE_BITS]        /* TEST9 */
+        ldr     tmp6,   [current, #OFS_TCB_RESOURCE_BITS]       /* TEST10 */
+
+#if defined(CONFIG_SCHEDULE_INHERITANCE)
+        /* Ensure that there are no threads enqueued on the receive
+         * queue. */
+        cmpne   tmp1,    #0                                     /* SI-CHECK3 */
+        bne     ipc_slowpath                                    /* SI-CHECK3 */
+#endif
+
+        /* Check if any resource bits are set (except
+         * KIPC_RESOURCE_BIT/EXCEPTIONFP_RESOURCE_BIT in to_tcb).
+         * We use the branch below if we fail this test. */
+        bic     tmp3,   tmp3,   #(KIPC_RESOURCE_BIT|EXCEPTIONFP_RESOURCE_BIT)
+                                                                /* TEST9 | TEST10 */
+        orrs    tmp3,   tmp3,   tmp6                            /* TEST9 | TEST10 */
+
+        ldreq   tmp1,   [to_tcb, #OFS_TCB_THREAD_STATE]         /* TEST5 */
+        ldreq   tmp6,   [to_tcb, #OFS_TCB_SPACE]                /* TEST11 */
+
+        /* Check partner (to_tcb) is waiting                       TEST5 */
+        cmpeq   tmp1,   #-1                                     /* TEST5 */
+
+        /* tcb->get_partner().is_anythread() or equals current     TEST6 */
+        ldreq   tmp1,   [to_tcb, #OFS_TCB_PARTNER]              /* TEST6 */
+
+        bne     ipc_slowpath                                    /* TEST5/TEST9/TEST10 */
+
+        /* Check that we are doing either a call or an open wait. */
+        cmp     from_tid,   #L4_ANYTHREAD                       /* TEST7 */
+        cmpne   to_tid, from_tid                                /* TEST7 */
+        bne     ipc_slowpath                                    /* TEST7 */
+
+        cmp     tmp1,   #L4_ANYTHREAD                           /* TEST6 */
+        cmpne   tmp1,   current                                 /* TEST6 */
+        bne     ipc_slowpath                                    /* TEST6 */
+
+        /* Check if to_tcb->space == NULL                          TEST11 */
+        cmp     tmp6,   #0                                      /* TEST11 */
+        /* Get ASID + sign extend */
+        ldrnesh tmp6,   [tmp6, #OFS_SPACE_ASID]
+        movne   tmp1,   #-1                                     /* For STORE1 */
+        // XXX stall here
+
+        /* check for invalid ASID */
+        cmpne   tmp6,   #-1
+        beq     ipc_slowpath
+        /* ASID is in tmp6 */
+
+#ifdef CONFIG_TRACEBUFFER
+        ldr     tmp3,   =trace_buffer
+        ldr     tmp3,   [tmp3]
+        ldr     tmp1,   [tmp3, #TBUF_LOGMASK]
+        tst     tmp1,   #(1<<3)                 /* IPC major_id = 3 */
+        beq     end_ipc_trace                   /* not tracing this major no */
+
+        ldr     tmp1,   [tmp3, #TBUF_ACTIVEBUF]
+        tst     tmp1,   #0x80000000
+        beq     do_ipc_trace                    /* an active buffer */
+
+LABEL(end_ipc_trace)
+        mov     tmp1,   #-1
+#endif
+        /* Point of no return */
+
+        /* Set partner of to_tcb to be thread handle of current */
+        ldr     tmp2,   [current, #OFS_TCB_TCB_IDX]     /* THREAD HANDLE */
+
+        mov     tmp3,     #ASM_INVALID_CAP_RAW          /* THREAD HANDLE */
+        str     tmp3,     [to_tcb, #OFS_TCB_PARTNER]    /* THREAD HANDLE */
+
+        /* Set thread state to waiting                             STORE1 */
+        str     tmp1,   [current, #OFS_TCB_THREAD_STATE]        /* STORE1  tmp1 = -1 */
+
+        /* Are we doing a call? */
+        cmp     to_tid, from_tid                        /* STORE2/SI-CALLTST */
+
+        /* Set partner                                             STORE2/3 */
+        streq   to_tcb,         [current, #OFS_TCB_PARTNER]     /* STORE2 */
+        strne   from_tid,       [current, #OFS_TCB_PARTNER]     /* STORE2 */
+
+        orr     tmp2,   tmp2, #0x80000000               /* THREAD HANDLE */
+        str     tmp2,   [to_tcb, #OFS_TCB_SENT_FROM]    /* THREAD HANDLE */
+#if defined(CONFIG_SCHEDULE_INHERITANCE)
+        /* If we are doing a call, need to setup a dependency. */
+        beq     ipc_fastpath_create_dependency                 /* SI-CALLTST */
+LABEL(ipc_fastpath_post_create_dependency)
+
+#endif
+
+#define tmp4            r0          /* only use after last to_tid use! */
+#define tmp5            r1          /* only use after last from_tid use! */
+
+#if defined(CONFIG_SCHEDULE_INHERITANCE)
+        /* Determine if the guy we are sending to has a dependency on us
+         * that needs to be cleared. */
+        ldr     tmp1,   [to_tcb, #OFS_TCB_WAITING_FOR]        /* SI-CHECK1 */
+#endif
+
+        /* Clean up mr0 (clear receive flags) */
+        and     mr0,    mr0,    #(~(0xe << 12))
+
+#if defined(CONFIG_SCHEDULE_INHERITANCE)
+        /* If there is a dependency, go ahead and remove it. */
+        /* BUBBLE */
+        cmp     tmp1,   #0                                   /* SI-CHECK1 */
+        bne     ipc_fastpath_drop_dependency                 /* SI-CHECK1 */
+LABEL(ipc_fastpath_post_drop_dependency)
+#endif
+
+        ldr     tmp3,   [to_tcb, #OFS_TCB_ARCH_EXC_NUM]
+        cmp     tmp3,   #0
+        bne     no_syscall_except_ipc_copy
+
+
+        ldr     tmp3,   [to_tcb, #OFS_TCB_RESOURCE_BITS]
+        tst     tmp3,   #EXCEPTIONFP_RESOURCE_BIT
+        beq     normal_ipc_copy_mrs
+
+/* When EXCEPTIONFP_RESOURCE_BIT set, we are replying to exception ipc thread,
+ * in this case, have to set context frame from MRs:
+ * Note: r4-r7 were already loaded from MR1-MR4, do not need to load again.
+ *       r8 were loaded with MR5(R0), however, since we copy MR6-MR8 to
+ *       context->r1-r3, it doesn't hurt to copy 1 more (as ARM1136 AXI bus
+ *       has double word size, it uses same cycles to copy 4 registers as 
+ *       3 registers as long as the start address is double word aligned),
+ *       therefore, we can use trash r8 and use it as tmp7, but only when
+ *       we do reply exception ipc( EXCEPTIONFP is set ).
+ *
+ */
+#define tmp7        r8
+        /* copy MR[EXCEPT_IPC_SYS_MR0 - R3] to context->r0-r3 */
+        ldr     tmp3,   [current, #OFS_TCB_UTCB]
+        add     tmp3,   tmp3,   #OFS_UTCB_MR0 + 20 //EXCEPT_IPC_SYS_MR_R0
+        ldmia   tmp3!,  {tmp4,tmp5,tmp1,tmp2}
+        add     tmp7,   to_tcb, #(OFS_TCB_ARCH_CONTEXT+PT_R0)
+        stmia   tmp7!,  {tmp4,tmp5,tmp1,tmp2}
+        /* copy r4-r7 to context->r4-r7 */
+        stmia   tmp7!,  {r4-r7}
+
+        /* copy MR[EXCEPT_IPC_SYS_MR_SP,LR] to context->sp,lr */
+        add     tmp3,   tmp3,   #4          //tmp3 = &current->utcb->MR[EXCEPT_IPC_SYS_MR_SP]
+        add     tmp7,   tmp7,   #20         //tmp7 = &to_tcb->arch.context->sp
+        ldmia   tmp3!,  {tmp1,tmp2}
+        stmia   tmp7!,  {tmp1,tmp2}
+
+        /* start to set dest cpsr and pc */
+        add     tmp3,   tmp3,   #4          //tmp3 = &current->utcb->MR[EXCEPT_IPC_SYS_MR_FLAGS]
+        add     tmp7,   tmp7,   #4          //tmp7 = &to_tcb->arch.context->cpsr
+        ldr     tmp1,   [tmp3]
+        ldr     tmp2,   [tmp7]
+        mov     tmp4,   #0xf9000000
+        add     tmp4,   tmp4,   #0xf0000
+        add     tmp4,   tmp4,   #0x200      // load tmp4 with ARM_USER_FLAGS_MASK except THUMB_BIT
+        and     tmp1,   tmp1,   tmp4
+        bic     tmp2,   tmp2,   tmp4
+        orr     tmp2,   tmp1,   tmp2        //tmp2 = to_tcb->arch.context->cpsr
+        sub     tmp3,   tmp3,   #16         //tmp3 = &current->utcb->MR[EXCEPT_IPC_SYS_MR_PC]
+        ldr     tmp1,   [tmp3]
+        tst     tmp1,   #1
+        orrne   tmp2,   tmp2,   #0x20    //THUMB_BIT
+        biceq   tmp2,   tmp2,   #0x20
+        str     tmp2,   [tmp7]
+        sub     tmp7,   tmp7,   #4          //tmp7 = &to_tcb->arch.context->pc
+        ldr     tmp2,   [tmp7]
+        tst     tmp2,  #1
+        orrne   tmp1,   tmp1,   #0x1
+        biceq   tmp1,   tmp1,   #0x1
+        str     tmp1,   [tmp7]
+
+        b       fast_path_switch_to
+#undef  tmp7
+LABEL(no_syscall_except_ipc_copy)
+        ldr     tmp3,   [current,   #OFS_TCB_UTCB]
+        add     tmp3,   tmp3,   #OFS_UTCB_MR0 + 8  //EXCEPT_IPC_GEN_MR_SP
+        add     tmp4,   to_tcb,     #(OFS_TCB_ARCH_CONTEXT+PT_SP)
+        ldr     tmp1,   [tmp3]
+        str     tmp1,   [tmp4]
+        /* start to set dest cpsr and pc */
+        add     tmp3,   tmp3,   #4           //tmp3 = &current->utab->MR[EXCEPT_IPC_GEN_MR_FLAGS]
+        add     tmp4,   tmp4,   #12          //tmp4 = &to_tcb->arch.context->cpsr
+        ldr     tmp1,   [tmp3]
+        ldr     tmp2,   [tmp4]
+        mov     tmp5,   #0xf9000000
+        add     tmp5,   tmp5,   #0xf0000
+        add     tmp5,   tmp5,   #0x200      // load tmp4 with ARM_USER_FLAGS_MASK except THUMB_BIT
+        and     tmp1,   tmp1,   tmp5
+        bic     tmp2,   tmp2,   tmp5
+        orr     tmp2,   tmp1,   tmp2        //tmp2 = to_tcb->arch.context->cpsr
+        sub     tmp3,   tmp3,   #8         //tmp3 = &current->utcb->MR[EXCEPT_IPC_GEN_MR_IP]
+        ldr     tmp1,   [tmp3]
+        tst     tmp1,   #1
+        orrne   tmp2,   tmp2,   #0x20    //THUMB_BIT
+        biceq   tmp2,   tmp2,   #0x20
+        str     tmp2,   [tmp4]
+        sub     tmp4,   tmp4,   #4          //tmp4 = &to_tcb->arch.context->pc
+        ldr     tmp2,   [tmp4]
+        tst     tmp2,  #1
+        orrne   tmp1,   tmp1,   #0x1
+        biceq   tmp1,   tmp1,   #0x1
+        str     tmp1,   [tmp4]
+
+        b       fast_path_switch_to
+
+LABEL(normal_ipc_copy_mrs)
+        /* Use copy loop if more than 6 message registers          COPYMR */
+        and     tmp1,   mr0,    #(IPC_NUM_MR-1)                 /* COPYMR */
+        subs    tmp1,   tmp1,   #5                              /* COPYMR */
+        bgt     do_ipc_copy                                     /* COPYMR */
+
+LABEL(fast_path_switch_to)
+        /* Get destination address space */
+        ldr     tmp2,   [to_tcb, #OFS_TCB_SPACE]
+
+        mov     tmp4,   #ARM_GLOBAL_BASE
+
+        mov     tmp1,   #0xff000000             /* USER_UTCB_PAGE */
+
+        /* Update the current clist. */
+        ldr     tmp5,   [tmp2, #OFS_SPACE_CLIST]
+
+        /* Set fast path return address */
+        adr     tmp3,   fast_path_recover
+
+        /* Update the current clist. */
+        str     tmp5,   [tmp4, #OFS_GLOBAL_CURRENT_CLIST]
+
+        str     tmp3,   [current, #OFS_TCB_CONT]/* Save continuation */
+
+        ldr     tmp5,   [to_tcb, #OFS_TCB_UTCB_LOCATION] /* Get to_tcb UTCB Pointer */
+
+        /* Get resource bits -- test for KIPC */
+        ldr     tmp3,   [to_tcb, #OFS_TCB_RESOURCE_BITS]
+
+        /* Set new UTCB XXX - if we fault after this, (before switch) is this bad? */
+        str     tmp5,   [tmp1, #0xff0]          /* UTCB ref */
+
+        /* Update current tcb and current schedule pointers */
+        str     to_tcb, [tmp4, #OFS_GLOBAL_CURRENT_TCB]
+        str     to_tcb, [tmp4, #OFS_GLOBAL_CURRENT_SCHEDULE]
+
+        /* Get new page table */
+        ldr     tmp2,   [tmp2, #OFS_SPACE_PDIR]
+        ldr     tmp4,   [tmp4, #OFS_GLOBAL_RAM_PHYS]
+
+        mov     tmp1, #0
+        /* Clear user-RW thread register - For security */
+        mcr     p15, 0, tmp1, c13, c0, 2
+        /* Flush BTB/BTAC */
+        mcr     p15, 0, tmp1, c7, c5, 6
+        /* Drain write buffer */
+        mcr     p15, 0, tmp1, c7, c10, 4
+
+        /* Get physical address of page table */
+        sub     tmp2,   tmp2,   #VIRT_ADDR_PGTABLE
+        add     tmp2,   tmp2,   tmp4
+        /* Set pgtable cachability */
+        orr     tmp2,   tmp2,   #9
+nop
+nop
+
+        /* Set new ASID */
+        mcr     p15, 0, tmp6, c13, c0, 1
+nop
+        /* Set pagetable */
+        mcr     p15, 0, tmp2, c2, c0, 0
+nop
+nop
+        /* Set destination thread to running */
+        mov     tmp1,   #TSTATE_RUNNING
+        str     tmp1,   [to_tcb, #OFS_TCB_THREAD_STATE]
+
+        /* Check if any resource bits are set */
+        tst     tmp3,   #KIPC_RESOURCE_BIT|EXCEPTIONFP_RESOURCE_BIT
+        bne     ipc_complete_switch_to          /* UTCB in tmp5(r1), resource in tmp3(r12) */
+
+        /* Load the sender's space id to return to receiver */
+        ldr     tmp3,   [current, #OFS_TCB_SPACE_ID]
+
+        /* Load new context pointer     */
+        add     sp,     to_tcb, #(OFS_TCB_ARCH_CONTEXT + PT_SIZE)
+
+        /* Set the sender space id in receiver's utcb */
+        str     tmp3,   [tmp5, #OFS_UTCB_SENDER_SPACE]
+
+#undef tmp4
+        /* Load result          */
+        ldr     r0,     [to_tcb, #OFS_TCB_SENT_FROM]
+        mov     current, to_tcb
+
+LABEL(ipc_return_user)
+        /* trashes ip/r12 and lr */
+        /* Determine if to_tcb has any callbacks to process before
+         * returning to userspace. */
+        ldr     tmp5,   [current, #OFS_TCB_POST_SYSCALL_CALLBACK]
+        /* See if post_syscall_callback is NULL. */
+        cmp     tmp5,   #0
+
+        /* restore the user's banked SP */
+        sub     tmp1,   sp,     #ARM_SYSCALL_STACK_SIZE
+        add     sp,     tmp1,   #8
+        ldmia   tmp1,   {sp}^           /* Load user's stack pointer */
+        nop
+
+        /* return to user */
+        /* If there is post syscall work to do, do it now. */
+        ldrne     lr, [tmp1, #SC_PC]
+        bne       arm_perform_callback_saveregs_full
+
+        rfeia   sp!                     /* Restore PC, SP and return */
+
+#define tmp4            r0          /* must be same as above #define tmp4 ... */
+
+#ifdef CONFIG_TRACEBUFFER
+LABEL(do_ipc_trace)
+        /* tmp3 = trace_buffer, tmp1 = buffer no */
+        str     r3,     [sp, #-4]
+        str     r4,     [sp, #-8]
+        tst     tmp1,   #1
+
+        ldreq   r3,     [tmp3, #TBUF_BUFHEAD0]
+        ldrne   r3,     [tmp3, #TBUF_BUFHEAD1]
+        ldr     r4,     [tmp3, #TBUF_BUFSIZE]
+        add     r3,     r3,     #(6*4)
+
+        /* Check if enough space in buffer */
+        subs    r4,     r3,     r4
+        bpl     slow_ipc_trace
+
+        /* Update buffer head */
+        tst     tmp1,   #1
+        streq   r3,     [tmp3, #TBUF_BUFHEAD0]
+        strne   r3,     [tmp3, #TBUF_BUFHEAD1]
+        ldreq   r4,     [tmp3, #TBUF_BUFOFF0]
+        ldrne   r4,     [tmp3, #TBUF_BUFOFF1]
+
+        /* Get buffer offset into tmp3 */
+        sub     r3,     r3,     #(6*4)
+        add     r3,     r3,     r4
+        add     tmp3,   tmp3,   r3
+
+        /* Write trace entry */
+        ldr     r4,     =0x00630c50
+        ldr     tmp1,   time_ptr
+        ldr     r3,     [current, #OFS_TCB_MYSELF_GLOBAL]
+
+        str     r4,     [tmp3, #8]
+        ldr     r4,     [tmp1, #0]
+        str     to_tid, [tmp3, #16]
+        str     from_tid,       [tmp3, #20]
+        str     r4,     [tmp3, #0]
+        ldr     r4,     [tmp1, #4]
+        str     r3,     [tmp3, #12]
+        str     r4,     [tmp3, #4]
+
+        ldr     r3,     [sp, #-4]
+        ldr     r4,     [sp, #-8]
+        b       end_ipc_trace
+LABEL(slow_ipc_trace)
+        ldr     r3,     [sp, #-4]
+        ldr     r4,     [sp, #-8]
+        b       ipc_slowpath
+#endif
+
+LABEL(do_ipc_copy)
+        /* destination utcb */
+        /* Non-fass only gets here for Intra address space IPC */
+        ldr     tmp3,   [to_tcb, #OFS_TCB_UTCB]
+
+        /* current utcb */
+        ldr     tmp2,   [current, #OFS_TCB_UTCB]
+
+        /* tmp1 = num to copy - 1
+         * tmp2 = from utcb
+         * tmp3 = to utcb           */
+        add     tmp3,   tmp3,   #88
+        add     tmp2,   tmp2,   #88
+
+LABEL(copy_loop)
+        ldr     tmp4,   [tmp2], #4
+        ldr     tmp5,   [tmp2], #4
+        subs    tmp1,   tmp1,   #2
+        str     tmp4,   [tmp3], #4
+        strpl   tmp5,   [tmp3], #4
+        bgt     copy_loop
+
+        b       fast_path_switch_to
+
+/*
+ * Convert a ThreadID stored in 'tmp1' into a TCB pointer.
+ */
+LABEL(decode_reply_cap)
+        /* Grab the number of threads in the system, and the location of
+         * the threads. */
+        ldr     tmp6,   =num_tcbs
+        ldr     tmp3,   =tcb_array
+
+        /* Get size of KTCB.                                       CALC3 */
+        mov     tmp2,   #ASM_KTCB_SIZE
+
+        /* Load up "num_tcbs". */
+        ldr     tmp6,   [tmp6]
+
+        /* to_tcb = (ThreadID * TCB_SIZE) + tcb_array              CALC3 */
+        mul     to_tcb, tmp1,   tmp2                            /* CALC3 */
+
+        /* Load up "tcb_array". */
+        ldr     tmp3,   [tmp3]                                  /* CALC3 */
+
+        /* Ensure that our ThreadId is not too high.               TEST16 */
+        cmp     tmp1,   tmp6                                    /* TEST16 */
+
+        /* Add on the location of the tcb_array. */
+        addls   to_tcb, to_tcb, tmp3                            /* CALC3 */
+
+        /* Reply caps are only valid if the thread is doing a closed wait on
+         * us. Ensure their partner is pointing to us. */
+        ldrls   tmp6,  [to_tcb, #OFS_TCB_PARTNER]               /* TEST14 */
+
+        bhi     ipc_slowpath                                    /* TEST16 */
+
+        /* BUBBLE */
+        cmp     current,   tmp6                                 /* TEST14 */
+
+        /* Load up the real 'to_tid' of the destination. */
+        ldreq   to_tid, [to_tcb, #OFS_TCB_MYSELF_GLOBAL]
+        beq     to_tcb_decoded
+
+        b       ipc_slowpath
+
+#if defined(CONFIG_SCHEDULE_INHERITANCE)
+
+/*
+ * Place ourself on the destination's receive IPC queue.
+ * Earlier on, we tested to ensure that nobody else was on the queue,
+ * so we need not check again.
+ */
+LABEL(ipc_fastpath_create_dependency)
+        str     current, [current, #(OFS_TCB_BLOCKED_LIST \
+                                + OFS_RINGLIST_NEXT)]              /* SI-ENQ */
+        str     current, [current, #(OFS_TCB_BLOCKED_LIST \
+                                + OFS_RINGLIST_PREV)]              /* SI-ENQ */
+        str     current, [to_tcb, #(OFS_TCB_END_POINT \
+                                + OFS_ENDPOINT_RECV_QUEUE \
+                                + OFS_SYNCPOINT_BLOCKED_HEAD)]     /* SI-ENQ */
+
+        /* Mark that we are waiting for the destination's recevie syncpoint. */
+        mov     tmp1,    #(OFS_TCB_END_POINT \
+                                + OFS_ENDPOINT_RECV_QUEUE)         /* SI-ENQ */
+
+        /* Update the destinations effective priority. */
+        ldr     tmp2,    [to_tcb, #(OFS_TCB_EFFECTIVE_PRIO)]    /* SI-UPDATE */
+        ldr     tmp3,    [current, #(OFS_TCB_EFFECTIVE_PRIO)]   /* SI-UPDATE */
+
+        /* Mark that we are waiting for the destination's recevie syncpoint. */
+        add     tmp1,    tmp1, to_tcb                              /* SI-ENQ */
+        str     tmp1,    [current, #(OFS_TCB_WAITING_FOR)]         /* SI-ENQ */
+
+        /* Update the destinations effective priority. */
+        cmp     tmp3,    tmp2                                   /* SI-UPDATE */
+        strgt   tmp3,    [to_tcb, #(OFS_TCB_EFFECTIVE_PRIO)]    /* SI-UPDATE */
+
+        b       ipc_fastpath_post_create_dependency                /* SI-ENQ */
+
+/*
+ * Given that our destination is current on our blocked queue,
+ * dequeue them.
+ */
+LABEL(ipc_fastpath_drop_dependency)
+        /* Get next/previous pointers on the destination's blocked list. */
+        ldr     tmp4,    [to_tcb, #(OFS_TCB_BLOCKED_LIST \
+                                + OFS_RINGLIST_NEXT)]              /* SI-DEQ */
+        ldr     tmp5,    [to_tcb, #(OFS_TCB_BLOCKED_LIST \
+                                + OFS_RINGLIST_PREV)]              /* SI-DEQ */
+
+        /* Set "to_tcb" blocked_list points to NULL to indicate not blocked */
+        mov     tmp1,    #0
+        str     tmp1,    [to_tcb, #(OFS_TCB_BLOCKED_LIST \
+                                + OFS_RINGLIST_NEXT)]             /* SI-DEQ */
+        str     tmp1,    [to_tcb, #(OFS_TCB_BLOCKED_LIST \
+                                + OFS_RINGLIST_PREV)]             /* SI-DEQ */
+        str     tmp1,    [to_tcb, #(OFS_TCB_WAITING_FOR)]
+
+        /* See if 'next' == 'to_tcb', implying we are the only thread on the
+         * queue. */
+        cmp     tmp4,    to_tcb                                   /* SI-DEQ */
+
+        /* Are they the only person on the queue? If not, perform some more
+         * work to get the dequeue done. This function will set tmp2/tmp3 to
+         * the values loaded below. */
+        bne     ipc_fastpath_long_dequeue_queue_item              /* SI-DEQ */
+
+        /* Determine if we need to recalualte our effective prio. */
+        ldr     tmp2,    [to_tcb, #OFS_TCB_EFFECTIVE_PRIO]        /* SI-DEQ */
+        ldr     tmp3,    [current, #OFS_TCB_EFFECTIVE_PRIO]       /* SI-DEQ */
+
+        /* Otherwise, just set our syncpoint's blocked head to NULL. */
+        str     tmp1,    [current, #(OFS_TCB_END_POINT \
+                                + OFS_ENDPOINT_RECV_QUEUE \
+                                + OFS_SYNCPOINT_BLOCKED_HEAD)]    /* SI-DEQ */
+LABEL(ipc_fastpath_drop_dependency_after_dequeue)
+
+        /* Determine if we need to recalulate our effective prio. */
+        cmp     tmp2,    tmp3                                  /* SI-CHECK2 */
+        bne     ipc_fastpath_post_drop_dependency              /* SI-CHECK2 */
+
+        /* We now scan our syncpoints. We have quite a few to look at:
+         * our receive endpoint, our send endpoint, and all of our mutexes. */
+        ldr     tmp1,    [current, #(OFS_TCB_END_POINT \
+                                + OFS_ENDPOINT_RECV_QUEUE \
+                                + OFS_SYNCPOINT_BLOCKED_HEAD)] /* SI-RECALC */
+        ldr     tmp2,    [current, #(OFS_TCB_END_POINT \
+                                + OFS_ENDPOINT_SEND_QUEUE \
+                                + OFS_SYNCPOINT_BLOCKED_HEAD)] /* SI-RECALC */
+        ldr     tmp3,    [current, #(OFS_TCB_MUTEXES_HEAD)]
+
+        /* Load our own base priority. */
+        ldr     tmp4,    [current, #OFS_TCB_BASE_PRIO]         /* SI-RECALC */
+
+        /* Load the priorities of the threads blocked on our endpoints. */
+        cmp     tmp1,    #0
+        ldrne   tmp1,    [tmp1, #OFS_TCB_EFFECTIVE_PRIO]       /* SI-RECALC */
+        cmp     tmp2,    #0
+        ldrne   tmp2,    [tmp2, #OFS_TCB_EFFECTIVE_PRIO]       /* SI-RECALC */
+
+        /* Set tmp4 = max(tmp2, tmp4) */
+        cmp     tmp4,    tmp2                                  /* SI-RECALC */
+        movlt   tmp4,    tmp2                                  /* SI-RECALC */
+
+        /* Loop through our mutexes, checking the priority of each one. */
+        cmp     tmp3,    #0                                    /* SI-RECALC */
+        beq     done_mutex_loop                                /* SI-RECALC */
+        mov     tmp2,    tmp3                                  /* SI-RECALC */
+
+LABEL(mutex_loop_start)
+        /* tmp4 = max(tmp1, tmp4) */
+        cmp     tmp4,    tmp1                                  /* SI-RECALC */
+        movlt   tmp4,    tmp1                                  /* SI-RECALC */
+
+        /* Load the thread waiting on this mutex. */
+        ldr     tmp1,    [tmp2, #(OFS_MUTEX_SYNC_POINT \
+                                + OFS_SYNCPOINT_BLOCKED_HEAD)] /* SI-RECALC */
+
+        /* Move to the next mutex. */
+        ldr     tmp2,    [tmp2, #(OFS_MUTEX_HELD_LIST \
+                                + OFS_RINGLIST_NEXT)]          /* SI-RECALC */
+        /* BUBBLE */
+
+        /* If the blocked head on the mutex is non-NULL, load the thread's
+         * priority                                               SI-RECALC */
+        cmp     tmp1,    #0
+
+        /* Finish loading the priority of this mutex. */
+        ldrne   tmp1,    [tmp1, #(OFS_TCB_EFFECTIVE_PRIO)]     /* SI-RECALC */
+
+        /* Is this the last mutex? */
+        cmp     tmp2,    tmp3                                  /* SI-RECALC */
+        bne     mutex_loop_start                               /* SI-RECALC */
+
+LABEL(done_mutex_loop)
+        /* Set tmp4 = max(tmp4, tmp1) */
+        cmp     tmp4,    tmp1                                  /* SI-RECALC */
+        movlt   tmp4,    tmp1                                  /* SI-RECALC */
+
+        /* Our effective priority is now calculated in 'tmp4'. */
+        str     tmp4,     [current, #(OFS_TCB_EFFECTIVE_PRIO)] /* SI-RECALC */
+        b       ipc_fastpath_post_drop_dependency              /* SI-RECALC */
+
+/*
+ * Dequeue a queue item.
+ */
+LABEL(ipc_fastpath_long_dequeue_queue_item)
+        /* Remove "to_tcb" from the current thread's syncpoint waiting
+         * queue. */
+        str     tmp5,    [tmp4, #(OFS_TCB_BLOCKED_LIST \
+                                + OFS_RINGLIST_PREV)]              /* SI-DEQ */
+        str     tmp4,    [tmp5, #(OFS_TCB_BLOCKED_LIST \
+                                + OFS_RINGLIST_NEXT)]              /* SI-DEQ */
+
+        /* Update our blocked head if it points to 'to_tcb' */
+        ldr     tmp1,    [current, #(OFS_TCB_END_POINT \
+                                + OFS_ENDPOINT_RECV_QUEUE \
+                                + OFS_SYNCPOINT_BLOCKED_HEAD)]     /* SI-DEQ */
+
+        /* Determine if we need to recalualte our effective prio, used when
+         * we return. */
+        ldr     tmp2,    [to_tcb, #OFS_TCB_EFFECTIVE_PRIO]         /* SI-DEQ */
+        ldr     tmp3,    [current, #OFS_TCB_EFFECTIVE_PRIO]        /* SI-DEQ */
+
+        /* Update our blocked head if it points to 'to_tcb' */
+        cmp     tmp1,    to_tcb                                    /* SI-DEQ */
+        streq   tmp4,    [current, #(OFS_TCB_END_POINT \
+                                + OFS_ENDPOINT_RECV_QUEUE \
+                                + OFS_SYNCPOINT_BLOCKED_HEAD)]     /* SI-DEQ */
+        b       ipc_fastpath_drop_dependency_after_dequeue         /* SI-DEQ */
+
+#endif /* CONFIG_SCHEDULE_INHERITANCE */
+
+LABEL(ipc_complete_switch_to)
+        /* Pointer to UTCB assumed to be in tmp5 (r1) */
+#ifdef CONFIG_EXCEPTION_FASTPATH
+        /* tmp3 = to_tcb(new_tcb after switch to) resource bits */
+        tst     tmp3,   #EXCEPTIONFP_RESOURCE_BIT
+        bne     fast_reply_exception
+#endif
+LABEL(ipc_complete_switch_to_noex)
+        /* Return to a kernel "C" switch_to, push message registers to UTCB,
+         * because user sys-ipc stub will not run. */
+        /* Pointer to UTCB assumed to be in tmp5 (r1) */
+
+        ldr     r0,     [current, #OFS_TCB_TCB_IDX]
+        add     r12,    tmp5,   #OFS_UTCB_MR0
+
+        /* Save ONLY valid registers - avoid trashing preserved MRs */
+        ands    r10,    mr0,    #(IPC_NUM_MR-1)
+        str     mr0,    [r12, #0]       // MR0 (tag)
+        strne   mr1,    [r12, #4]       // MR1
+
+        ldr     r11,    [to_tcb, #OFS_TCB_CONT]     /* Load continuation target */
+
+        cmp     r10,    #2
+        strge   mr2,    [r12, #8]       // MR2
+        strgt   mr3,    [r12, #12]      // MR3
+        cmp     r10,    #4
+        strge   mr4,    [r12, #16]      // MR4
+        strgt   mr5,    [r12, #20]      // MR5
+
+        orr     r0,     r0, #0x80000000
+        str     r0,     [to_tcb, #OFS_TCB_SENT_FROM]
+
+        mov     r0,     #ASM_INVALID_CAP_RAW
+        str     r0,     [to_tcb, #OFS_TCB_PARTNER]
+
+        jump    r11     /* Jump to continuation */
+
+LABEL(fast_path_recover)
+        /* retrieve tcb pointer */
+        mov     current,    #ARM_GLOBAL_BASE
+        ldr     current,    [current, #OFS_GLOBAL_CURRENT_TCB]
+
+        /* Get UTCB address */
+        mov     tmp3,   #0xff000000 
+        ldr     tmp3,   [tmp3, #0xff0]
+
+        /* Set the state to running */
+        mov     tmp1,   #TSTATE_RUNNING
+        ldr     tmp2,   [current, #OFS_TCB_SENT_FROM]         /* get partner */
+        str     tmp1,   [current, #OFS_TCB_THREAD_STATE]
+        ldr     tmp1,   [tmp3, #OFS_UTCB_MR0]               /* get tag */
+
+        /* current->get_partner().is_nilthread() && (!current->get_tag().is_error()) */
+        cmp     tmp2,   #0
+        andeqs  tmp1,   tmp1, #(8<<12)                      /* check tag error not set */
+        bne     ipc_syscall_return
+
+        /* Setup async notify return */
+
+        ldr     tmp1,   [tmp3, #OFS_UTCB_NOTIFY_BITS]
+        ldr     tmp2,   [tmp3, #OFS_UTCB_NOTIFY_MASK]
+
+        mov     r8,     #1
+        str     r8,     [tmp3, #OFS_UTCB_MR0]               /* set notify_tag */
+
+        and     r8,     tmp1, tmp2
+        str     r8,     [tmp3, #OFS_UTCB_MR0+4]             /* return delivered bits */
+
+        mvn     tmp2,   tmp2                                /* invert mask */
+        and     tmp1,   tmp1,   tmp2                        /* clear delivered bits */
+        str     tmp1,   [tmp3, #OFS_UTCB_NOTIFY_BITS]       /* update notify bits */
+
+        b       ipc_syscall_return
+
+LABEL(check_async_ipc)
+        /* from_tid != niltread ?                                  TEST A0 */
+        cmp     from_tid,   #0                                  /* TEST A0 */
+
+        /* Get to_tcb->acceptor ( to_tcb->get_br(0) )              TEST A1 */
+        ldr     tmp6,   [to_tcb, #OFS_TCB_UTCB]                 /* TEST A1 */
+
+        bne     ipc_slowpath                                    /* TEST A0 */
+
+        /* mr2, mr3, mr4 - can be used as temp from here */
+
+        ldr     mr3,    [tmp6, #OFS_UTCB_ACCEPTOR]              /* TEST A1 */
+        ldr     mr4,    [tmp6, #OFS_UTCB_NOTIFY_MASK]           /* TEST A2 */
+        ldr     tmp3,   [tmp6, #OFS_UTCB_NOTIFY_BITS]           /* CALC A1 */
+
+        tst     mr3,    #2                                      /* TEST A1 */
+        beq     async_no_acceptor                               /* TEST A1 - UTCB must be in tmp6 here*/
+
+        /* OR in the bits */
+        orr     tmp3,   tmp3,   mr1                             /* CALC A1 */
+
+        /* to_tcb->get_notify_bits() & to_tcb->get_br(1)           TEST A2 */
+        ands    tmp1,   mr4,    tmp3                            /* TEST A2 */
+
+        ldrne   mr2,    [to_tcb, #OFS_TCB_THREAD_STATE]         /* TEST A3 */
+        str     tmp3,   [tmp6, #OFS_UTCB_NOTIFY_BITS]           /* CALC A1 */
+
+        beq     async_no_trigger                                /* TEST A2 */
+
+        /* Check is_waiting()                                      TEST A3 */
+        cmp     mr2,    #TSTATE_WAITING_NOTIFY                  /* TEST A3 */
+        beq     L1
+
+        ldr     mr3,    [to_tcb, #OFS_TCB_PARTNER]              /* TEST A4 */
+        cmp     mr2,    #TSTATE_WAITING_FOREVER                 /* TEST A3 */
+
+        /* Check to_tcb->partner->is_anythread                     TEST A4 */
+        cmpeq   mr3,    #L4_ANYTHREAD                           /* TEST A4 */
+
+        bne     async_no_trigger                                /* TEST A3/A5 */
+
+LABEL(L1)
+        mov     tmp1,   #0                                      /* OP A1 */
+        /* to_tcb->set_partner(NILTHREAD)                          OP A1 */
+        str     tmp1,   [to_tcb, #OFS_TCB_SENT_FROM]            /* OP A1 */
+        str     tmp1,   [tmp6, #OFS_UTCB_MR0]              /* CLEAR TAG OF TO_T */
+
+        /* to_tcb       = r2 */
+        /* current      = r9 */
+        ldr     tmp1,   =async_fp_helper_asm
+
+
+        /* async_fp_helper will set thread states and enqueue threads
+         * into the scheduling queue as appropriate. */
+        call    tmp1
+
+        /* async_fp_helper_asm returns here */
+LABEL(async_no_trigger)
+        /* Set the stack pointer up */
+        mov     current,   #ARM_GLOBAL_BASE
+        ldr     current,   [current, #OFS_GLOBAL_CURRENT_TCB]
+
+        mov     mr0,    #0                      /* clear error status */
+
+        /* ipc_return_user expects sp to be pointing to top of context */
+        add     sp,     current,   #(OFS_TCB_ARCH_CONTEXT + PT_SIZE)
+        b       ipc_return_user
+
+LABEL(async_no_acceptor)
+        ldr     tmp6,   [current, #OFS_TCB_UTCB]
+        add     sp,     current, #(OFS_TCB_ARCH_CONTEXT+PT_SIZE)
+        /* No acceptor, set error */
+        mov     tmp3,   #IPC_ERROR_NOT_ACCEPTED
+        str     tmp3,   [tmp6, #OFS_UTCB_ERROR_CODE]
+        mov     mr0,    #IPC_ERROR_TAG
+        b       ipc_return_user
+
+        ALIGN   32
+        /* Leave the fastpath and return to C code */
+LABEL(ipc_slowpath)
+
+#undef  to_tid
+#undef  from_tid
+#undef  timeouts
+#undef  mr0
+#undef  mr1
+#undef  mr2
+#undef  mr3
+#undef  mr4
+
+#undef  to_tcb
+#undef  current
+#undef  tmp1
+#undef  tmp2
+#undef  tmp3
+#undef  tmp4
+#undef  tmp5
+#undef  tmp6
+
+#else /* !CONFIG_IPC_FASTPATH */
+LABEL(ipc_slowpath)
+#endif
+        /* Save message registers */
+        mov     r11,    #0xff000000
+        ldr     r11,    [r11, #0xff0]   /* Get UTCB Address */
+        ldr     r12,    arm_syscall_vectors + 0 /* sys_ipc */
+
+        /* use the kernel stack */
+        ldr     sp,     stack_top
+
+        add     r11,    r11,    #OFS_UTCB_MR0
+        adr     lr,     ipc_syscall_return
+
+        /* Save message registers to UTCB */
+        stmia   r11,    {r3-r8}
+
+        bx      r12
+
+        ALIGN   32
+LABEL(check_other_syscalls)
+        /* User SP less than 0xffffff00? - SWI exception */
+        bcc     arm_swi_exception
+
+        /* svc_sp should point to current thread's kernel stack in the KTCB */
+
+        /* Test to see if it is a syscall */
+        and     r12,    lr,     #0x000000fc
+        cmp     r12,    #SYSCALL_limit
+        bhi     arm_misc_syscall
+
+LABEL(arm_std_syscall)
+        /* set up kernel stack pointer */
+        ldr     sp,     stack_top
+
+        /* Calling registers:
+         *   r0, r1, r2, r3, r4, r5, r6, r7 : arguments 1 - 8
+         * Retuned registers:
+         *   r0, r1, r2, r3, r4, r5, r6     : returned 1 - 7
+         */
+        adr     lr,     syscall_return
+        ldr     pc,     [pc, r12]
+        nop
+
+LABEL(arm_syscall_vectors)
+#if defined(CONFIG_IPC_C_FASTPATH)
+        DCDU    sys_ipc_c_fastpath
+#else
+        DCDU    sys_ipc
+#endif
+        DCDU    sys_thread_switch
+        DCDU    vector_sys_thread_control_exargs
+        DCDU    vector_sys_exchange_registers_exargs
+        DCDU    vector_sys_schedule_exargs
+        DCDU    sys_map_control
+        DCDU    vector_sys_space_control_exargs
+        DCDU    syscall_return /* Unused system call. */
+        DCDU    sys_cache_control
+        DCDU    sys_security_control
+#if defined(CONFIG_IPC_C_FASTPATH)
+        DCDU    sys_ipc_c_fastpath /* lipc */
+#else
+        DCDU    sys_ipc            /* lipc */
+#endif
+        DCDU    sys_platform_control
+        DCDU    sys_space_switch
+        DCDU    sys_mutex
+        DCDU    sys_mutex_control
+        DCDU    sys_interrupt_control
+        DCDU    sys_cap_control
+        DCDU    sys_memory_copy
+        END_PROC_TRAPS(arm_swi_syscall)
+
+/* Generate code for syscalls with extra arguments
+   that need to be stacked. */
+
+#if defined(__GNUC__)
+#define SYS_EXARGS(name, lastreg, numregs)      \
+BEGIN_PROC_TRAPS(name##_exargs)                 \
+        ldr     r12,    =name##;                \
+        stmdb   sp!,    {r4##lastreg};          \
+        jump    r12;                            \
+END_PROC_TRAPS(name##_exargs)
+#elif defined(__RVCT_GNU__)
+        MACRO
+        sys_exargs $name, $name_exargs, $last, $num, $vname
+        EXPORT  $name_exargs
+$name_exargs
+        ldr     r12,    =$name
+        stmdb   sp!,    {r4 $last}
+        jump    r12
+$vname  EQU     $name_exargs - __vector_addr + 0xffff0000
+        MEND
+#define SYS_EXARGS(name, last, num) \
+    sys_exargs name, name##_exargs, last, num, vector_##name##_exargs
+
+#endif
+
+        SYS_EXARGS(sys_thread_control,-r7, 4)       /* save one extra word for RVCT 8-byte alignment requirements */
+        SYS_EXARGS(sys_space_control,-r5, 2)        /* save one extra word for RVCT 8-byte alignment requirements */
+        SYS_EXARGS(sys_exchange_registers,-r7, 4)
+        SYS_EXARGS(sys_schedule,-r5, 2)
+
+/*
+ * IPC Syscall Return.
+ */
+        ALIGN   32
+        BEGIN_PROC_TRAPS(ipc_syscall_return)
+        mov     r12,    #0xff000000
+        ldr     r12,    [r12, #0xff0]
+
+        /* Get current TCB */
+        mov     sp,     #ARM_GLOBAL_BASE
+        ldr     sp,     [sp, #OFS_GLOBAL_CURRENT_TCB]
+
+        add     r12,    r12,    #OFS_UTCB_MR0
+        ldmia   r12,    {r3-r8}
+
+        ldr     r0,     [sp, #OFS_TCB_SENT_FROM]
+
+        /* Fall through */
+        END_PROC_TRAPS(ipc_syscall_return)
+
+/* 
+ * Return from a L4 syscall
+ */
+        BEGIN_PROC_TRAPS(syscall_return)
+        /* Get current TCB */
+        mov     sp,     #ARM_GLOBAL_BASE
+        ldr     sp,     [sp, #OFS_GLOBAL_CURRENT_TCB]
+
+        /* Determine if there is any work required before returning
+         * back to userspace. */
+        ldr     lr,     [sp, #OFS_TCB_POST_SYSCALL_CALLBACK]
+
+        /* restore the user's banked SP, LR, CPSR */
+        add     r12,    sp,     #(OFS_TCB_ARCH_CONTEXT + PT_SIZE - ARM_SYSCALL_STACK_SIZE)
+        add     sp,     r12,    #8
+
+        /* restore the user's banked SP, PC, CPSR */
+        ldmia   r12,    {sp}^
+        nop
+
+        /* Determine if there is any work required before returning
+         * back to userspace. */
+        cmp     lr,     #0
+        bne     arm_perform_callback_saveregs_partial
+
+        rfeia   sp!
+
+        END_PROC_TRAPS(syscall_return)
+
+/*
+ * Call an arbitrary C function prior to returning back to userspace
+ * from a syscall.
+ *
+ * At this point, we expect:
+ *   - CURRENT_TCB is correct
+ *   - r0 - r12 have precious userspace values that need to be saved
+ *     (for instance, the return paramters of a syscall that just
+ *     finished).
+ *   - r13, r14 and SPSR needs to be saved for the "Full" version of
+ *     this function.
+ *   - User PC is stored in kernel LR, but is only saved for the "Full"
+ *     version.
+ */
+        BEGIN_PROC_TRAPS(arm_perform_callback_saveregs_partial)
+        /* Load current TCB's context frame. */
+        mov     sp,     #ARM_GLOBAL_BASE
+        ldr     sp,     [sp, #OFS_GLOBAL_CURRENT_TCB]
+        add     sp,     sp, #OFS_TCB_ARCH_CONTEXT
+
+        /* Save user registers */
+        stmib   sp,     {r0-r12}^
+
+        /* Call 'start_post_syscall_callback' */
+        ldr     r1,     =start_post_syscall_callback
+        ldr     sp,     stack_top
+        adr     lr,     arm_finish_callback_restoreregs
+        jump    r1
+        END_PROC_TRAPS(arm_perform_callback_saveregs_partial)
+
+        BEGIN_PROC_TRAPS(arm_perform_callback_saveregs_full)
+        /* Load current TCB's context frame. */
+        mov     sp,     #ARM_GLOBAL_BASE
+        ldr     sp,     [sp, #OFS_GLOBAL_CURRENT_TCB]
+        add     sp,     sp, #OFS_TCB_ARCH_CONTEXT
+
+        /* Save user registers */
+        stmib   sp,     {r0-r14}^
+        nop
+
+        /* Save user PC / CPSR */
+        str     lr,     [sp, #PT_PC]
+        mrs     lr,    spsr
+        nop
+        str     lr,    [sp, #PT_CPSR] /* Save tmp1(r11) to CPSR */
+
+        /* Call 'start_post_syscall_callback' */
+        ldr     r1,     =start_post_syscall_callback
+        ldr     sp,     stack_top
+        adr     lr,     arm_finish_callback_restoreregs
+        jump    r1
+        END_PROC_TRAPS(arm_perform_callback_saveregs_full)
+
+        BEGIN_PROC_TRAPS(arm_finish_callback_restoreregs)
+        /* Return back to userspace after doing some post-syscall work. */
+        RESTORE_ALL
+        movs    pc,     lr
+        END_PROC_TRAPS(arm_finish_callback_restoreregs)
+
+/*
+ * Call an arbitrary C function prior to returning back to userspace
+ * from an exception.
+ *
+ * At this point, we expect:
+ *   - CURRENT_TCB is correct
+ *   - All user registers have been saved in the TCB.
+ */
+        BEGIN_PROC_TRAPS(arm_perform_callback_from_interrupt)
+        /* Call 'start_post_syscall_callback' */
+        ldr     r1,     =start_post_syscall_callback
+        ldr     sp,     stack_top
+        adr     lr,     arm_finish_callback_from_interrupt
+        jump    r1
+
+        END_PROC_TRAPS(arm_perform_callback_from_interrupt)
+
+        BEGIN_PROC_TRAPS(arm_finish_callback_from_interrupt)
+        LOAD_CONTEXT_INTO_SP
+        ldmib   sp,     {r0-r14}^
+        nop
+        add     sp,     sp,     #PT_SIZE-8
+        rfeia   sp!
+        END_PROC_TRAPS(arm_finish_callback_from_interrupt)
+
+/*
+ * Software Interrupt Exceptions.
+ * (Non-L4 syscalls.)
+ */
+        ALIGN   32
+        BEGIN_PROC_TRAPS(arm_swi_exception)
+        /* Save lr to context(SP) (user SP was in lr), then allocate context_t space on stack */
+        str     lr,     [sp], #-(PT_SIZE - ARM_SYSCALL_STACK_SIZE)
+
+        ldr     lr,     [sp, #PT_PC]    /* Get user PC */
+
+        stmib   sp,     {r0-r12}        /* Save rest of user registers */
+        bic     lr,     lr,     #1      /* Clear syscall bit */
+        str     lr,     [sp, #PT_PC]    /* Save user PC */
+
+
+#ifdef CONFIG_EXCEPTION_FASTPATH
+#include    <arch/types.h>
+#include    <arch/exception.h>
+        /***** Fast path Exception IPC *****/
+
+        /* Registers R4-R7 - remain in place, will be copied to MR1-MR4 by
+         *                   user sys-ipc stub.
+         * Register R0 is move to R8, will be copied to MR5 by user sys-ipc stub.
+         * Registers R1-R3,LR - must go into MR6-MR9
+         *
+         * For schedule inheritance, we only support sending IPCs up-priority,
+         * and require that the destination is performing an open wait.
+         *
+         * // If the destination has a lower priority than us, abort.
+         * // (SIE-CHECK1)
+         * if (to_tcb->effective_prio < current->effective_prio) {
+         *     SLOWPATH();
+         * }
+         *
+         * // If the destination already has other threads on their
+         * // receive queue, abort. We don't want to perform a sorted
+         * // insert in the fastpath. (SIE-CHECK2)
+         * if (to_tcb->end_point->receive_queue->has_waiters()) {
+         *     SLOWPATH();
+         * }
+         *
+         * // Enqueue ourselves on the destination's end-point receive
+         * // queue. (SIE-ENQ)
+         * to_tcb->end_point->receive_queue->enqueue(current);
+         *
+         * // Set exception_fp_bits in resource_bits (SET_RESRC)
+         * current->resources |= EXCEPTIONFP_RESOURCE_BIT
+         */
+
+        /* Move r0 to r8/MR5 */
+        mov     r8, r0
+/* NOTICE: r4-r8 should not be changed in fast path exception IPC!
+ *         r1-r3 and lr can only be used after they've been saved in MR6-MR9
+ */
+#define current r9
+#define to_tcb  r10
+#define tmp1    r11
+#define tmp2    r0
+#define tmp3    r12
+
+        /* Get exception_handler cap.                              CALC_E2 */
+        ldr     tmp1,   [sp, #OFS_TCB_EXCEPTION_HANDLER \
+                          + OFS_CAP_RAW - OFS_TCB_ARCH_CONTEXT] /* CALC_E2 */
+
+        /* Calculate current_tcb pointer */
+        sub     current, sp, #OFS_TCB_ARCH_CONTEXT              /* CALC_E1 */
+
+        /* Load kernel stack */
+        ldr     sp,     stack_top
+
+        /* We have to set EXCEPTIONFP in resource_bits to indicate a
+         * exception ipc before branch to slowpath.
+         */
+        ldr     tmp3,   [current, #OFS_TCB_RESOURCE_BITS]       /* SET_RESRC */
+
+        /* Kill the low bit of the cap. */
+        and     to_tcb, tmp1,   #0xfffffffe
+
+        /* Ensure that our pointer is non-null. */
+        cmp     to_tcb, #0
+
+        orr     tmp3,   tmp3,   #EXCEPTIONFP_RESOURCE_BIT       /* SET_RESRC */
+        str     tmp3,   [current, #OFS_TCB_RESOURCE_BITS]       /* SET_RESRC */
+
+        beq     exception_slowpath
+
+        /* Do we have any resource bits set? */
+        ldr     tmp3,   [to_tcb, #OFS_TCB_RESOURCE_BITS]        /* TEST_E2 */
+
+        /* Check if any resource bits are set (except KIPC_RESOURCE_BIT in to_tcb, and EXCEPTIONFP in current_tcb)   TEST9 | TEST10 */
+        ldr     tmp2,   [current, #OFS_TCB_RESOURCE_BITS]       /* TEST_E3 */
+        bic     tmp3,   tmp3,   #KIPC_RESOURCE_BIT              /* TEST_E2 | TEST_E3 */
+        bic     tmp2,   tmp2,   #EXCEPTIONFP_RESOURCE_BIT
+        ldr     tmp1,   [to_tcb, #OFS_TCB_THREAD_STATE]         /* TEST_E4 */
+        orrs    tmp3,   tmp3,   tmp2                            /* TEST_E2 | TEST_E3 */
+        //bne   exception_slowpath                              /* TEST_E1 | TEST_E2 | TEST_E3 */
+
+        ldreq   tmp3,   [to_tcb, #OFS_TCB_PARTNER]              /* TEST_E5 */
+        ldreq   tmp2,   [current, #OFS_TCB_MYSELF_GLOBAL]       /* TEST_E5 */
+
+        /* Check partner (to_tcb) is waiting                       TEST_E4 */
+        cmpeq   tmp1,   #-1                                     /* TEST_E4 */
+        bne     exception_slowpath                              /* TEST_E1 | TEST_E2 | TEST_E3 | TEST_E4 */
+
+        ldr     tmp1,   [current, #(OFS_TCB_END_POINT \
+                                + OFS_ENDPOINT_SEND_QUEUE \
+                                + OFS_SYNCPOINT_BLOCKED_HEAD)]  /* TEST_E6 */
+
+        /* tcb->get_partner().is_anythread()                       TEST_E5 */
+        cmp     tmp3,   #L4_ANYTHREAD                           /* TEST_E5 */
+
+        /* tcb->get_partner() == current->get_global_id()          TEST_E5 */
+        cmpne   tmp3,   tmp2                                    /* TEST_E5 */
+        ldreq   tmp2,   [to_tcb, #OFS_TCB_SPACE]                /* TEST_E7 */
+        //bne   exception_slowpath                              /* TEST_E5 */
+
+        /* Ensure that our destination's priority is at least as high
+         * as our own. */
+        ldr     tmp3,   [current, #(OFS_TCB_EFFECTIVE_PRIO)]  /* SIE-CHECK1 */
+
+        /* Require send_head to be empty                           TEST_E6 */
+        cmpeq   tmp1,   #0                                      /* TEST_E6 */
+
+        /* Ensure that our destination's priority is at least as high
+         * as our own. */
+        ldr     tmp1,   [to_tcb, #(OFS_TCB_EFFECTIVE_PRIO)]  /* SIE-CHECK1 */
+
+        /* Require send_head to be empty                           TEST_E6 */
+        bne     exception_slowpath                              /* TEST_E6 */
+
+        /* Check if to_tcb->space == NULL                          TEST_E7 */
+        cmp     tmp2,   #0                                      /* TEST_E7 */
+        beq     exception_slowpath                              /* TEST_E7 */
+
+        cmp     tmp3,   tmp1                                 /* SIE-CHECK1 */
+        bgt     exception_slowpath                           /* SIE-CHECK1 */
+
+#if defined(CONFIG_SCHEDULE_INHERITANCE)
+        /* We will need to be enqueued on the destination's receive queue. Make
+         * sure nobody else is on the queue */
+        ldr     tmp1,    [to_tcb, #(OFS_TCB_END_POINT \
+                                + OFS_ENDPOINT_RECV_QUEUE \
+                                + OFS_SYNCPOINT_BLOCKED_HEAD) ] /* SIE-CHECK2 */
+        /* BUBBLE */
+        /* BUBBLE */
+        cmp     tmp1,    #0
+        ldrne   tmp1,   [tmp1, #(OFS_TCB_EFFECTIVE_PRIO)]
+        cmpne   tmp3,   tmp1
+        blt     exception_slowpath
+#endif /* CONFIG_SCHEDULE_INHERITANCE */
+
+
+exception_do_ipc:
+        /* Get ASID + sign extend */
+        ldrsh tmp2,   [tmp2, #OFS_SPACE_ASID]
+
+        /* check for invalid ASID */
+        cmp     tmp2,   #-1
+        beq     exception_slowpath
+        /* ASID is in tmp2 */
+
+#ifdef CONFIG_TRACEBUFFER
+        ldr     tmp3,   =trace_buffer
+        ldr     tmp3,   [tmp3]
+        ldr     tmp1,   [tmp3, #TBUF_LOGMASK]
+        tst     tmp1,   #(1<<3)                 /* IPC major_id = 3 */
+        beq     end_excep_trace                 /* not tracing this major no */
+
+        ldr     tmp1,   [tmp3, #TBUF_ACTIVEBUF]
+        tst     tmp1,   #0x80000000
+        beq     do_excep_trace                  /* an active buffer */
+
+end_excep_trace:
+#endif
+
+        /* Point of no return */
+        mov     tmp1,   #-1
+
+        /* Set thread state to waiting                             STORE_E1 */
+        str     tmp1,   [current, #OFS_TCB_THREAD_STATE]        /* STORE_E1  tmp1 = -1 */
+        mov     tmp1,   #TSTATE_RUNNING
+
+        /* Set partner of excepting thread to be it's exception handler  STORE_E2*/
+        str     to_tcb, [current, #OFS_TCB_PARTNER]             /* STORE_E2 */
+
+        /* Set partner to invalid. */
+        mov     tmp3,   #ASM_INVALID_CAP_RAW
+        str     tmp3,   [to_tcb, #OFS_TCB_PARTNER]
+
+        /* Set thread saved-state to running                       STORE_E4 */
+        str     tmp1,   [current, #OFS_TCB_SAVED_STATE]         /* STORE_E4 */
+
+#if defined(CONFIG_SCHEDULE_INHERITANCE)
+        /* Enqueue ourself on the destination's receive queue. Note that
+         * we have already checked to make sure it is empty or current_tcb has
+         * the highest effictive prio among the to_tcb's recieve queue, 
+         * therefore, always insert current to the head of the receive queue of
+         * to_tcb.
+         */
+        ldr     tmp1,   [to_tcb, #(OFS_TCB_END_POINT \
+                                + OFS_ENDPOINT_RECV_QUEUE \
+                                + OFS_SYNCPOINT_BLOCKED_HEAD)]
+
+        cmp     tmp1,   #0
+        /* receive queue is empty */
+        streq   current,    [current, #(OFS_TCB_BLOCKED_LIST \
+                                + OFS_RINGLIST_NEXT)]             /* SIE-ENQ */
+        streq   current,    [current, #(OFS_TCB_BLOCKED_LIST \
+                                + OFS_RINGLIST_PREV)]             /* SIE-ENQ */
+        /* receive queue is not empty */
+        ldrne   tmp3,       [tmp1, #(OFS_TCB_BLOCKED_LIST \
+                                + OFS_RINGLIST_PREV)]
+        strne   tmp1,       [current, #(OFS_TCB_BLOCKED_LIST \
+                                + OFS_RINGLIST_NEXT)]
+        strne   current,    [tmp1, #(OFS_TCB_BLOCKED_LIST \
+                                + OFS_RINGLIST_PREV)]
+        strne   tmp3,       [current, #(OFS_TCB_BLOCKED_LIST \
+                                + OFS_RINGLIST_PREV)]
+        strne   current,    [tmp3,  #(OFS_TCB_BLOCKED_LIST \
+                                + OFS_RINGLIST_NEXT)]
+
+        str     current,    [to_tcb, #(OFS_TCB_END_POINT \
+                                + OFS_ENDPOINT_RECV_QUEUE \
+                                + OFS_SYNCPOINT_BLOCKED_HEAD)]    /* SIE-ENQ */
+
+        /* Mark that we are waiting for the destination's receive syncpoint. */
+        mov     tmp1,    #(OFS_TCB_END_POINT \
+                                + OFS_ENDPOINT_RECV_QUEUE)        /* SIE-ENQ */
+        add     tmp1,    tmp1, to_tcb                             /* SIE-ENQ */
+        str     tmp1,    [current, #(OFS_TCB_WAITING_FOR)]        /* SIE-ENQ */
+#endif /* CONFIG_SCHEDULE_INHERITANCE */
+
+        /* destination utcb */
+        ldr     tmp3,   [to_tcb, #OFS_TCB_UTCB]
+        add     tmp3,   tmp3,   #OFS_UTCB_MR0 + 24      /* Save to UTCB */
+        stmia   tmp3,   {r1-r3, lr}                     /* Save to UTCB r1-r3,pc */
+
+#define tag     r3
+#define tmp4    r2
+#define tmp5    r1
+
+        /* Set to_tcb's sent_from to be thread handle of current.  STORE E3*/
+        ldr     tmp5,   [current, #OFS_TCB_TCB_IDX]             /* STORE_E3 */
+
+        /* Setup Exception-IPC tag */
+        mov     tag,    #(EXCEPT_IPC_SYS_TAG_HI)                /* SETUP_E1 */
+
+        ldr     tmp4,   [current,       #(OFS_TCB_ARCH_CONTEXT+PT_LR)]
+
+        /* Set to_tcb's sent_from to be thread handle of current.  STORE E3*/
+        orr     tmp5,   tmp5,   #0x80000000                     /* STORE_E3 */
+        str     tmp5,   [to_tcb, #OFS_TCB_SENT_FROM]            /* STORE_E3 */
+
+        ldr     tmp5,   [current,       #(OFS_TCB_ARCH_CONTEXT+PT_SP)]
+
+        mov     tag,    tag,    LSL #20                         /* SETUP_E1 */
+
+        str     tmp4,   [tmp3,  #20]                    /* Save to UTCB user LR         */
+        str     tmp5,   [tmp3,  #16]                    /* Save to UTCB user SP         */
+
+        mrs     tmp1,   spsr
+
+        ldr     tmp5,   [lr,    #-4]                    /* Read swi instruction         */
+
+        orr     tag,    tag,    #EXCEPT_IPC_SYS_TAG_LO          /* SETUP_E1 */
+
+        str     tmp1,   [tmp3,  #28]                    /* Save to UTCB user CPSR       */
+        str     tmp5,   [tmp3,  #24]                    /* Save to UTCB, SYSCALL        */
+
+exception_switch_to:
+        /* ASID in tmp2 */
+        /* set current_pid from space->get_pid() */
+        ldr     tmp1,   [to_tcb, #OFS_TCB_SPACE]
+
+        mov     tmp4,   #ARM_GLOBAL_BASE
+
+        /* Setup the destination's clist. */
+        ldr     tmp5,   [tmp1, #OFS_SPACE_CLIST]
+
+        /* Setup the destination's clist. */
+        str     tmp5,   [tmp4, #OFS_GLOBAL_CURRENT_CLIST]
+
+        /* Set new UTCB XXX - if we fault after this, (before switch) is this bad? */
+        ldr     tmp5,   [to_tcb, #OFS_TCB_UTCB_LOCATION]
+
+        /* Get destination address space */
+        ldr     tmp3,   [tmp1, #OFS_SPACE_PDIR]
+
+        /* Update current tcb and current schedule pointers */
+        str     to_tcb, [tmp4, #OFS_GLOBAL_CURRENT_TCB]
+        str     to_tcb, [tmp4, #OFS_GLOBAL_CURRENT_SCHEDULE]
+
+        mov     tmp1,   #0xff000000             /* USER_UTCB_PAGE */
+        str     tmp5,   [tmp1, #0xff0]          /* UTCB ref */
+
+        ldr     tmp4,   [tmp4,  #OFS_GLOBAL_RAM_PHYS]
+
+        /* Set fast path return address */
+        adr     tmp1,   exception_fastpath_recover
+
+        str     tmp1,   [current, #OFS_TCB_CONT]/* Save return address */
+
+
+        mov     tmp1, #0
+        /* Clear user-RW thread register - For security */
+        mcr     p15, 0, tmp1, c13, c0, 2
+        /* Flush BTB/BTAC */
+        mcr     p15, 0, tmp1, c7, c5, 6
+        /* Drain write buffer */
+        mcr     p15, 0, tmp1, c7, c10, 4
+
+        sub     tmp3,   tmp3,   #VIRT_ADDR_PGTABLE
+        add     tmp3,   tmp3,   tmp4
+        /* Set pgtable cachability */
+        orr     tmp3,   tmp3,   #9
+nop
+nop
+
+        /* Set new ASID */
+        mcr     p15, 0, tmp2, c13, c0, 1
+nop
+        /* Set pagetable */
+        mcr     p15, 0, tmp3, c2, c0, 0
+nop
+nop
+        /* Get resource bits -- test for KIPC */
+        ldr     tmp3,   [to_tcb, #OFS_TCB_RESOURCE_BITS]
+
+        /* Set destination thread to running */
+        mov     tmp1,   #TSTATE_RUNNING
+        str     tmp1,   [to_tcb, #OFS_TCB_THREAD_STATE]
+
+        /* Check if any resource bits are set */
+        tst     tmp3,   #KIPC_RESOURCE_BIT|EXCEPTIONFP_RESOURCE_BIT
+
+        bne     ipc_complete_switch_to_noex
+
+        /* Load the sender's space id to return to receiver */
+        ldr     tmp3,   [current, #OFS_TCB_SPACE_ID]
+
+        /* Point sp to context for ip_return_user */
+        add     sp,     to_tcb, #(OFS_TCB_ARCH_CONTEXT+PT_SIZE)
+
+        /* Set the sender space id in receiver's utcb */
+        str     tmp3,   [tmp5, #OFS_UTCB_SENDER_SPACE]
+
+        /* Load result (should be cached from before XXX) */
+        ldr     r0,     [to_tcb, #OFS_TCB_SENT_FROM]
+
+        mov     current, to_tcb
+        b       ipc_return_user
+
+#ifdef CONFIG_TRACEBUFFER
+LABEL(do_excep_trace)
+        /* tmp3 = trace_buffer, tmp1 = buffer no */
+        str     r3,     [sp, #-4]
+        str     r4,     [sp, #-8]
+        tst     tmp1,   #1
+
+        ldreq   r3,     [tmp3, #TBUF_BUFHEAD0]
+        ldrne   r3,     [tmp3, #TBUF_BUFHEAD1]
+        ldr     r4,     [tmp3, #TBUF_BUFSIZE]
+        add     r3,     r3,     #(5*4)
+
+        /* Check if enough space in buffer */
+        subs    r4,     r3,     r4
+        bpl     slow_excep_trace
+
+        /* Update buffer head */
+        tst     tmp1,   #1
+        streq   r3,     [tmp3, #TBUF_BUFHEAD0]
+        strne   r3,     [tmp3, #TBUF_BUFHEAD1]
+        ldreq   r4,     [tmp3, #TBUF_BUFOFF0]
+        ldrne   r4,     [tmp3, #TBUF_BUFOFF1]
+
+        /* Get buffer offset */
+        sub     r3,     r3,     #(5*4)
+        add     r3,     r3,     r4
+        add     r3,     r3,     tmp3
+
+        /* Write trace entry */
+        ldr     r4,     =0x00620a51
+        ldr     tmp1,   time_ptr
+        ldr     tmp3,   [current, #OFS_TCB_MYSELF_GLOBAL]
+
+        str     r4,     [r3, #8]
+        ldr     r4,     [tmp1, #0]
+        str     tmp3,   [r3, #12]
+        ldr     tmp3,   [to_tcb, #OFS_TCB_MYSELF_GLOBAL]
+        str     r4,     [r3, #0]
+        ldr     r4,     [tmp1, #4]
+        str     tmp3,   [r3, #16]
+        str     r4,     [r3, #4]
+
+        ldr     r3,     [sp, #-4]
+        ldr     r4,     [sp, #-8]
+        b       end_excep_trace
+LABEL(slow_excep_trace)
+        ldr     r3,     [sp, #-4]
+        ldr     r4,     [sp, #-8]
+        b       exception_slowpath
+#endif
+
+#undef tag
+#undef to_tcb
+#undef current
+#undef tmp3
+#undef tmp4
+#undef tmp5
+
+/* define current/tmp5 such that it matches to_tcb in ipc_fastpath */
+#define current     r2
+#define tmp5        r1
+/* Exception_fastpath_recover is set to be continuation of exception-ipcing
+ * thread. It will be called when exception-ipc fall in the fastpath but
+ * reply exception ipc fall into the slowpath.
+ * It basically do the same job as do_ipc_help(), which is set to be
+ * continuation by exception ipc slowpath.
+ */
+LABEL(exception_fastpath_recover)
+        mov     tmp1,   #ARM_GLOBAL_BASE
+        ldr     current,[tmp1, #OFS_GLOBAL_CURRENT_TCB]
+LABEL(fast_reply_exception)
+        /* We have performed reply to exception ipc-ing thread, need to
+         * clean up before return to exception ipc-ing thread:
+         * 1. clear exception ipc bit and kipc bit (set by slowpath do_ipc)
+         * 2. clear saved_partner.
+         * 3. set saved_state to aborted.
+         */
+        ldr     tmp1,   [current, #OFS_TCB_RESOURCE_BITS]
+        bic     tmp1,   tmp1,   #(EXCEPTIONFP_RESOURCE_BIT | KIPC_RESOURCE_BIT)
+        str     tmp1,   [current, #OFS_TCB_RESOURCE_BITS]
+
+        /* Clear saved partner */
+        mov     tmp1,   #0
+        str     tmp1,   [current, #OFS_TCB_SAVED_PARTNER]
+        /* Set the state to running */
+        mov     tmp1,   #TSTATE_RUNNING
+        str     tmp1,   [current, #OFS_TCB_THREAD_STATE]
+        ldr     tmp5,   =arm_common_return
+        /* Set the saved-state to aborted */
+        mov     tmp1,   #TSTATE_ABORTED
+        str     tmp1,   [current, #OFS_TCB_SAVED_STATE]
+
+        jump    tmp5
+#else
+        // put current and sp to correct values
+        sub     r9,     sp,     #OFS_TCB_ARCH_CONTEXT
+        ldr     sp,     stack_top
+#endif  /* EXCEPTION_FASTPATH */
+
+LABEL(exception_slowpath)
+
+        /* Call C function send_exception_ipc(0, 0, arm_irq_context_t *, continuation_t) */
+        ldr     r1,     =send_exception_ipc
+
+        /* r9 MUST be the current TCB for this to work!! */
+        add     r2,     r9, #OFS_TCB_ARCH_CONTEXT
+        mov     r0,     #0
+        ldr     r3,     =arm_common_return
+        jump    r1
+        END_PROC_TRAPS(arm_swi_exception)
+
+/*
+ * Miscellaneous Syscall.
+ */
+        BEGIN_PROC_TRAPS(arm_misc_syscall)
+        ldr     lr,     [sp, #SC_PC]    /* Get user PC */
+        /* Fix stack to be an arm_irq_context_t */
+        sub     sp,     sp,     #(PT_SIZE-ARM_SYSCALL_STACK_SIZE)
+        stmib   sp,     {r0-r12}        /* Save user registers, syscall num to r12 */
+        bic     lr,     lr,     #1      /* Clear syscall bit */
+        str     lr,     [sp, #PT_PC]    /* Save user PC */
+
+        ldr     r1,     =sys_arm_misc
+        mov     r0,     sp
+        ldr     sp,     stack_top
+
+        ldr     lr,     =arm_common_return
+        bx      r1
+        END_PROC_TRAPS(arm_misc_syscall)
+
+/*
+ * Prefetch Abort Exception.
+ */
+        ALIGN   32
+        BEGIN_PROC_TRAPS(arm_prefetch_abort_exception)
+        sub     lr,     lr,     #4
+        srsdb   r13_svc!
+        /* Enter supervisor mode */
+        cps     svc_mode
+        sub     sp,     sp,     #PT_SIZE-8
+        stmib   sp,     {r0-r14}^           /* save user - banked regs */
+        ldr     r4,     =arm_memory_abort   /* r4 not banked */
+        str     lr,     [sp, #PT_KLR]       /* save kernel R14 */
+
+        /* Pointer to base of current arm_irq_context_t record */
+        mov     r2,     sp
+
+        /* Get Faulting address */
+        ldr     r1,     [sp, #PT_PC]
+        /* Check for kernel / user exception - test stored SPSR */
+        ldr     r6,     [sp, #PT_CPSR]
+
+        /* Get Instruction Fault status */
+        mrc     p15, 0, r0, c5, c0, 1
+
+        /* Indicate prefetch abort */
+        orr     r0,     r0,     #0x80000000
+
+        /* Check for kernel / user exception - test stored SPSR */
+        ands    r6,     r6,     #CPSR_SYS_MODE_TEST /* User mode CPSR bits 3:0 = 0 */
+#if defined(CONFIG_DEBUG_SYSMODE)
+        subnes  r6,     r6,     #0xF        /* Also check if from SYSTEM mode */
+#endif
+        ldreq   sp,     stack_top           /* Use kernel stack if from USER mode */
+
+        /* Process the page fault */
+        adr     lr,     arm_memory_abort_return
+        bx      r4
+        /* Returns to arm_memory_abort_return */
+        END_PROC_TRAPS(arm_prefetch_abort_exception)
+
+/*
+ * Data access fault handler vector
+ */
+        ALIGN   32
+        BEGIN_PROC_TRAPS(arm_data_abort_exception)
+        sub     lr,     lr,     #8
+        /* Store r14, SPSR on supervisor stack */
+        srsdb   r13_svc!
+        /* Enter supervisor mode */
+        cps     svc_mode
+        sub     sp,     sp,     #PT_SIZE-8
+
+        stmib   sp,     {r0-r14}^           /* save user - banked regs */
+        ldr     r4,     =arm_memory_abort   /* r4 not banked */
+        str     lr,     [sp, #PT_KLR]       /* save kernel R14 */
+
+        /* Check for kernel / user exception - test stored SPSR */
+        ldr     r6,     [sp, #PT_CPSR]
+
+        /* Pointer to base of current arm_irq_context_t record */
+        mov     r2,     sp
+
+        /* Get Data Fault status */
+        mrc     p15, 0, r0, c5, c0, 0
+        /* Get Faulting address */
+        mrc     p15, 0, r1, c6, c0, 0
+
+        /* Check for kernel / user exception - test stored SPSR */
+        ands    r6,     r6,     #CPSR_SYS_MODE_TEST /* User mode CPSR bits 3:0 = 0 */
+#if defined(CONFIG_DEBUG_SYSMODE)
+        subnes  r6,     r6,     #0xF        /* Also check if from SYSTEM mode */
+#endif
+        ldreq   sp,     stack_top           /* Use kernel stack if from USER mode */
+
+        /* Process the page fault */
+        ldr     lr,     =arm_memory_abort_return
+        bx      r4
+        /* Returns to arm_memory_abort_return */
+        END_PROC_TRAPS(arm_data_abort_exception)
+
+/*
+ * FIQ handler vector
+ */
+        BEGIN_PROC_TRAPS(arm_fiq_exception)
+        sub     lr,     lr,     #4
+        srsdb   r13_svc!
+        /* Enter supervisor mode */
+        cps     svc_mode
+        sub     sp,     sp,     #PT_SIZE-8
+        stmib   sp,     {r0-r14}^           /* save user - banked regs  */
+        mov     r1,     #1                  /* Indicate FIQ to handle_interrupt() */
+        b       generic_irq
+        END_PROC_TRAPS(arm_fiq_exception)
+
+/*
+ * IRQ handler vector
+ */
+        ALIGN   32
+        BEGIN_PROC_TRAPS(arm_irq_exception)
+        sub     lr,     lr,     #4
+        srsdb   r13_svc!
+        /* Enter supervisor mode */
+        cps     svc_mode
+        sub     sp,     sp,     #PT_SIZE-8
+
+        stmib   sp,     {r0-r14}^           /* save user - banked regs  */
+        mov     r1,     #0                  /* Indicate IRQ to handle_interrupt() */
+
+        /* Handle both IRQs and FIQs */
+LABEL(generic_irq)
+        ldr     r4,     =handle_interrupt   /* r4 not banked            */
+        str     lr,     [sp, #PT_KLR]       /* save kernel R14          */
+
+        /* Check for kernel / user exception - test stored SPSR */
+        ldr     r6,     [sp, #PT_CPSR]
+        /* Pointer to base of current arm_irq_context_t record */
+        mov     r0,     sp
+        ldr     lr,     =arm_common_return
+
+        /* Check for kernel / user exception - test stored SPSR */
+        ands    r6,     r6,     #CPSR_SYS_MODE_TEST /* User mode CPSR bits 3:0 = 0 */
+#if defined(CONFIG_DEBUG_SYSMODE)
+        subnes  r6,     r6,     #0xF        /* Also check if from SYSTEM mode */
+#endif
+        ldr     sp,     stack_top           /* Use kernel stack */
+
+        /* Process the page fault */
+        bxeq    r4      /* call handle_interrupt if user interrupt */
+
+        /* kernel interrupt */
+LABEL(kernel_interrupt)
+        /* We were interrupted in kernel mode */
+        /* r0 is the bottom of the current stack, r4 points to handle_interrupt() */
+        call    r4
+
+        /* Get current TCB */
+        mov     r1,     #ARM_GLOBAL_BASE
+        ldr     r1,     [r1, #OFS_GLOBAL_CURRENT_TCB]
+        orr     sp,     sp, #(STACK_TOP)
+
+        /* Return to continuation */
+        ldr     pc,     [r1, #(OFS_TCB_PREEMPTION_CONTINUATION)];
+        END_PROC_TRAPS(arm_irq_exception)
+
+        ALIGN   32
+        /* these accessed at remapped (not compile) address */
+#ifdef CONFIG_TRACEBUFFER
+        VECTOR_WORD(time_ptr)
+        DCDU    _ZN11scheduler_t12current_timeE
+#endif
+        VECTOR_WORD(stack_top)
+        DCDU    __stack + STACK_TOP
+        VECTOR_WORD(scheduler_ptr)
+        DCDU    __scheduler
+
+        LTORG
+        ALIGN   4096
+
+        END

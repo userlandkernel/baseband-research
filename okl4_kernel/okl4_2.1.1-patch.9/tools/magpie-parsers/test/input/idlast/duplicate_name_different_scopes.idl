@@ -1,0 +1,7 @@
+   module M {
+     struct s { short x; short y; };
+     typedef s foo;
+     interface test {
+       typedef short foo;
+     };
+   };

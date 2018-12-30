@@ -1,0 +1,17 @@
+ MagpieAST  (0, ?:?)
+  type test  (1, test/input/idlast/boolean_constants.idl:1)
+   (meta_type) = ['interface']
+   type_instance yes  (2, test/input/idlast/boolean_constants.idl:2)
+    (meta_type) = ['const']
+    target  (3, <builtin>:?)
+     type boolean (backref)
+    expression  (3, ?:?)
+     (value) = [True]
+     type bool (backref)
+   type_instance no  (2, test/input/idlast/boolean_constants.idl:3)
+    (meta_type) = ['const']
+    target  (3, <builtin>:?)
+     type boolean (backref)
+    expression  (3, ?:?)
+     (value) = [False]
+     type bool (backref)

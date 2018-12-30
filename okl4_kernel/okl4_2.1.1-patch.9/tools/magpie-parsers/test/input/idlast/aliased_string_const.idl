@@ -1,0 +1,4 @@
+   interface test {
+     typedef string<10> mystring;
+     const mystring s = "Test";
+   };

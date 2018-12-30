@@ -1,0 +1,88 @@
+-> assemlby.camkes
+
+import "simple.camkes";
+import "component_def.camkes";
+import "std_connector.camkes";
+import "fat_component.camkes";
+
+assembly {
+	component simple si;
+	component component_def cdi;
+	
+	composition {
+		connection IguanaRPC conn1(from si.simp2, to cdi.simp2);
+		connection IguanaRPC conn2(from cdi.simp1, to si.simp1);
+	};
+	
+}
+
+-> simple.camkes
+
+include "simple_interface.idl4";
+include "very_simple_interface.idl4";
+
+component simple_component {
+	active;
+	uses simple simp1;
+	provides very_simple simp2;
+};
+
+-> component_def.camkes
+
+include "simple_interface.idl4";
+include "very_simple_interface.idl4";
+
+component component_def {
+	active;
+	provides simple simp1;
+	uses very_simple simp2;
+};
+
+-> std_connector.camkes
+
+connector IguanaRPC {
+	from Interface user_inf;
+	to Interface provider_inf;
+}
+connector IguanaExportRPC {
+	from Interface implemented_inf;
+	to Interface exported_inf;
+}
+
+connector IguanaSharedData {
+	from DataPort fromdata;
+	to DataPort todata;
+}
+
+
+connector IguanaExportData {
+	from DataPort implemented_data;
+	to DataPort exported_data;
+}
+
+-> fat_component.camkes
+
+component FAT {
+	provides FS fs;
+	dataport Buf buf[];
+	provides FSUtil util;
+	uses BlockDevice dev;
+	dataport Buf devbuf;
+
+	composition {
+		component FATFS fat;
+		component FSUtil util;
+
+		connection IguanaExportRPC fat (from fat.fs, to fs);
+		connection IguanaExportData fatd (from fat.buf, to buf);
+
+		connection IguanaExportRPC util (from util.util, to util);
+
+		connection IguanaExportRPC dev (from fat.dev, to dev);
+		connection IguanaExportData devd (from fat.devbuf, to devbuf);
+
+		connection IguanaRPC fsutil (from util.fs, to fat.fs);
+		connection IguanaSharedData fsutild (from util.buf, to fat.buf);
+	}
+
+}

@@ -1,0 +1,4 @@
+* Semantic error *
+test/input/idlast/inheritance_1.idl:10:Name "red" is ambiguous without explicit scoping
+test/input/idlast/inheritance_1.idl:2:Name "red" defined here
+test/input/idlast/inheritance_1.idl:5:Name "red" defined here

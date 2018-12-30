@@ -1,0 +1,162 @@
+/*
+ * Copyright (c) 2006, National ICT Australia
+ */
+/*
+ * Copyright (c) 2007 Open Kernel Labs, Inc. (Copyright Holder).
+ * All rights reserved.
+ *
+ * 1. Redistribution and use of OKL4 (Software) in source and binary
+ * forms, with or without modification, are permitted provided that the
+ * following conditions are met:
+ *
+ *     (a) Redistributions of source code must retain this clause 1
+ *         (including paragraphs (a), (b) and (c)), clause 2 and clause 3
+ *         (Licence Terms) and the above copyright notice.
+ *
+ *     (b) Redistributions in binary form must reproduce the above
+ *         copyright notice and the Licence Terms in the documentation and/or
+ *         other materials provided with the distribution.
+ *
+ *     (c) Redistributions in any form must be accompanied by information on
+ *         how to obtain complete source code for:
+ *        (i) the Software; and
+ *        (ii) all accompanying software that uses (or is intended to
+ *        use) the Software whether directly or indirectly.  Such source
+ *        code must:
+ *        (iii) either be included in the distribution or be available
+ *        for no more than the cost of distribution plus a nominal fee;
+ *        and
+ *        (iv) be licensed by each relevant holder of copyright under
+ *        either the Licence Terms (with an appropriate copyright notice)
+ *        or the terms of a licence which is approved by the Open Source
+ *        Initative.  For an executable file, "complete source code"
+ *        means the source code for all modules it contains and includes
+ *        associated build and other files reasonably required to produce
+ *        the executable.
+ *
+ * 2. THIS SOFTWARE IS PROVIDED ``AS IS'' AND, TO THE EXTENT PERMITTED BY
+ * LAW, ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE, OR NON-INFRINGEMENT, ARE DISCLAIMED.  WHERE ANY WARRANTY IS
+ * IMPLIED AND IS PREVENTED BY LAW FROM BEING DISCLAIMED THEN TO THE
+ * EXTENT PERMISSIBLE BY LAW: (A) THE WARRANTY IS READ DOWN IN FAVOUR OF
+ * THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+ * PARTICIPANT) AND (B) ANY LIMITATIONS PERMITTED BY LAW (INCLUDING AS TO
+ * THE EXTENT OF THE WARRANTY AND THE REMEDIES AVAILABLE IN THE EVENT OF
+ * BREACH) ARE DEEMED PART OF THIS LICENCE IN A FORM MOST FAVOURABLE TO
+ * THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+ * PARTICIPANT). IN THE LICENCE TERMS, "PARTICIPANT" INCLUDES EVERY
+ * PERSON WHO HAS CONTRIBUTED TO THE SOFTWARE OR WHO HAS BEEN INVOLVED IN
+ * THE DISTRIBUTION OR DISSEMINATION OF THE SOFTWARE.
+ *
+ * 3. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR ANY OTHER PARTICIPANT BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include <compat/asm.h>
+#include <l4/arch/syscalls_asm.h> /* L4 Trap numbers. */
+
+#if defined(__ADS__) || defined(__RVCT__) || defined(__RVCT_GNU__)
+        AREA    Kdebug, CODE
+#endif
+
+/*
+ * FIXME: Move these to libcompat, and make them more general.
+ */
+#if defined(__GNUC__)
+
+#if defined __ARM_ARCH_4T__ || defined __ARM_ARCH_5T__ || \
+    defined __ARM_ARCH_5TE__ || defined __ARM_ARCH_5TEJ__ || \
+    __ARM_ARCH__ >= 6
+        /* Use the instructions normally. */
+#else
+        .macro  BX reg
+        mov     pc, \reg
+        .endm
+
+        .macro  BLX reg
+        mov     lr, pc
+        mov     pc, \reg
+        .endm
+#endif
+#endif
+
+/*
+ * L4_KDB_Enter
+ */
+        EXPORT L4_KDB_Enter
+LABEL(L4_KDB_Enter)
+        mov     r3, lr
+        mov     ip, sp
+        ldr     sp, =TRAPNUM(L4_TRAP_KDEBUG)
+        mov     lr, pc
+        swi     0x01
+        BX      r3
+
+#if defined(__GNUC__)
+        .macro __L4_KDB_Op op, name
+        EXPORT  \name
+LABEL(\name)
+        mov     r3, lr
+        mov     ip, sp
+        ldr     sp, =\op
+        mov     lr, pc
+        swi     0x00
+        BX      r3
+        .endm
+#define L4_KDB_Op(op, name)     __L4_KDB_Op     TRAPNUM(op), name
+#elif defined(__ADS__) || defined(__RVCT__) || defined(__RVCT_GNU__)
+        MACRO
+        __L4_KDB_Op $op, $name
+        EXPORT  $name
+LABEL($name)
+        mov     r3, lr
+        mov     ip, sp
+        ldr     sp, =$op
+        mov     lr, pc
+        swi     0x00
+        BX      r3
+        MEND
+#define L4_KDB_Op(op, name)     __L4_KDB_Op     TRAPNUM(op), name
+#endif
+
+        L4_KDB_Op(L4_TRAP_GETTICK, L4_KDB_GetTick)
+        L4_KDB_Op(L4_TRAP_KGETC, L4_KDB_ReadChar_Blocked_ASM)
+        L4_KDB_Op(L4_TRAP_KGETC_NB, L4_KDB_ReadChar_ASM)
+        L4_KDB_Op(L4_TRAP_KPUTC, L4_KDB_PrintChar_ASM)
+        L4_KDB_Op(L4_TRAP_GETCOUNTER, L4_KDB_GetTracepointCount)
+        L4_KDB_Op(L4_TRAP_GETNUMTPS, L4_KDB_GetNumTracepoints)
+        L4_KDB_Op(L4_TRAP_GETTPNAME, L4_KDB_GetTracepointNameIntroMRs)
+        L4_KDB_Op(L4_TRAP_TCCTRL, L4_KDB_TCCtrl)
+
+        L4_KDB_Op(L4_TRAP_PMN_READ, L4_KDB_PMN_Read)
+        L4_KDB_Op(L4_TRAP_PMN_WRITE, L4_KDB_PMN_Write)
+        L4_KDB_Op(L4_TRAP_PMN_OFL_READ, L4_KDB_PMN_Ofl_Read)
+        L4_KDB_Op(L4_TRAP_PMN_OFL_WRITE, L4_KDB_PMN_Ofl_Write)
+
+/*
+ * L4_KDB_SetObjectName_ASM
+ */
+	EXPORT  L4_KDB_SetObjectName_ASM
+LABEL(L4_KDB_SetObjectName_ASM)
+        stmfd   sp!, {r4, r5, lr}
+
+        ldr     r5, [r2, #12]
+        ldr     r4, [r2, #8]
+        ldr     r3, [r2, #4]
+        ldr     r2, [r2, #0]
+
+        mov     ip, sp
+        ldr     sp, =TRAPNUM(L4_TRAP_KSET_OBJECT_NAME)
+        mov     lr, pc
+        swi     0x01
+
+        ldmfd   sp!, {r4, r5, pc}
+
+	END

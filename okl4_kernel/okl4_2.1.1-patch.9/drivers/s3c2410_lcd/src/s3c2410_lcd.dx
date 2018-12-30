@@ -1,0 +1,225 @@
+<device name="s3c2410_lcd">
+<!--
+Copyright (c) 2007 Open Kernel Labs (Copyright Holder).
+All rights reserved.
+
+1. Redistribution and use of OKL4 (Software) in source and binary
+forms, with or without modification, are permitted provided that the
+following conditions are met:
+
+    (a) Redistributions of source code must retain this clause 1
+        (including paragraphs (a), (b) and (c)), clause 2 and clause 3
+        (Licence Terms) and the above copyright notice.
+
+    (b) Redistributions in binary form must reproduce the above
+        copyright notice and the Licence Terms in the documentation and/or
+        other materials provided with the distribution.
+
+    (c) Redistributions in any form must be accompanied by information on
+        how to obtain complete source code for:
+       (i) the Software; and
+       (ii) all accompanying software that uses (or is intended to
+       use) the Software whether directly or indirectly.  Such source
+       code must:
+       (iii) either be included in the distribution or be available
+       for no more than the cost of distribution plus a nominal fee;
+       and
+       (iv) be licensed by each relevant holder of copyright under
+       either the Licence Terms (with an appropriate copyright notice)
+       or the terms of a licence which is approved by the Open Source
+       Initative.  For an executable file, "complete source code"
+       means the source code for all modules it contains and includes
+       associated build and other files reasonably required to produce
+       the executable.
+
+2. THIS SOFTWARE IS PROVIDED ``AS IS'' AND, TO THE EXTENT PERMITTED BY
+LAW, ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE, OR NON-INFRINGEMENT, ARE DISCLAIMED.  WHERE ANY WARRANTY IS
+IMPLIED AND IS PREVENTED BY LAW FROM BEING DISCLAIMED THEN TO THE
+EXTENT PERMISSIBLE BY LAW: (A) THE WARRANTY IS READ DOWN IN FAVOUR OF
+THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+PARTICIPANT) AND (B) ANY LIMITATIONS PERMITTED BY LAW (INCLUDING AS TO
+THE EXTENT OF THE WARRANTY AND THE REMEDIES AVAILABLE IN THE EVENT OF
+BREACH) ARE DEEMED PART OF THIS LICENCE IN A FORM MOST FAVOURABLE TO
+THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+PARTICIPANT). IN THE LICENCE TERMS, "PARTICIPANT" INCLUDES EVERY
+PERSON WHO HAS CONTRIBUTED TO THE SOFTWARE OR WHO HAS BEEN INVOLVED IN
+THE DISTRIBUTION OR DISSEMINATION OF THE SOFTWARE.
+
+3. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR ANY OTHER PARTICIPANT BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+
+<state name="deep_standby" />
+<state name="sleep" />
+<state name="normal" />
+
+<interface name="fb" interface_type="fb" />
+
+<resource name="jbt_space" rtype="bus_space_t" />
+<block name="jbt" space="jbt_space" space_type="bus" register_size="8">
+
+ <register name="sleep_in"          offset="0x10" type="rw"></register>
+ <register name="sleep_out"         offset="0x11" type="rw"></register>
+ 
+ <register name="disp_off"          offset="0x28" type="rw"></register>
+ <register name="disp_on"           offset="0x29" type="rw"></register>
+ 
+ <register name="rgb_format"        offset="0x3a" type="rw"></register>
+ <register name="quad_rate"         offset="0x3b" type="rw"></register>
+ 
+ <register name="power_on_off"      offset="0xb0" type="rw"></register>
+ <register name="booster_op"        offset="0xb1" type="rw"></register>
+ <register name="booster_mode"      offset="0xb2" type="rw"></register>
+ <register name="booster_freq"      offset="0xb3" type="rw"></register>
+ <register name="opamp_sysclk"      offset="0xb4" type="rw"></register>
+ 
+ <register name="vsc_volt"          offset="0xb5" type="rw"></register>
+ <register name="vcom_volt"         offset="0xb6" type="rw"></register>
+ 
+ <register name="ext_disp"          offset="0xb7" type="rw"></register>
+ <register name="output_ctrl"       offset="0xb8" type="rw"></register>
+ <register name="dcclk_dcev"        offset="0xb9" type="rw"></register>
+ 
+ <register name="disp_mode_1"       offset="0xba" type="rw"></register>
+ <register name="disp_mode_2"       offset="0xbb" type="rw"></register>
+ <register name="disp_mode"         offset="0xbc" type="rw"></register>
+ <register name="asw_slew"          offset="0xbd" type="rw"></register>
+ <register name="drive_system"      offset="0xbe" type="rw"></register>
+ 
+ <register name="sleep_out_fr_a"    offset="0xc0" type="rw"></register>
+ <register name="sleep_out_fr_b"    offset="0xc1" type="rw"></register>
+ <register name="sleep_out_fr_c"    offset="0xc2" type="rw"></register>
+ 
+ <register name="sleep_in_lccnt_d"  offset="0xc3" type="rw"></register>
+ <register name="sleep_in_lccnt_e"  offset="0xc4" type="rw"></register>
+ <register name="sleep_in_lccnt_f"  offset="0xc5" type="rw"></register>
+ <register name="sleep_in_lccnt_g"  offset="0xc6" type="rw"></register>
+ 
+ <register name="gamma1_fine1"       offset="0xc7" type="rw"></register>
+ <register name="gamma1_fine2"       offset="0xc8" type="rw"></register>
+ <register name="gamma1_inclination" offset="0xc9" type="rw"></register>
+ <register name="gamma1_blue_offset" offset="0xca" type="rw"></register>
+ 
+ <register name="blank_ctrl"        offset="0xcf" type="rw"></register>
+ <register name="blank_th_tv"       offset="0xd0" type="rw"></register>
+ <register name="ckv_on_off"        offset="0xd1" type="rw"></register>
+ <register name="ckv_1_2"           offset="0xd2" type="rw"></register>
+ 
+ <register name="oev_timing"        offset="0xd3" type="rw"></register>
+ <register name="asw_timing_1"      offset="0xd4" type="rw"></register>
+ <register name="asw_timing_2"      offset="0xd5" type="rw"></register>
+ 
+ <register name="hclk_vga"          offset="0xec" type="rw"></register>
+ <register name="hclk_qvga"         offset="0xed" type="rw"></register>
+ 
+</block>
+
+<resource name="s3c_space" rtype="mem_space_t" />
+<block name="s3c" space="s3c_space" space_type="mem" register_size="32">
+
+ <register name="lcdcon1"   offset="0x00" type="rw">
+     <field name="envid"    bits="0"    />
+     <field name="bppmode"  bits="1:4"  />
+     <field name="pnrmode"  bits="5:6"  />
+     <field name="mmode"    bits="7"    />
+     <field name="clkval"   bits="8:17" />
+     <field name="linecnt"  bits="18:27"/>
+ </register>
+ 
+ <register name="lcdcon2"   offset="0x04" type="rw">
+     <field name="vspw"     bits="0:5"  />
+     <field name="vfpd"     bits="6:13" />
+     <field name="lineval"  bits="14:23"/>
+     <field name="vbpd"     bits="24:31"/>
+ </register>
+ 
+ <register name="lcdcon3"   offset="0x08" type="rw">
+     <field name="hfpd"     bits="0:7"  />
+     <field name="hozval"   bits="8:18" />
+     <field name="hbpd"     bits="19:25"/>
+ </register>
+ 
+ <register name="lcdcon4"   offset="0x0c" type="rw">
+     <field name="hspw"     bits="0:7"  />
+     <field name="mval"     bits="8:15" />
+ </register>
+ 
+ <register name="lcdcon5"   offset="0x10" type="rw">
+     <field name="hwswp"    bits="0"    />
+     <field name="bswp"     bits="1"    />
+     <field name="enlend"   bits="2"    />
+     <field name="pwren"    bits="3"    />
+     <field name="invlend"  bits="4"    />
+     <field name="invpwren" bits="5"    />
+     <field name="invvden"  bits="6"    />
+     <field name="invvd"    bits="7"    />
+     <field name="invvfram" bits="8"    />
+     <field name="invvline" bits="9"    />
+     <field name="invvclk"  bits="10"   />
+     <field name="frm565"   bits="11"   />
+     <field name="bpp24bl"  bits="12"   />
+     <field name="hstatus"  bits="13:14"/>
+     <field name="vstatus"  bits="15:16"/>
+     <field name="reserved" bits="17:31"/>
+ </register>
+ 
+ <register name="lcdsaddr1" offset="0x14" type="rw">
+     <field name="lcdbaseu" bits="0:20" />
+     <field name="lcdbank"  bits="21:29"/>
+ </register>
+ 
+ <register name="lcdsaddr2" offset="0x18" type="rw">
+     <field name="lcdbasel" bits="0:20" />
+ </register>
+ 
+ <register name="lcdsaddr3" offset="0x1c" type="rw">
+     <field name="pagewidth" bits="0:10" />
+     <field name="offsize"   bits="11:21"/>
+ </register>
+ 
+ <!-- Some registers are not listed here - RGB LUTs, dithering mode,
+    temp palette, 
+  -->
+  <register name="lcdintpnd" offset="0x54" type="rw">
+      <field name="INT_FiCnt" bits="0" />
+      <field name="INT_FrSyn" bits="1" />
+  </register>
+  
+  <register name="lcdsrcpnd" offset="0x58" type="rw">
+      <field name="INT_FiCnt" bits="0" />
+      <field name="INT_FrSyn" bits="1" />
+  </register>
+  
+  <register name="lcdintmsk" offset="0x5c" type="rw">
+      <field name="INT_FiCnt" bits="0" />
+      <field name="INT_FrSyn" bits="1" />
+      <field name="FIWSEL"    bits="2" />
+  </register>
+  
+  <register name="lpcsel"    offset="0x60" type="rw">
+      <field name="LPC_EN"   bits="0" />
+      <field name="RES_SEL"  bits="1" />
+      <field name="reserved" bits="2" />
+  </register>
+ 
+</block>
+
+</device>
+
+
+
+
+
+
+
+
+

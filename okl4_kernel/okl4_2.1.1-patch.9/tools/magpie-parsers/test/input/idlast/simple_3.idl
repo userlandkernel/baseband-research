@@ -1,0 +1,6 @@
+[uuid(20)]
+interface simple
+{
+	int func(in char *arg);
+};
+

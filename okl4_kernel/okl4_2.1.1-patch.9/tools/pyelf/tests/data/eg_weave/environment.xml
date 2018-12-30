@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!DOCTYPE image SYSTEM "weaver-1.0.dtd">
+<image>
+	<machine file="data/eg_weave/machine.xml">
+	</machine>
+	<virtual_pool name="virtual">
+		<memory base="0x1000" size="0xcffff000"/>
+	</virtual_pool>
+
+	<physical_pool name="large">
+		<memory base="0xa0000000" size="0x3000000"/>
+	</physical_pool>
+
+	<physical_pool name="physical">
+		<memory base="0xa3000000" size="0x1000000"/>
+	</physical_pool>
+
+	<kernel file="data/eg_weave/l4kernel">
+	</kernel>
+
+	<rootprogram file="data/eg_weave/ig_server" virtpool="virtual" physpool="physical">
+	</rootprogram>
+	<pd name="the_pd" >
+		<memsection name="make_dynamically" size="16K" attach="rwx" />
+		<!-- Test the parsing of the zero attribute -->
+		<memsection name="make_dynamically2" size="16K" attach="rwx" zero="false"/>
+		<!-- Test the parsing of custom caps. -->
+		<memsection name="custom_cap" size="16K" attach="wx">
+			<cap name="odd" >
+				<right value="read" />
+				<right value="execute" />
+			</cap>
+		</memsection>
+	</pd>
+        <program name="ig_naming" file="data/eg_weave/ig_naming" physpool="large">
+		<environment>
+			<entry key="A Key" cap="/the_pd/make_dynamically" attach="rw" />
+			<entry key="Custom" cap="/the_pd/custom_cap/odd" attach="wx" />
+			<entry key="AVALUE" value="42" />
+		</environment>
+        </program>
+</image>
+

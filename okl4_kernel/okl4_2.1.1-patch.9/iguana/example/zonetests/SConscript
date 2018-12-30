@@ -1,0 +1,208 @@
+#
+# Copyright (c) 2007 Open Kernel Labs, Inc. (Copyright Holder).
+# All rights reserved.
+# 
+# 1. Redistribution and use of OKL4 (Software) in source and binary
+# forms, with or without modification, are permitted provided that the
+# following conditions are met:
+# 
+#     (a) Redistributions of source code must retain this clause 1
+#         (including paragraphs (a), (b) and (c)), clause 2 and clause 3
+#         (Licence Terms) and the above copyright notice.
+# 
+#     (b) Redistributions in binary form must reproduce the above
+#         copyright notice and the Licence Terms in the documentation and/or
+#         other materials provided with the distribution.
+# 
+#     (c) Redistributions in any form must be accompanied by information on
+#         how to obtain complete source code for:
+#        (i) the Software; and
+#        (ii) all accompanying software that uses (or is intended to
+#        use) the Software whether directly or indirectly.  Such source
+#        code must:
+#        (iii) either be included in the distribution or be available
+#        for no more than the cost of distribution plus a nominal fee;
+#        and
+#        (iv) be licensed by each relevant holder of copyright under
+#        either the Licence Terms (with an appropriate copyright notice)
+#        or the terms of a licence which is approved by the Open Source
+#        Initative.  For an executable file, "complete source code"
+#        means the source code for all modules it contains and includes
+#        associated build and other files reasonably required to produce
+#        the executable.
+# 
+# 2. THIS SOFTWARE IS PROVIDED ``AS IS'' AND, TO THE EXTENT PERMITTED BY
+# LAW, ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+# PURPOSE, OR NON-INFRINGEMENT, ARE DISCLAIMED.  WHERE ANY WARRANTY IS
+# IMPLIED AND IS PREVENTED BY LAW FROM BEING DISCLAIMED THEN TO THE
+# EXTENT PERMISSIBLE BY LAW: (A) THE WARRANTY IS READ DOWN IN FAVOUR OF
+# THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+# PARTICIPANT) AND (B) ANY LIMITATIONS PERMITTED BY LAW (INCLUDING AS TO
+# THE EXTENT OF THE WARRANTY AND THE REMEDIES AVAILABLE IN THE EVENT OF
+# BREACH) ARE DEEMED PART OF THIS LICENCE IN A FORM MOST FAVOURABLE TO
+# THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+# PARTICIPANT). IN THE LICENCE TERMS, "PARTICIPANT" INCLUDES EVERY
+# PERSON WHO HAS CONTRIBUTED TO THE SOFTWARE OR WHO HAS BEEN INVOLVED IN
+# THE DISTRIBUTION OR DISSEMINATION OF THE SOFTWARE.
+# 
+# 3. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR ANY OTHER PARTICIPANT BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+# BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+# OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+# IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+Import("*")
+import os
+
+# If building with gcc, add a custom linker script to put some code in
+# it's own segment and zone.
+if env.toolchain.type == 'gnu':
+    src_root = Dir('#').srcnode().abspath
+    alt_lds_path = os.path.join(src_root, "cust", args["cust"], "arch",  env.machine.arch,  args["package"], "src", "linker.lds")
+
+    if os.path.exists(alt_lds_path):
+        linkscripts = str(File(alt_lds_path))
+    else:
+        linkscripts = str(File("src/linker.lds"))
+
+# Object to request 1M alignment.
+addressing = env.WeaverAddressing(virt_align = 1024*1024)
+
+# Test directly addresses object with 1M alignment.
+direct_addressing = env.WeaverAddressing(virt_align = 1024*1024, direct='true')
+
+# Declare memsections that are to go into one zone:
+## Memsection with fixed address at the base of a zone.
+ms = env.IguanaMemSection(name = 'zoned_ms',
+                          base = env.ADDR_ALLOC,
+                          size = 4096,
+                          addressing = addressing)
+
+## Memesection with a fixed address somewhere in the zone
+ms1 = env.IguanaMemSection(name = 'zoned_ms1',
+                           base = env.ADDR_ALLOC,
+                           size = 4096)
+
+## Memsection somewhere in the zone calculated by elfweaver.
+ms2 = env.IguanaMemSection(name = 'zoned_ms2',
+                           base = env.ADDR_ALLOC_RUNTIME,
+                           size = 4096)
+## Memsection that will be placed in a new 1M window.  This the zone
+## will contain 2 1M regions.
+ms3 = env.IguanaMemSection(name = 'zoned_ms3',
+                          base = env.ADDR_ALLOC_RUNTIME,
+                          size = 4096,
+                          addressing = addressing)
+
+## Memesection with a fixed address somewhere in the zone
+ms4 = env.IguanaMemSection(name = 'zoned_ms4',
+                           base = env.ADDR_ALLOC,
+                           size = 4096)
+
+## Directly addresses memesection in a new window.
+ms5 = env.IguanaMemSection(name = 'zoned_direct',
+                           base = env.ADDR_ALLOC_RUNTIME,
+                           size = 4096,
+                           addressing = direct_addressing)
+
+# Zone for memsection tests.
+ms_zone = env.WeaverZone(name = "z1", contents = [ms, ms1, ms2, ms3,
+                                                  ms4, ms5])
+
+# Declare a code segment that is to go into a zone.  This requires a
+# custom linker script that is only available for GNU compilers.
+# For other compilers, just create an empty zone.
+if env.toolchain.type == 'gnu':
+    seg = env.WeaverSegment("zone_segment")
+    seg_zone = env.WeaverZone(name = "z2", contents = [seg])
+else:
+    seg_zone = env.WeaverZone(name = "z2", contents = [])
+
+libs = ["c", "range_fl", "circular_buffer", "iguana", "l4", "ll", "l4e",
+        "mutex", "atomic_ops"]
+
+# Add the LINKERSCRIPTS keyword when using gcc.
+if env.toolchain.type == 'gnu':
+    obj = env.KengeProgram("zonetests_example",
+                           weaver=env.WeaverIguanaProgram(),
+                           LIBS=libs,
+                           LINKSCRIPTS=linkscripts,
+                           ELFADORN_FLAGS="-c 'text,data,zone_segment'")
+else:
+    obj = env.KengeProgram("zonetests_example",
+                           weaver=env.WeaverIguanaProgram(),
+                           LIBS=libs,
+                           ELFADORN_FLAGS="-c 'text,data,zone_segment'")
+    
+# Add the zones.
+env.weaver(obj).add_zone(ms_zone)
+env.weaver(obj).add_zone(seg_zone)
+
+
+env.expect_test_data = [("Zone tests", None),
+                        ("----------", None),
+                        ("zonetest01: OK.", None),
+#                        ("zonetest01a: Faulting...", None),
+                        ("zonetest02: OK.", None),
+                        ("zonetest03: Faulting...", None),
+#                        ("Unhandled page fault", None),
+                        ("zonetest04: OK.", None),
+                        ("zonetest05: Faulting...", None),
+#                        ("Unhandled page fault", None),
+                        ("zonetest06: Faulting...", None),
+#                        ("Unhandled page fault", None),
+                        ("zonetest07: OK.", None),
+                        ("zonetest08: Faulting...", None),
+#                        ("Unhandled page fault", None),
+                        ("zonetest09: Faulting...", None),
+#                        ("Unhandled page fault", None),
+                        ("zonetest10: OK.", None),
+                        ("zonetest11: Faulting...", None),
+#                        ("Unhandled page fault", None),
+                        ("zonetest12: Faulting...", None),
+#                        ("Unhandled page fault", None),
+                        ("zonetest13: OK.", None),
+                        ("Faulting...", None),
+#                        ("Unhandled page fault", None),
+                        ("OK.", None),
+                        #("zonetest14: Not implemented.", None),
+                        ("zonetest15: Zone call return: 200", None),
+                        ("OK.", None),
+                        ("zonetest16: OK.", None),
+                        ("zonetest01: OK.", None),
+#                        ("zonetest01a: Faulting...", None),
+                        ("zonetest02: OK.", None),
+                        ("zonetest03: Faulting...", None),
+#                        ("Unhandled page fault", None),
+                        ("zonetest04: OK.", None),
+                        ("zonetest05: Faulting...", None),
+#                        ("Unhandled page fault", None),
+                        ("zonetest06: Faulting...", None),
+#                        ("Unhandled page fault", None),
+                        ("zonetest07: OK.", None),
+                        ("zonetest08: Faulting...", None),
+#                        ("Unhandled page fault", None),
+                        ("zonetest09: Faulting...", None),
+#                        ("Unhandled page fault", None),
+                        ("zonetest10: OK.", None),
+                        ("zonetest11: Faulting...", None),
+#                        ("Unhandled page fault", None),
+                        ("zonetest12: Faulting...", None),
+#                        ("Unhandled page fault", None),
+                        ("zonetest13: OK.", None),
+                        ("Faulting...", None),
+#                        ("Unhandled page fault", None),
+                        ("OK.", None),
+                        #("zonetest14: Not implemented.", None),
+                        ("zonetest15: Zone call return: 200", None),
+                        ("OK.", None),
+                        ("zonetest16: OK.", None),
+                        ("Finished.", None),
+                       ]
+
+Return("obj")

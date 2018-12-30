@@ -1,0 +1,2 @@
+* Semantic error *
+test/input/idlast/mixed_literal_types.idl:2:Cannot coerce "octet" to "float"

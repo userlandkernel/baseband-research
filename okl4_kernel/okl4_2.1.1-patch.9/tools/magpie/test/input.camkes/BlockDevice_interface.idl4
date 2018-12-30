@@ -1,0 +1,5 @@
+[uuid(40)]
+interface BlockDevice {
+    int readBlock(in char* buf);
+    int writeBlock(in char* buf);
+};

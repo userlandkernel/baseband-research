@@ -1,0 +1,4 @@
+[uuid(30)]
+interface FSUtil {
+    int copy(in char* src, in char* dest);
+};

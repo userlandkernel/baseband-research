@@ -1,0 +1,853 @@
+#
+# Copyright (c) 2007 Open Kernel Labs, Inc. (Copyright Holder).
+# All rights reserved.
+# 
+# 1. Redistribution and use of OKL4 (Software) in source and binary
+# forms, with or without modification, are permitted provided that the
+# following conditions are met:
+# 
+#     (a) Redistributions of source code must retain this clause 1
+#         (including paragraphs (a), (b) and (c)), clause 2 and clause 3
+#         (Licence Terms) and the above copyright notice.
+# 
+#     (b) Redistributions in binary form must reproduce the above
+#         copyright notice and the Licence Terms in the documentation and/or
+#         other materials provided with the distribution.
+# 
+#     (c) Redistributions in any form must be accompanied by information on
+#         how to obtain complete source code for:
+#        (i) the Software; and
+#        (ii) all accompanying software that uses (or is intended to
+#        use) the Software whether directly or indirectly.  Such source
+#        code must:
+#        (iii) either be included in the distribution or be available
+#        for no more than the cost of distribution plus a nominal fee;
+#        and
+#        (iv) be licensed by each relevant holder of copyright under
+#        either the Licence Terms (with an appropriate copyright notice)
+#        or the terms of a licence which is approved by the Open Source
+#        Initative.  For an executable file, "complete source code"
+#        means the source code for all modules it contains and includes
+#        associated build and other files reasonably required to produce
+#        the executable.
+# 
+# 2. THIS SOFTWARE IS PROVIDED ``AS IS'' AND, TO THE EXTENT PERMITTED BY
+# LAW, ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+# PURPOSE, OR NON-INFRINGEMENT, ARE DISCLAIMED.  WHERE ANY WARRANTY IS
+# IMPLIED AND IS PREVENTED BY LAW FROM BEING DISCLAIMED THEN TO THE
+# EXTENT PERMISSIBLE BY LAW: (A) THE WARRANTY IS READ DOWN IN FAVOUR OF
+# THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+# PARTICIPANT) AND (B) ANY LIMITATIONS PERMITTED BY LAW (INCLUDING AS TO
+# THE EXTENT OF THE WARRANTY AND THE REMEDIES AVAILABLE IN THE EVENT OF
+# BREACH) ARE DEEMED PART OF THIS LICENCE IN A FORM MOST FAVOURABLE TO
+# THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+# PARTICIPANT). IN THE LICENCE TERMS, "PARTICIPANT" INCLUDES EVERY
+# PERSON WHO HAS CONTRIBUTED TO THE SOFTWARE OR WHO HAS BEEN INVOLVED IN
+# THE DISTRIBUTION OR DISSEMINATION OF THE SOFTWARE.
+# 
+# 3. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR ANY OTHER PARTICIPANT BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+# BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+# OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+# IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+from math import ceil, log
+
+import distutils
+from distutils import dir_util, file_util
+from distutils.dir_util import copy_tree
+
+#############################################################################
+## Build
+#############################################################################
+build = KengeBuild(IMAGE_TYPE="iguana")
+machine = build.machine
+apps = []
+
+# Make it easier to raise UserErrors
+UserError = SCons.Errors.UserError
+
+# Maximum number of ELF segments supported in an image.
+MAX_ELF_SEGMENTS = 1000
+
+#############################################################################
+## Debug options
+#############################################################################
+
+def process_debug_opt(build_env):
+    if not build_env.args.get("ENABLE_DEBUG", True):
+        build_env.scons_env.Append(CPPDEFINES = ["NDEBUG"])
+    else:
+        # This is a first pass; to be expanded
+        debug_options = [None, 1, 2, 3, 4, 5]
+        debug_opt = get_option_arg("DEBUG_TRACE", None, debug_options)
+        if debug_opt:
+            build_env.Append(CPPDEFINES = [("IGUANA_DEBUG", debug_opt)])
+            build_env.Append(CPPDEFINES = ["IG_DEBUG_PRINT"])
+            build_env.Append(CPPDEFINES = [("CONFIG_TRACEBUFFER", 1)])
+            verbose_opt = get_bool_arg("VERBOSE", False)
+            if verbose_opt:
+                build_env.Append(CPPDEFINES = ["IG_VERBOSE"])
+
+#############################################################################
+## Global configuration options
+#############################################################################
+
+def process_global_config(build_env):
+    default_max_threads = 1024
+
+    max_threads = build_env.args.setdefault("MAX_THREADS", default_max_threads)
+
+    if (max_threads < 16) or (max_threads > 32768):
+        raise UserError, "MAX_THREADS of %d is out of range" % max_threads
+
+    max_thread_bits = int(ceil(log(max_threads, 2)))
+
+    build_env.Append(CPPDEFINES =[("CONFIG_MAX_THREAD_BITS", max_thread_bits)])
+
+    # Read in the scheduling behaviour
+    sched_algorithm = build_env.args.setdefault("SCHEDULING_ALGORITHM", 'inheritance').lower()
+    build_env.Append(CPPDEFINES = [("CONFIG_STRICT_SCHEDULING", 1)])
+    if (sched_algorithm == 'inheritance'):
+        build_env.Append(CPPDEFINES = [("CONFIG_SCHEDULE_INHERITANCE", 1)])
+    elif (sched_algorithm == 'strict'):
+        pass
+    else:
+        raise UserError, "'%s' is not a valid scheduling algorithm." \
+              % sched_algorithm
+
+    if  build_env.args.get("CONTEXT_BITMASKS", False):
+        build_env.Append(CPPDEFINES=[("CONFIG_CONTEXT_BITMASKS", 1)])
+
+    feature_profiles = ["NORMAL", "EXTRA"]
+    feature_profile = get_option_arg("OKL4_FEATURE_PROFILE",
+                                     machine.default_feature_profile, feature_profiles)
+    build_env.feature_profile = feature_profile
+    if feature_profile == "EXTRA":
+        build_env.Append(CPPDEFINES=[("CONFIG_EAS", 1), 
+                                     ("CONFIG_ZONE", 1), 
+                                     ("CONFIG_MEM_PROTECTED", 1), 
+                                     ("CONFIG_MEMLOAD", 1),
+                                     ("CONFIG_REMOTE_MEMORY_COPY", 1)])
+
+#############################################################################
+## Pistachio
+#############################################################################
+kernel_env = build.KengeEnvironment("pistachio")
+
+process_global_config(kernel_env)
+
+kernel_env.Package("libs/compat")
+kernel_env.Package("libs/atomic_ops")
+kernel_env.Package("libs/l4")
+if kernel_env.toolchain.type in ["gnu"]:
+    kernel_env.Package("libs/gcc")
+l4kernel = kernel_env.Package("pistachio")
+
+#############################################################################
+## File inclusion hack
+#############################################################################
+
+fpath = get_option_arg('INCLUDE_FILE', False)
+if (fpath != False):
+    fd = os.open(fpath, os.O_RDONLY)
+    if os.access("inc_file", os.F_OK):
+        os.remove("inc_file")
+    fd_new = os.open("inc_file", os.O_CREAT | os.O_RDWR)
+    fsize = os.stat(fpath).st_size
+    x = 16 - len(str(fsize))
+    for i in range(1,x):
+        os.write(fd_new, "0")
+    os.write(fd_new, str(fsize))
+    os.write(fd_new, "\n")
+    buf = os.read(fd, fsize)
+    os.write(fd_new, buf)
+    os.close(fd_new)
+    os.close(fd)
+
+    if os.access("libs/fs/src/inc_file.S", os.F_OK):
+        os.remove("libs/fs/src/inc_file.S")
+    fd = os.open("libs/fs/src/inc_file.S", os.O_CREAT | os.O_RDWR)
+    os.write(fd, ".data\n\n")
+    os.write(fd, ".align 4\n")
+    os.write(fd, ".globl test_file\n")
+    os.write(fd, "test_file:\n")
+    os.write(fd, ".incbin \"inc_file\"\n")
+    os.close(fd)
+
+
+#############################################################################
+## Iguana Server
+#############################################################################
+# Now we setup the environment for compiling the iguana server in.
+# Note that we have use a lot of other libraries, mostly for implementing
+# data structures
+ig_serv_env = build.KengeEnvironment("iguana_server")
+if ig_serv_env.toolchain.type == "gnu":
+    ig_serv_env.scons_env["CC_OPTIMISATIONS"] = "s"
+ig_serv_env.Append(CPPDEFINES=[('MAX_ELF_SEGMENTS', MAX_ELF_SEGMENTS)])
+if ig_serv_env.args.get("IGUANA_STATS", False):
+    ig_serv_env.Append(CPPDEFINES=[("CONFIG_STATS", 1)])
+
+process_debug_opt(ig_serv_env)
+process_global_config(ig_serv_env)
+
+if ig_serv_env.toolchain.type in ["ads", "rvct"]:
+    ig_serv_env.Package("libs/rvct", buildname="c", filesystem="null")
+else:
+    ig_serv_env.Package("libs/c", filesystem="null")
+    ig_serv_env.Package("libs/gcc")
+ig_serv_env.Package("libs/compat")
+
+ig_serv_env.Package("libs/bit_fl")
+ig_serv_env.Package("libs/circular_buffer")
+ig_serv_env.Package("libs/hash")
+ig_serv_env.Package("libs/ll")
+ig_serv_env.Package("libs/queue")
+ig_serv_env.Package("libs/range_fl")
+
+ig_serv_env.Package("libs/mutex")
+ig_serv_env.Package("libs/atomic_ops")
+ig_serv_env.Package("libs/util")
+ig_serv_env.Package("libs/check")
+
+ig_serv_env.Package("libs/l4")
+ig_serv_env.Package("libs/l4e")
+ig_serv_env.Package("libs/bootinfo")
+(iguana_lib, iguana_headers, iguana_servers) = ig_serv_env.Package("libs/iguana")
+
+roottask = ig_serv_env.Package("iguana/server",
+                               idl_server_headers = iguana_headers,
+                               idl_server_src = iguana_servers)
+
+#############################################################################
+## Iguana
+#############################################################################
+# Now we create an environment in which to compile the user applications.
+# All the applications share this environment, so eventually there may be
+# a long list of libraries, although every app will only use a small number
+# of these.
+
+# Where is OK Linux installed?
+oklinux_dir = get_option_arg('OKLINUX_DIR', 'linux', None, False)
+
+ig_env = build.KengeEnvironment("iguana", OKLINUX_DIR=oklinux_dir)
+
+ig_env.Append(CPPDEFINES=["THREAD_SAFE", ('MAX_ELF_SEGMENTS', MAX_ELF_SEGMENTS)])
+ig_env.Append(CPPDEFINES=[('IGUANA_VERSION', '20060101UL')])
+ig_env.max_elf_segments = MAX_ELF_SEGMENTS
+if ig_env.args.get("IGUANA_STATS", False):
+    ig_env.Append(CPPDEFINES=[("CONFIG_STATS", 1)])
+process_debug_opt(ig_env)
+process_global_config(ig_env)
+
+# Need to work out if any of the libraries are running their unit tests before
+# running their SConscript.
+test_libs = [x for x in os.listdir("libs") 
+             if os.path.exists(os.path.join("libs", x, "test")) and x != "posix"]
+ig_env.test_libs = get_option_arg('TEST_LIBS', None, test_libs+[None,"all"]+[None,"posix"], True)
+
+#ig_env.test_libs = get_option_arg('TEST_LIBS', None, test_libs+[None,"all"], True)
+
+if get_option_arg("TEST_LIBS", None) == "posix":
+    print "WARNING: posix tests not supported in iguana env, defaulting to None."
+else:
+    ig_env.test_libs = get_option_arg('TEST_LIBS', None, test_libs+[None,"all"], True)
+
+if ig_env.test_libs == ["all"]:
+    ig_env.test_libs = test_libs
+if ig_env.test_libs == None:
+    ig_env.test_libs = []
+
+# Don't test posix in iguana environment    
+if ig_env.test_libs is not None and "posix" in ig_env.test_libs:
+    ig_env.test_libs.remove("posix")
+
+if ig_env.toolchain.type in ["ads", "rvct"]:
+    ig_env.Package("libs/rvct", buildname="c", filesystem="static")
+    if ig_env.test_libs is not None and "c" in ig_env.test_libs:
+        ig_env.test_libs.remove("c")
+else:
+    ig_env.Package("libs/c", filesystem="static")
+    ig_env.Package("libs/gcc")
+
+# Don't bother running timer tests on qemu qemu uses the underlying hardware
+# for its timer this will be inaccurate whenever qemu sleeps between reads.
+if ig_env.machine.__name__ in ['kzm_arm11', 'ia32_pc99', 's3c2410']:
+    if "timer" in ig_env.test_libs:
+        ig_env.test_libs.remove("timer")
+
+ig_env.Package("libs/compat")
+
+ig_env.Package("libs/atomic_ops")
+ig_env.Package("libs/binary_tree")
+ig_env.Package("libs/circular_buffer")
+ig_env.Package("libs/hash")
+ig_env.Package("libs/ll")
+ig_env.Package("libs/queue")
+ig_env.Package("libs/range_fl")
+ig_env.Package("libs/check")
+ig_env.Package("libs/mutex")
+ig_env.Package("libs/fs")
+ig_env.Package("libs/trace")
+ig_env.Package("libs/util")
+
+ig_env.Package("libs/l4")
+ig_env.Package("libs/l4e")
+ig_env.Package("libs/bootinfo")
+
+
+(iguana_lib, iguana_headers, iguana_servers) = ig_env.Package("libs/iguana")
+(rtos_lib, rtos_headers, rtos_servers) = ig_env.Package("libs/rtos")
+for x in ["bench", "bit_fl"]:
+    if ig_env.test_libs and x in ig_env.test_libs:
+        ig_env.Package("libs/%s" % x)
+
+
+# Once a platform has drivers available for v2 we can pull the framework in
+
+# some platforms dont have a bus driver, however the device lib needs some includes from
+# vbus. Since we dont want to add it to the env twice, we keep track, and add vbus later
+# if necessary.
+have_v2_bus = False
+
+if ig_env.feature_profile == "EXTRA" and ig_env.machine.device_core is not None:
+    ig_env.Package("libs/driverv2")
+
+    for (driver, server, memory, interrupt) in ig_env.machine.v2_drivers:
+        ig_env.Package("drivers/%s" % driver)
+        (_libs, _headers, _servers) =  ig_env.Package("libs/%s" % server);
+        if server == "vbus":
+            have_v2_bus = True
+        globals()["%s_libs" % server] = _libs
+        globals()["%s_headers" % server] = _headers
+        globals()["%s_servers" % server] = _servers
+
+    (event_lib, event_headers, event_servers) = ig_env.Package("libs/event")
+    if ig_env.test_libs is not None and "timer" in ig_env.test_libs:
+        ig_env.test_libs.remove("timer")
+
+if ig_env.feature_profile == "EXTRA" and not have_v2_bus:
+    ig_env.Package("libs/vbus")	
+
+#############################################################################
+## PSE51 - POSIX ENVIRONMENT
+#############################################################################
+
+if get_option_arg("EXAMPLE_ENV", "iguana") == "posix":
+    pse51_env = build.KengeEnvironment("posix")
+
+    process_global_config(pse51_env)
+
+    pse51_env.Append(CPPDEFINES=["THREAD_SAFE", ('MAX_ELF_SEGMENTS', MAX_ELF_SEGMENTS)])
+    pse51_env.Append(CPPDEFINES=[('IGUANA_VERSION', '20060101UL')])
+    pse51_env.max_elf_segments = MAX_ELF_SEGMENTS
+# Define that we are in a POSIX environment
+    pse51_env.Append(CPPDEFINES=[('__USE_POSIX', '1')])
+
+# Define POSIX profile that we are in
+# This is supposed to be in unistd.h
+    pse51_env.Append(CPPDEFINES=[('_POSIX_AEP_REALTIME_MINIMAL', '200312L')])
+
+# Need a way to distinguish between posix_env and iguana_env libs. For not just
+# explicitly list all posix_env libraries.
+    test_libs = ['posix']
+    pse51_env.test_libs = get_option_arg('TEST_LIBS', None, test_libs+[None,"all"], True)
+    if pse51_env.test_libs == ["all"]:
+        pse51_env.test_libs = test_libs
+    if pse51_env.test_libs == None:
+        pse51_env.test_libs = []
+
+    if pse51_env.toolchain.type in ["ads", "rvct"]:
+        pse51_env.Package("libs/rvct", buildname="c", filesystem="static")
+        if pse51_env.test_libs is not None and "c" in pse51_env.test_libs:
+            pse51_env.test_libs.remove("c")
+    else:
+        pse51_env.Package("libs/c", filesystem="static")
+        pse51_env.Package("libs/gcc")
+
+# Don't bother running timer tests on qemu qemu uses the underlying hardware
+# for its timer this will be inaccurate whenever qemu sleeps between reads.
+    if pse51_env.machine.__name__ in ['kzm_arm11', 'ia32_pc99', 's3c2410']:
+        if "timer" in pse51_env.test_libs:
+            pse51_env.test_libs.remove("timer")
+
+    pse51_env.Package("libs/compat")
+
+    pse51_env.Package("libs/atomic_ops")
+    pse51_env.Package("libs/binary_tree")
+    pse51_env.Package("libs/circular_buffer")
+    pse51_env.Package("libs/hash")
+    pse51_env.Package("libs/ll")
+    pse51_env.Package("libs/queue")
+    pse51_env.Package("libs/range_fl")
+    pse51_env.Package("libs/check")
+    pse51_env.Package("libs/mutex")
+    pse51_env.Package("libs/posix")
+    pse51_env.Package("libs/trace")
+    pse51_env.Package("libs/util")
+    pse51_env.Package("libs/gstreamer")
+    pse51_env.Package("libs/fs")
+    pse51_env.Package("libs/m")
+
+    pse51_env.Package("libs/l4")
+    pse51_env.Package("libs/l4e")
+
+    (iguana_lib, iguana_headers, iguana_servers) = pse51_env.Package("libs/iguana")
+    for x in ["bench", "bit_fl"]:
+        if pse51_env.test_libs and x in pse51_env.test_libs:
+            pse51_env.Package("libs/%s" % x)
+
+# Once a platform has drivers available for v2 we can pull the framework in
+# some platforms dont have a bus driver, however the device lib needs some includes from
+# vbus. Since we dont want to add it to the env twice, we keep track, and add vbus later
+# if necessary.
+    have_v2_bus = False
+
+    if pse51_env.machine.device_core is not None:
+        pse51_env.Package("libs/driverv2")
+
+        for (driver, server, memory, interrupt) in pse51_env.machine.v2_drivers:
+            pse51_env.Package("drivers/%s" % driver)	
+            (_libs, _headers, _servers) =  pse51_env.Package("libs/%s" % server);
+            if server == "vbus":
+                have_v2_bus = True
+            globals()["%s_libs" % server] = _libs
+            globals()["%s_headers" % server] = _headers
+            globals()["%s_servers" % server] = _servers
+
+        (event_lib, event_headers, event_servers) = pse51_env.Package("libs/event")
+        if pse51_env.test_libs is not None and "timer" in pse51_env.test_libs:
+            pse51_env.test_libs.remove("timer")
+    else:
+        pse51_env.Package("libs/driver")
+        for driver in pse51_env.machine.drivers:
+            pse51_env.Package("drivers/%s" % driver)	
+        (timer_lib, timer_headers, timer_servers)    = pse51_env.Package("libs/timer")
+
+    if not have_v2_bus:
+        pse51_env.Package("libs/vbus")	
+else:
+    pse51_env = None
+
+
+#############################################################################
+## Generic Servers
+#############################################################################
+do_trace = get_bool_arg('TRACE_SERVER', False)
+
+if do_trace:
+    iguana_trace = ig_env.Package("iguana/trace")
+    apps.append(iguana_trace)
+
+#############################################################################
+## Driver servers
+#############################################################################
+
+if hasattr(machine, "uart"):
+    serial_defs = [machine.uart]
+else:
+    serial_defs = []
+
+#############################################################################
+## DriverV2 Framework Servers
+#############################################################################
+if ig_env.feature_profile == "EXTRA" and ig_env.machine.device_core is not None:
+    event = ig_env.Package("iguana/event", 
+            serial_defs=[],
+            idl_server_headers=event_headers,
+            idl_server_src=event_servers)
+    apps.append(event)
+
+    # now start the device servers if required
+    for (driver, server, memory, interrupt) in ig_env.machine.v2_drivers:
+        app =  ig_env.Package("iguana/%s" % server,
+                driver=driver, serial_defs=[],
+                idl_server_headers = globals()["%s_headers" % server],
+                idl_server_src     = globals()["%s_servers" % server])
+        apps.append(app)
+
+#############################################################################
+## Iguana Examples
+#############################################################################
+# Example app to compile
+cust = get_option_arg('CUST', 'okl')
+examples = []
+for dir_ in ["iguana/example", "cust/%s/iguana/example" % cust]:
+    if not os.path.exists(dir_):
+        continue
+    examples += [eg for eg in os.listdir(dir_) if not eg.startswith(".")]
+
+example_cmd_line = get_option_arg('EXAMPLE', None, examples+[None,"all"], True)
+if example_cmd_line:
+    xml_file = get_option_arg('RTOS_TESTS_CONF', None)
+    if xml_file:
+        rtos_args = get_rtos_example_args(xml_file, example_cmd_line)
+    if example_cmd_line == ["all"]:
+        if xml_file == None:
+            raise UserError, "Argument \"RTOS_TESTS_CONF\" is missing"
+        example_cmd_line = [arg for arg in rtos_args.keys() if not arg == "server"]
+        # We disable the mixed_priority_inversion example which currently 
+        # hangs due to mutex implementation and the ipc/mutex_priority_inversion example
+        # which currently fails on smt.
+        if "mixed_priority_inversion" in example_cmd_line:
+            example_cmd_line.remove("mixed_priority_inversion")
+        if "mutex_priority_inversion" in example_cmd_line and ig_env.machine.smp:
+            example_cmd_line.remove("mutex_priority_inversion")
+        if "ipc_priority_inversion" in example_cmd_line and ig_env.machine.smp:
+            example_cmd_line.remove("ipc_priority_inversion")
+    # FIX ME: We should't hardcode the number of processing units here
+    nb_cpu = 0
+    if ig_env.machine.smp:
+        if "ipc_priority_inversion" in example_cmd_line or \
+        "mixed_priority_inversion" in example_cmd_line or \
+        "mutex_priority_inversion" in example_cmd_line:
+            nb_cpu = 6
+
+    if xml_file and int(rtos_args["server"]) == 1:
+        nb_tests = 0
+        for example in example_cmd_line:
+            nb_tests += int(rtos_args[example]['nb_copies'])
+        iguana_rtos = ig_env.Package("iguana/rtos",
+                                     idl_server_headers = rtos_headers,
+                                     idl_server_src = rtos_servers,
+                                     nb_tests = [nb_tests],
+                                     nb_cpu = nb_cpu)
+        apps += [iguana_rtos]
+        
+    # If building the kernel_counter example, build the kernel
+    # extension into the kernel
+    if "kernel_counter" in example_cmd_line:
+        kernel_env.Append(CPPDEFINES = ["KERNEL_COUNTER_EXAMPLE"])
+
+    example_env_name = get_option_arg("EXAMPLE_ENV", "iguana")
+    example_env = ig_env;
+    if example_env_name == "posix":
+        example_env = pse51_env
+
+    for example in example_cmd_line:
+
+        if example not in examples:
+            raise UserError, "Example must be one of: %s " % examples
+
+        if example == "intervm" or example == "gstreamer_ogg2avi":
+            [obj, intervm_ctl, intervm_fwd, intervm_bwd] = example_env.Package("iguana/example/%s" % example,
+                                       nb_copies = "1",
+                                       extra_arg = "1",
+                                       server = "0")
+            apps.append(obj)
+
+        elif xml_file:
+            apps.append(example_env.Package("iguana/example/%s" % example, 
+                                       nb_copies = rtos_args[example]['nb_copies'],
+                                       extra_arg = rtos_args[example]['extra_arg'],
+                                       server = rtos_args['server']))
+        else:
+            if example == "interrupt_cancel":
+                if ig_env.machine.device_core is not None:
+                    interrupts = []
+                    for (driver, server, memory, interrupt) in ig_env.machine.v2_drivers:
+                        interrupts.extend(interrupt)
+                    apps.append(example_env.Package("iguana/example/%s" % example,
+                                        nb_copies = "1",
+                                        extra_arg = "1",
+                                        server = "0",
+                                        interrupts_nb = interrupts))
+                else:
+                    raise UserError, "Example %s can only run with a DriverV2 Framework Server" % example
+            else:
+                apps.append(example_env.Package("iguana/example/%s" % example,
+                                       nb_copies = "1",
+                                       extra_arg = "1",
+                                       server = "0"))
+
+
+        build.expect_test_data = example_env.expect_test_data
+
+#############################################################################
+## Iguana Tests
+#############################################################################
+example_env_name = get_option_arg("EXAMPLE_ENV", "iguana")
+example_env = ig_env;
+if example_env_name == "posix":
+    example_env = pse51_env
+
+if example_env.test_libs:
+    apps.append(example_env.Package("iguana/test", libs=example_env.test_libs))
+    build.expect_test_data = [(["100%: Checks: \d+, Failures: 0, Errors: 0",
+                                "\d+%: Checks: \d+, Failures: \d+, Errors: \d+",
+                                "--- KD# .* ---"],
+                               None)]
+
+#############################################################################
+## Customised root filesystem
+#############################################################################
+
+extern_rootfs = get_option_arg('LINUX_ROOTFS', None, None, False)
+
+if extern_rootfs:
+    rootfs_path = Dir(extern_rootfs).abspath
+    if extern_rootfs != "none" and not os.path.exists(rootfs_path) :
+        raise UserError, "%s is not a valid path" % rootfs_path
+
+Export('extern_rootfs')
+
+rootfs_size = get_option_arg('LINUX_ROOTFS_SIZE', None, None, False)
+
+Export('rootfs_size')
+
+def getpathsize(path):
+    f = os.popen("du -s %s" % path)
+    l = f.readline().split()[0]
+    return int(l)
+
+
+# NOTE: this is disabled because regression has trouble passing this
+#       reliably (always works when invoked manually though)
+# ext_devfs_file = get_option_arg('LINUX_DEVFS', None, None, False)
+# 
+# Export('ext_devfs_file')
+# 
+# # setup a temporary devfs file
+# if ext_devfs_file:
+#     orig_devfs = 'linux/rootfs-2.6.11-v2/dev.txt'
+#     tmp_devfs  = 'dev.txt'
+#     distutils.file_util.copy_file(orig_devfs, tmp_devfs)
+# 
+#     tmp_devf = open(tmp_devfs, 'a')
+#     tmp_devf.write("dr-x                  /dev/findme\n")
+#     tmp_devf.write("crw-      1,   5      /dev/findme/foobar\n")
+#     tmp_devf.close()
+
+#############################################################################
+## Linux
+#############################################################################
+do_wombat = get_bool_arg('WOMBAT', False)
+if do_wombat:
+    assert os.path.exists(oklinux_dir), "OKLINUX_DIR: %s: does not exist" % oklinux_dir
+    #############################################################################
+    ## Linux Apps
+    #############################################################################
+    # Apps to compile
+
+    linux_apps = [app for app in os.listdir(os.path.join(oklinux_dir, 'apps')) if
+                    (not app.startswith(".") and (app != 'busybox'))] + [None]
+
+    extra_linux_apps = get_option_arg('LINUX_APPS', None, linux_apps, True)
+    Export('extra_linux_apps')
+
+    ltp_set = get_option_arg('LTP_SET', 'all', None, False)
+    Export('ltp_set')
+
+    run_bench = get_option_arg('RUN_BENCH', False, None, False) 
+    Export('run_bench')
+
+    run_gstreamertest = get_option_arg('RUN_GSTREAMERTEST', False, None, False)
+    Export('run_gstreamertest')
+
+    # There is no need to run elfadorn on linux apps.
+    linux_env = build.KengeEnvironment("linux", LINKCOM="$UNADORNED_LINKCOM", OKLINUX_DIR=oklinux_dir)
+    process_global_config(linux_env)
+    if ig_env.machine.device_core is not None:
+        kernel_version = "2.6.23-v2"
+    else:
+        kernel_version = "2.6.10-v1"
+
+    ig_env.required_vdevs["vmlinux"] = (["vtimer", "vserial"])
+    wombat = ig_env.Package(os.path.join(oklinux_dir, "kernel-%s" % kernel_version), kernel_version=kernel_version)
+
+    # Clean the ramdisk contents if it exists
+    inst_dir = Dir(linux_env.builddir + "/install").abspath
+    if os.path.exists(inst_dir):
+        distutils.dir_util.remove_tree(inst_dir)
+
+    # Set the unit test environment (common to everyone)
+    build.expect_test_data = ig_env.expect_test_data
+
+    # Create an external rootfs if supplied, otherwise create default rootfs
+    if extern_rootfs == "none":
+
+        # error if rootfs_size is defined
+        if rootfs_size:
+            raise UserError, "Don't define the rootfs size if you're not using one!"
+
+        # skip all the filesystem code below!
+        rootfs_path = None
+
+    else:
+        paths_size = 0
+
+        if extern_rootfs:
+            #
+            # Use customised rootfs
+            #
+            print "Installing root filesystem from %s" % rootfs_path
+            distutils.dir_util.copy_tree(rootfs_path, inst_dir, preserve_symlinks=True)
+
+            # Don't allow linux applications to be bundled together
+            assert extra_linux_apps is None, "Can't bundle extra Linux apps when using external rootfs"
+
+            paths_size += getpathsize(extern_rootfs)
+            rootfs = None
+
+        else:
+            #
+            # Use default rootfs
+            #
+            rootfs = linux_env.Package(os.path.join(oklinux_dir, "rootfs-%s" % kernel_version))
+
+            paths_size = 4000
+
+            if extra_linux_apps is not None:
+                if 'lmbench' in extra_linux_apps:
+                    paths_size += 4500
+                if 'ltp' in extra_linux_apps:
+                    paths_size += 20500
+
+                for app in extra_linux_apps:
+                    extra = linux_env.Package(os.path.join(oklinux_dir, 'apps', app))
+                    linux_env.Depends(extra, rootfs)
+
+        # Common code path
+
+        # Always include BusyBox
+        busybox = linux_env.Package(os.path.join(oklinux_dir, "apps", "busybox"))
+
+        if rootfs is not None:
+            linux_env.Depends(busybox, rootfs)
+
+        if rootfs_size is None:
+            disk_size = int(paths_size * 1.4)
+
+        else:
+            if rootfs_size < paths_size:
+                raise UserError, \
+                    "Suggested filesystem image size of %s is insufficient for " \
+                    "rootfs at %s, which is %s blocks in size" \
+                    % (rootfs_size, rootfs_path, paths_size)
+            else:
+                disk_size = rootfs_size
+
+        print "disk_size is %s" % disk_size
+
+        ###################################
+        ## Customised device file system
+        ###################################
+#        if ext_devfs_file:
+#            #
+#            # Use custom device description file
+#            #
+#            devfs_file_path = File(ext_devfs_file).abspath
+#            if not os.path.exists(devfs_file_path):
+#                raise UserError, "%s does not exist" % devfs_file_path
+#            devfs_file = ext_devfs_file
+#
+#        else:
+#            #
+#            # Use default device description file
+#            #
+
+        devfs_file = os.path.join(oklinux_dir, "rootfs-%s" % kernel_version, "dev.txt")
+
+        linux_env.Depends(wombat, busybox)
+        fs = linux_env.Ext2FS(disk_size, devfs_file, name='rootfs')
+        linux_env.weaver(wombat).add_memsection(fs)
+
+    # endif extern_rootfs is "none"
+
+    # vmalloc area.  Must be within 23-bits of wombat.
+    vmalloc = linux_env.IguanaMemSection(
+        name = 'vmalloc',
+        base = linux_env.ADDR_ALLOC,
+        size = 4 * 1024 * 1024,
+        flags = 0x10 | 0x02, # MEM_USER | MEM_FIXED
+        cache_policy = "default"
+        )
+
+    linux_env.weaver(wombat).add_memsection(vmalloc)
+
+    if getattr(linux_env.machine, "linux_vga", False):
+        addressing = linux_env.WeaverAddressing(physpool='vga', virt_addr = 0xa0000)
+        print "addressing.get_physpool()", addressing.get_physpool()
+        vga_area = linux_env.IguanaMemSection(
+                        name = 'vga',
+                        base = 0xa0000,
+                        size = 0x20000,
+                        flags = 0x02, # MEM_FIXED
+                        cache_policy = "default",
+                        addressing = addressing
+                        )
+        linux_env.weaver(wombat).add_memsection(vga_area)
+
+    if example_cmd_line:
+        for example in example_cmd_line:
+            if example == "intervm" or example == "gstreamer_ogg2avi":
+                linux_env.weaver(wombat).add_external_object('INTERVM_CTL', intervm_ctl, 'rwe', "/%s/intervm_ctl" % example)
+                linux_env.weaver(wombat).add_external_object('INTERVM_FWD', intervm_fwd, 'rwe', "/%s/intervm_fwd" % example)
+                linux_env.weaver(wombat).add_external_object('INTERVM_BWD', intervm_bwd, 'rwe', "/%s/intervm_bwd" % example)
+
+    apps.append(wombat)
+
+#############################################################################
+## Memory Pools
+#############################################################################
+
+pools = ig_env.IguanaDefaultMemoryPools(roottask)
+
+#############################################################################
+## Build Bootimage
+#############################################################################
+elfweaver_env = build.KengeEnvironment("images")
+elfweaver_env.LayoutVirtual([pools, l4kernel, roottask] + apps) 
+
+# Tell elfweaver about how many virtual device instance to spawn
+required_vdevs = ig_env.required_vdevs;
+example_env_name = get_option_arg("EXAMPLE_ENV", "iguana")
+if example_env_name == "posix":
+    required_vdevs.update(pse51_env.required_vdevs)
+
+if (ig_env.machine.device_core is not None) or ((pse51_env is not None) and (pse51_env.machine.device_core is not None)):
+    for key, value in required_vdevs.iteritems():
+        for vdev in value:
+            if not elfweaver_env.spawn_vdevs.has_key(vdev):
+                elfweaver_env.spawn_vdevs[vdev] = 1
+            else:
+                elfweaver_env.spawn_vdevs[vdev] += 1
+
+            elfweaver_env.vdev_counter[vdev] = 0
+
+    elfweaver_env.required_vdevs = required_vdevs
+
+spec = elfweaver_env.GenWeaverXML([pools, l4kernel, roottask] + apps)
+elf_image, sim_image, boot_image = elfweaver_env.CreateImages(spec, [pools, l4kernel,roottask] + apps)
+run_method = get_option_arg('RUN', None)
+if machine.platform == "pc99":
+    boot_image = elfweaver_env.CreateFatImage([elf_image])
+    build.TestImage(boot_image)
+    build.RunImage(boot_image)
+    Default(boot_image)
+elif machine.__name__ == 'gumstix' and run_method == 'hardware':
+    build.TestImage(boot_image)
+    build.RunImage(boot_image)
+    Default(boot_image)
+elif machine.__name__ in ['gta01', 'gta01_xip']:
+    build.expect_test_data = [('GTA01Bv4 #', 'bootelf 0x31000000')] + build.expect_test_data 
+    build.TestImage(boot_image)
+    build.RunImage(boot_image)
+    Default(boot_image)
+elif machine.__name__ == 'kzm_arm11':
+    build.expect_test_data = [('KZM_ARM11 #', 'cfsetenv bootfile regression/kzm_arm11'), \
+        ('KZM_ARM11 #', 'dhcp'), ('KZM_ARM11 #', 'go 0x80000000')] + build.expect_test_data
+    build.TestImage(boot_image)
+    build.RunImage(boot_image)
+    Default(boot_image)
+else:
+    build.TestImage(sim_image)
+    build.RunImage(sim_image)
+    build.CoverageImage(sim_image)
+    Default(elf_image, sim_image, boot_image)

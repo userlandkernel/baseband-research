@@ -1,0 +1,2 @@
+class LineObject(object):
+	pass

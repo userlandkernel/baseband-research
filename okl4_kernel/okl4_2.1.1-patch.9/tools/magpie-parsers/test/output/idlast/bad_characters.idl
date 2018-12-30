@@ -1,0 +1,2 @@
+* Parser error *
+test/input/idlast/bad_characters.idl:1:unexpected char: '\'

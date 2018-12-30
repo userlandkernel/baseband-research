@@ -1,0 +1,6 @@
+module A { 
+	interface foo {};
+};
+module A { 
+	interface test { void op(in foo arg); }; 
+};

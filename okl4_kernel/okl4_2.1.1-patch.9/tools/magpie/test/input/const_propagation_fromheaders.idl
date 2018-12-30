@@ -1,0 +1,15 @@
+import "constants.h";
+
+[uuid(KEYPAD_UUID_DEVICE)]
+interface keypad_interface_device
+{
+    long create(in long driver);
+};
+
+[uuid(KEYPAD_UUID_DEVICE2)]
+interface keypad_interface_device2
+{
+    long create(in long driver);
+};
+
+

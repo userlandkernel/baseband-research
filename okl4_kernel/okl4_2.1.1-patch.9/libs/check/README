@@ -1,0 +1,15 @@
+Check is a unit test framework for C. It features a simple interface
+for defining unit tests, putting little in the way of the
+developer. Tests are run in a separate address space, so Check can
+catch both assertion failures and code errors that cause segmentation
+faults or other signals. The output from unit tests can be used within
+source code editors and IDEs.
+
+See http://check.sourceforge.net/ for more information, including a
+tutorial.
+
+If you get Check out of CVS, you will need a working setup of automake
+(at least version 1.4) and autoconf (at least version 2.13) in order
+to successfully build Check. There's a script called autogen.sh that
+calls autoconf and automake for you and then runs the generated 
+configure script.

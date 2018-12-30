@@ -1,0 +1,9 @@
+AST generator notes:
+
+Top level:
+
+* declaration <decl-type> <type> <identifier>
+	- Defines a new type and a name by which it may be associated.
+	- decl-type: "typedef", "class", "union", or "struct"
+	- type: a type AST, see below.
+	- identifier: text

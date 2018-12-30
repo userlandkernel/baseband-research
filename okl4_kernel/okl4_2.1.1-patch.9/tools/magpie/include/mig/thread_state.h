@@ -1,0 +1,1 @@
+#define THREAD_STATE_MAX 64

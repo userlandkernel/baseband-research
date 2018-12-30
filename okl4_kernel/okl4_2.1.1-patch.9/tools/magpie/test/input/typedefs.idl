@@ -1,0 +1,6 @@
+import "typedefs.h";
+
+[uuid(20)]
+interface heavy{
+	excpthndlr_t fun(in unsignedint a, in unsignedintptr b);
+};

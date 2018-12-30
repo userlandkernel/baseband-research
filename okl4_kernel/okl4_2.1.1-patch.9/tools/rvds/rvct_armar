@@ -1,0 +1,2 @@
+#!/bin/sh
+tools/rvds/wrapper.py rvct armar "$@"

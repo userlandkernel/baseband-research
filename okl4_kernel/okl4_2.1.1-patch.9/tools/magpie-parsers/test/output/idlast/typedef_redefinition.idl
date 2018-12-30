@@ -1,0 +1,3 @@
+* Semantic error *
+test/input/idlast/typedef_redefinition.idl:7:Name "inner1" defined twice in same scope
+test/input/idlast/typedef_redefinition.idl:2:Name "inner1" was previously defined here.

@@ -1,0 +1,6 @@
+   union foo;
+   typedef sequence<foo> fooseq;
+   union foo switch(short) {
+     case 1:
+       short x;
+   };

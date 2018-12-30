@@ -1,0 +1,6 @@
+   interface test;
+   interface test;
+   interface test {
+     void op();
+   };
+

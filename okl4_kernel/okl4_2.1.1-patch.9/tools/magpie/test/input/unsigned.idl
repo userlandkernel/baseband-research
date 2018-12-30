@@ -1,0 +1,18 @@
+/*
+ * Iguana IDL for dealing with userland
+ * eg. pagefaults, exceptions, syscalls.
+ *
+ */
+ 
+
+[uuid(22)]
+interface iguana_pd
+{
+	unsigned create_memsection(in unsigned inputarg, out unsigned result);
+};
+
+[uuid(23)]
+interface iguana_pd_2
+{
+	unsigned create_memsection(in unsigned inputarg, out unsigned result);
+};

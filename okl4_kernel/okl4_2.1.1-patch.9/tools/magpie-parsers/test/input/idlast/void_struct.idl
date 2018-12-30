@@ -1,0 +1,5 @@
+   interface test {
+     struct foo {
+       void x;
+     };
+   };

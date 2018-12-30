@@ -1,0 +1,436 @@
+/*
+ * Copyright (c) 2002-2003, University of New South Wales
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+/*
+ * Copyright (c) 2007 Open Kernel Labs, Inc. (Copyright Holder).
+ * All rights reserved.
+ *
+ * 1. Redistribution and use of OKL4 (Software) in source and binary
+ * forms, with or without modification, are permitted provided that the
+ * following conditions are met:
+ *
+ *     (a) Redistributions of source code must retain this clause 1
+ *         (including paragraphs (a), (b) and (c)), clause 2 and clause 3
+ *         (Licence Terms) and the above copyright notice.
+ *
+ *     (b) Redistributions in binary form must reproduce the above
+ *         copyright notice and the Licence Terms in the documentation and/or
+ *         other materials provided with the distribution.
+ *
+ *     (c) Redistributions in any form must be accompanied by information on
+ *         how to obtain complete source code for:
+ *        (i) the Software; and
+ *        (ii) all accompanying software that uses (or is intended to
+ *        use) the Software whether directly or indirectly.  Such source
+ *        code must:
+ *        (iii) either be included in the distribution or be available
+ *        for no more than the cost of distribution plus a nominal fee;
+ *        and
+ *        (iv) be licensed by each relevant holder of copyright under
+ *        either the Licence Terms (with an appropriate copyright notice)
+ *        or the terms of a licence which is approved by the Open Source
+ *        Initative.  For an executable file, "complete source code"
+ *        means the source code for all modules it contains and includes
+ *        associated build and other files reasonably required to produce
+ *        the executable.
+ *
+ * 2. THIS SOFTWARE IS PROVIDED ``AS IS'' AND, TO THE EXTENT PERMITTED BY
+ * LAW, ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE, OR NON-INFRINGEMENT, ARE DISCLAIMED.  WHERE ANY WARRANTY IS
+ * IMPLIED AND IS PREVENTED BY LAW FROM BEING DISCLAIMED THEN TO THE
+ * EXTENT PERMISSIBLE BY LAW: (A) THE WARRANTY IS READ DOWN IN FAVOUR OF
+ * THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+ * PARTICIPANT) AND (B) ANY LIMITATIONS PERMITTED BY LAW (INCLUDING AS TO
+ * THE EXTENT OF THE WARRANTY AND THE REMEDIES AVAILABLE IN THE EVENT OF
+ * BREACH) ARE DEEMED PART OF THIS LICENCE IN A FORM MOST FAVOURABLE TO
+ * THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+ * PARTICIPANT). IN THE LICENCE TERMS, "PARTICIPANT" INCLUDES EVERY
+ * PERSON WHO HAS CONTRIBUTED TO THE SOFTWARE OR WHO HAS BEEN INVOLVED IN
+ * THE DISTRIBUTION OR DISSEMINATION OF THE SOFTWARE.
+ *
+ * 3. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR ANY OTHER PARTICIPANT BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+/*                
+ * Author:        Carl van Schaik
+ * Description:   Kernel entry points for syscalls
+ */                
+
+#include <l4.h>
+#include <arch/asm.h>
+#include <arch/regdef.h>
+#include <arch/context.h>
+#include <arch/syscalls.h>
+#include <asmsyms.h>
+#include <tcb_layout.h>
+
+#define mr0         v1
+#define mr1         s0
+#define mr2         s1
+#define mr3         s2
+#define mr4         s3
+#define mr5         s4
+#define mr6         s5
+#define mr7         s6
+#define mr8         s7
+
+#define DECODE_SYSCALL_IPC                  \
+1:;                                         \
+        .set push;                          \
+        .set noreorder;                     \
+        LI      t4, SYSCALL_ipc;            \
+        bne     v0, t4, 1f;                 \
+        lui     ra, %hi(_mips_l4sysipc_return);                     \
+        LDR     t5, OFS_TCB_UTCB-OFS_TCB_ARCH_CONTEXT(sp); /* t5 = current utcb */ \
+        ADR     sp, __stack + STACK_TOP; /* sp = kernel stack */    \
+        ADDIU   ra, %lo(_mips_l4sysipc_return);                     \
+        STR     mr0, (UTCB_MR_OFFSET+SIZE(0))(t5);                  \
+        STR     mr1, (UTCB_MR_OFFSET+SIZE(4))(t5);                  \
+        STR     mr2, (UTCB_MR_OFFSET+SIZE(8))(t5);                  \
+        STR     mr3, (UTCB_MR_OFFSET+SIZE(12))(t5);                 \
+        STR     mr4, (UTCB_MR_OFFSET+SIZE(16))(t5);                 \
+        STR     mr5, (UTCB_MR_OFFSET+SIZE(20))(t5);                 \
+        STR     mr6, (UTCB_MR_OFFSET+SIZE(24))(t5);                 \
+        STR     mr7, (UTCB_MR_OFFSET+SIZE(28))(t5);                 \
+        j       sys_ipc;                    \
+        STR     mr8, (UTCB_MR_OFFSET+SIZE(32))(t5);                 \
+1:;     \
+        /* Goto next entry */                           \
+        lui     ra, %hi(_mips_l4syscall_return);        \
+        ADDIU   t4, t4, -1;     /* Sub syscall num by 1 for next test */ \
+        .set pop;
+
+#define DECODE_SYSCALL(name, vector)        \
+        .set push;                          \
+        .set noreorder;                     \
+1:      bne     v0, t4, 1f;                 \
+        ADDIU   t4, t4, -1;     /* Sub syscall num by 1 for next test */ \
+        j       sys_##name;                 \
+        ADDIU   ra, %lo(_mips_l4syscall_return);   \
+        .set pop;
+
+#define SKIPDECODE_SYSCALL(name, vector)    \
+        .set push;                          \
+        .set noreorder;                     \
+1:      bne     v0, t4, 1f;                 \
+        ADDIU   t4, t4, -1;     /* Sub syscall num by 1 for next test */ \
+        li      AT, L4_TRAP_KDEBUG;         \
+        LA      v0, 2f;                     \
+        break;                              \
+        .data;                              \
+2:      .string "Unsupported SYSCALL";      \
+        .previous;                          \
+        .set pop;
+
+
+#if 0
+#define START_SYSCALL_COUNTER       \
+        mfc0    k0, CP0_COUNT;      \
+        nop;                        \
+        nop;                        \
+        mtc0    k0, CP0_ERROREPC
+
+#define STOP_SYSCALL_COUNTER        \
+        nop;    \
+        nop;    \
+        nop;    \
+        nop;    \
+        nop;    \
+        nop;    \
+        mfc0    t2, CP0_COUNT;      \
+        mfc0    t3, CP0_ERROREPC;   \
+        nop;    \
+        nop;    \
+        dsub    AT, t2, t3;         \
+        dsll    AT, AT, 1;
+
+#if CONFIG_PLAT_ERPCN01
+#define d0 k0
+#define d1 k1
+#define PRINT_SYSCALL_TIMES     \
+        li      t2, 28;         \
+1:;     \
+        dsrlv   t3, AT, t2;     \
+        andi    t3, 0xf;        \
+        sub     t3, 10;         \
+        bgez    t3, 2f;         \
+        add     t3, '0'+10;     \
+        b 3f;                   \
+2:;     \
+        add     t3, 'a';        \
+3:;     \
+        LA      d0, propane_uart;   \
+        ld      d0, 0(d0);      \
+4:;     \
+        lw      d1,8(d0);       \
+        andi    d1,d1,0xf;      \
+        sltiu   d1,d1,13;       \
+        beqz    d1,4b;          \
+        sw      t3,4(d0);       \
+        sub     t2, 4;          \
+        bgez    t2, 1b;         \
+        \
+        li      t3, '\r';       \
+4:;     \
+        lw      d1,8(d0);       \
+        andi    d1,d1,0xf;      \
+        sltiu   d1,d1,13;       \
+        beqz    d1,4b;          \
+        sw      t3,4(d0);       \
+        li      t3, '\n';       \
+4:;     \
+        lw      d1,8(d0);       \
+        andi    d1,d1,0xf;      \
+        sltiu   d1,d1,13;       \
+        beqz    d1,4b;          \
+        sw      t3,4(d0)
+
+#endif
+
+#if CONFIG_PLAT_U4600
+#define PRINT_SYSCALL_TIMES     \
+        SAVE_ALL_INT            \
+        \
+        li      t2, 60;         \
+1:;     \
+        dsrlv   a0, AT, t2;     \
+        andi    a0, 0xf;        \
+        sub     a0, 10;         \
+        bgez    a0, 2f;         \
+        add     a0, '0'+10;     \
+        b 3f;                   \
+2:;     \
+        add     a0, 'a';        \
+3:;     \
+        jal     _Z11putc_serialc;\
+        sub     t2, 4;          \
+        bgez    t2, 1b;         \
+        \
+        li      a0, '\n';       \
+        jal     _Z11putc_serialc;\
+        \
+        RESTORE_ALL
+#endif
+
+#else
+#define START_SYSCALL_COUNTER
+#define STOP_SYSCALL_COUNTER
+#define PRINT_SYSCALL_TIMES
+#endif
+
+        .set noat
+        .set noreorder
+BEGIN_PROC(__mips_interrupt)
+        mfc0    k1, CP0_CAUSE
+        lui     k0, %hi(exception_handlers)
+        andi    k1, k1, 0x7c
+#ifdef CONFIG_IS_64BIT
+        dsll    k1, k1, 1
+#endif
+        add     k0, k0, k1
+        LDR     k0, %lo(exception_handlers)(k0)
+        jr      k0
+        nop
+END_PROC(__mips_interrupt)
+
+        .set reorder
+BEGIN_PROC(_mips_l4syscall)
+        START_SYSCALL_COUNTER
+        /* Trashed registers:
+         *   t4, t5, t6, t7
+         * Calling Registers:
+         *   v0 : syscall number
+         *   a0, a1, a2, a3 : arguments 1 - 4
+         *   t0, t1, t2, t3 : arguments 5 - 8
+         * Returned Registers:
+         *   v0     : returned 1
+         *   a0..a3 : returned 2 - 5
+         *   t0..t1 : returned 6 - 7
+         */
+        .set noat
+        bgez    v0, _mips_syscall_exception     /* Not an L4 system call? */
+        mfc0    t7, CP0_STATUS          /* get STATUS register */
+        lui     t5, %hi(KERNEL_BASE)    /* Load kernel base address */
+        move    t4, sp                  /* Old stack in t4 */
+
+        srl     t6, t7, 5               /* clear IE, EXL, ERL, KSU */
+        sll     t6, t6, 5
+        mtc0    t6, CP0_STATUS          /* Enter kernel mode */
+        andi    t6, t7, ST_KSU          /* Isolate KSU bits */
+
+        .set noreorder
+        beq     t6, zero, 9f            /* Branch if from KERNEL mode */
+        MFC0    t6, CP0_EPC             /* Branch delay */
+        .set reorder
+
+        LDR     sp, %lo(K_CURRENT_TCB)(t5)      /* Load current TCB */
+        ADDIU   sp, sp, OFS_TCB_ARCH_CONTEXT    
+        b       10f                                     /* FIXME: Get rid of this after discussion */
+9: /* CRASH if called from kernel... as I don't think this should happen*/
+        /* and it isn't handled later in the code */
+        li      AT, 2
+        ADR     v0, 9f
+        break
+9:      .data
+        .string "Syscall came from kernel mode" 
+        .previous
+10:
+        ADDIU   t6, t6, 4               /* Calc New EPC */
+        STR     ra, PT_RA(sp)           /* Save RA */
+        STR     t7, PT_STATUS(sp)       /* Save status */
+        STR     t4, PT_SP(sp)           /* Save stack */
+        STR     t6, PT_EPC(sp)          /* Save EPC */
+        STR     gp, PT_GP(sp)
+        STR     s8, PT_S8(sp)
+
+        /* XXX decode must be in this order ! */
+        DECODE_SYSCALL_IPC                                      /* 3 in, 1 out */
+
+        /* need to store callee saved registers */
+        STR     s0, PT_S0(sp)
+        STR     s1, PT_S1(sp)
+        STR     s2, PT_S2(sp)
+        STR     s3, PT_S3(sp)
+        STR     s4, PT_S4(sp)
+        STR     s5, PT_S5(sp)
+        STR     s6, PT_S6(sp)
+        STR     s7, PT_S7(sp)
+
+#if defined(CONFIG_IS_64BIT)
+        ADR     sp, __stack+STACK_TOP   /* sp = kernel stack */
+#elif defined(CONFIG_IS_32BIT)
+        ADR     sp, __stack+STACK_TOP - 32  /* sp = kernel stack */
+        STR     a4, 16(sp)
+        STR     a5, 20(sp)
+        STR     a6, 24(sp)
+        STR     a7, 28(sp)
+#endif
+        DECODE_SYSCALL(thread_switch, SYSCALL_thread_switch)    /* 1 in, 0 out */
+        DECODE_SYSCALL(thread_control, SYSCALL_thread_control)  /* 7 in, 1 out */
+        DECODE_SYSCALL(exchange_registers, SYSCALL_exchange_registers)  /* 8 in, 7 out */
+        DECODE_SYSCALL(schedule, SYSCALL_schedule)              /* 5 in, 2 out */
+        DECODE_SYSCALL(map_control, SYSCALL_map_control)        /* 2 in, 1 out */
+        DECODE_SYSCALL(space_control, SYSCALL_space_control)    /* 5 in, 2 out */
+        SKIPDECODE_SYSCALL(processor_control,SYSCALL_processor_control)
+        DECODE_SYSCALL(cache_control, SYSCALL_cache_control)    /* 2 in, 1 out */
+        DECODE_SYSCALL(security_control,SYSCALL_security_control)   /* 2 in, 1 out */
+        DECODE_SYSCALL(interrupt_control, SYSCALL_interrupt_control)    /* 2 in, 1 out */
+        DECODE_SYSCALL(cap_control, SYSCALL_cap_control)        /* 2 in, 1 out. */
+1:
+        ADDIU   t4, t4, -3; /* skip unused numbers */
+        DECODE_SYSCALL(platform_control, SYSCALL_platform_control)  /* 4 in, 1 out */
+        DECODE_SYSCALL(space_switch, SYSCALL_space_switch)      /* 3 in, 1 out */
+        DECODE_SYSCALL(mutex, SYSCALL_mutex)                    /* 2 in, 1 out. */
+        DECODE_SYSCALL(mutex_control, SYSCALL_mutex_control)    /* 2 in, 1 out. */
+        nop
+
+1:
+        /* Unknown syscall */
+        j       _mips_l4syscall_return
+        .set at
+END_PROC(_mips_l4syscall)
+
+BEGIN_PROC(_mips_l4sysipc_return)
+        lui     t6, %hi(KERNEL_BASE)    /* Load kernel base address */
+        LDR     sp, %lo(K_CURRENT_TCB)(t6)      /* Load current TCB */
+
+        LDR     v0, OFS_TCB_SENT_FROM(sp)
+        LDR     t5, OFS_TCB_UTCB(sp)        /* t5 = current utcb */
+        ADDIU   sp, sp, OFS_TCB_ARCH_CONTEXT
+        LDR     mr0, UTCB_MR_OFFSET+SIZE(0)(t5)
+        LDR     mr1, UTCB_MR_OFFSET+SIZE(4)(t5)
+        LDR     mr2, UTCB_MR_OFFSET+SIZE(8)(t5)
+        LDR     mr3, UTCB_MR_OFFSET+SIZE(12)(t5)
+        LDR     mr4, UTCB_MR_OFFSET+SIZE(16)(t5)
+        LDR     mr5, UTCB_MR_OFFSET+SIZE(20)(t5)
+        LDR     mr6, UTCB_MR_OFFSET+SIZE(24)(t5)
+        LDR     mr7, UTCB_MR_OFFSET+SIZE(28)(t5)
+        LDR     mr8, UTCB_MR_OFFSET+SIZE(32)(t5)
+        j 10f
+
+_mips_l4syscall_return:
+        lui     t6, %hi(KERNEL_BASE)    /* Load kernel base address */
+        LDR     sp, %lo(K_CURRENT_TCB)(t6)      /* Load current TCB */
+
+        ADDIU   sp, sp, OFS_TCB_ARCH_CONTEXT
+        
+        /* load the callee saved registers */
+        LDR     s0, PT_S0(sp)
+        LDR     s1, PT_S1(sp)
+        LDR     s2, PT_S2(sp)
+        LDR     s3, PT_S3(sp)
+        LDR     s4, PT_S4(sp)
+        LDR     s5, PT_S5(sp)
+        LDR     s6, PT_S6(sp)
+        LDR     s7, PT_S7(sp)
+        
+10:     
+        mfc0    t6, CP0_STATUS
+        LDR     gp, PT_GP(sp)
+        LDR     s8, PT_S8(sp)
+        LDR     t7, PT_SP(sp)           /* load stack */
+        ori     t6, t6, ST_EXL          /* set Exception Level */
+        mtc0    t6, CP0_STATUS          /* to disable interrupts, we now can set EPC */
+        LDR     t4, PT_STATUS(sp)       /* load status */
+        LDR     t5, PT_EPC(sp)          /* load epc */
+        LDR     ra, PT_RA(sp)           /* load ra */
+
+        STOP_SYSCALL_COUNTER
+        PRINT_SYSCALL_TIMES
+
+        MTC0    t5, CP0_EPC             /* restore EPC */ 
+        li      t3, CONFIG_MIPS_STATUS_MASK
+        LDR     t5, (OFS_TCB_UTCB_LOCATION - OFS_TCB_ARCH_CONTEXT)(sp)
+        move    sp, t7                  /* restore stack */
+        and     t6, t3, t6              /* compute new status register */
+        nor     t3, zero, t3
+        and     t4, t3, t4
+        or      t7, t6, t4              /*            " "              */
+        mtc0    t7, CP0_STATUS          /* new status value */
+        move    k0, t5  /* Load UTCB into k0 */
+nop
+        .set push
+        .set mips3
+        eret
+        .set pop
+
+.set at
+END_PROC(_mips_l4sysipc_return)
+
+        .set reorder
+BEGIN_PROC(_mips_syscall_exception)
+        SAVE_ALL_INT
+
+        move    a0, sp
+        jal     syscall_exception
+
+        j       _mips_restore_user
+END_PROC(_mips_syscall_exception)

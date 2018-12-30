@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE image SYSTEM "weaver-1.0.dtd">
+<image>
+	<machine file="data/eg_weave/machine.xml" />
+	<virtual_pool name="virtual">
+		<memory base="0x1000" size="0xcffff000"/>
+	</virtual_pool>
+
+	<physical_pool name="physical">
+		<memory base="0xa0000000" size="0x3800000"/>
+	</physical_pool>
+
+	<kernel file="data/eg_weave/l4kernel">
+	</kernel>
+
+	<rootprogram file="data/eg_weave/ig_server" virtpool="virtual" physpool="physical">
+	</rootprogram>
+        <!-- Load all segments with a custom pager. -->
+        <program name="ig_naming" file="data/eg_weave/ig_naming" pager="memload">
+        </program>
+</image>

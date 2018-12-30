@@ -1,0 +1,10 @@
+subsystem number_of_the_beast 666;
+
+type mach_port_t = MACH_MSG_TYPE_COPY_SEND;
+
+routine unholyalliance(
+	in  server  : mach_port_t;
+	in  inarg	: MACH_MSG_TYPE_INTEGER_8;
+	out outarg  : MACH_MSG_TYPE_INTEGER_16);
+
+

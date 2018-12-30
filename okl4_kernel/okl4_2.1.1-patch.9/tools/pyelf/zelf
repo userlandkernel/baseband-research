@@ -1,0 +1,220 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2007 Open Kernel Labs, Inc. (Copyright Holder).
+# All rights reserved.
+# 
+# 1. Redistribution and use of OKL4 (Software) in source and binary
+# forms, with or without modification, are permitted provided that the
+# following conditions are met:
+# 
+#     (a) Redistributions of source code must retain this clause 1
+#         (including paragraphs (a), (b) and (c)), clause 2 and clause 3
+#         (Licence Terms) and the above copyright notice.
+# 
+#     (b) Redistributions in binary form must reproduce the above
+#         copyright notice and the Licence Terms in the documentation and/or
+#         other materials provided with the distribution.
+# 
+#     (c) Redistributions in any form must be accompanied by information on
+#         how to obtain complete source code for:
+#        (i) the Software; and
+#        (ii) all accompanying software that uses (or is intended to
+#        use) the Software whether directly or indirectly.  Such source
+#        code must:
+#        (iii) either be included in the distribution or be available
+#        for no more than the cost of distribution plus a nominal fee;
+#        and
+#        (iv) be licensed by each relevant holder of copyright under
+#        either the Licence Terms (with an appropriate copyright notice)
+#        or the terms of a licence which is approved by the Open Source
+#        Initative.  For an executable file, "complete source code"
+#        means the source code for all modules it contains and includes
+#        associated build and other files reasonably required to produce
+#        the executable.
+# 
+# 2. THIS SOFTWARE IS PROVIDED ``AS IS'' AND, TO THE EXTENT PERMITTED BY
+# LAW, ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+# PURPOSE, OR NON-INFRINGEMENT, ARE DISCLAIMED.  WHERE ANY WARRANTY IS
+# IMPLIED AND IS PREVENTED BY LAW FROM BEING DISCLAIMED THEN TO THE
+# EXTENT PERMISSIBLE BY LAW: (A) THE WARRANTY IS READ DOWN IN FAVOUR OF
+# THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+# PARTICIPANT) AND (B) ANY LIMITATIONS PERMITTED BY LAW (INCLUDING AS TO
+# THE EXTENT OF THE WARRANTY AND THE REMEDIES AVAILABLE IN THE EVENT OF
+# BREACH) ARE DEEMED PART OF THIS LICENCE IN A FORM MOST FAVOURABLE TO
+# THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+# PARTICIPANT). IN THE LICENCE TERMS, "PARTICIPANT" INCLUDES EVERY
+# PERSON WHO HAS CONTRIBUTED TO THE SOFTWARE OR WHO HAS BEEN INVOLVED IN
+# THE DISTRIBUTION OR DISSEMINATION OF THE SOFTWARE.
+# 
+# 3. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR ANY OTHER PARTICIPANT BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+# BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+# OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+# IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# zelf:  Copy an ELF file but zero out all of the data.
+#
+# Usage: zelf [--traceback] <in> <out>
+#
+
+import sys
+import random
+import string
+from traceback import print_exc
+from elf.structures import *
+from elf.File import File
+
+
+def copy_elf(inpf, outf):
+    """
+    Copy the input ELF file to the output file, zeroing all data that
+    doesn't describe the structure of the ELF file.
+    """
+    # Fill the output files with NULs, making it the same size as the
+    # input file in the process.
+    all_zero = ByteArray('\0' * inpf.size())
+    outf.seek(0)
+    all_zero.tofile(outf)
+    all_zero = None
+
+    # Work out the wordsize and endianess of the input file
+    ident     = ElfIdentification()
+    ident.fromdata(inpf.get_data(0, ident.get_size()))
+    wordsize  = ident.get_word_size()
+    endianess = ident.get_endianess()
+
+    assert wordsize in ElfHeaderClasses # get_word_size() should ensure this
+        
+    # Load the ELF header structure.  There are diffent header classes
+    # depending on the word size.
+    header_data = inpf.get_data(0, ElfHeaderClasses[wordsize].size())
+    hdr         = ElfHeaderClasses[wordsize]()
+    hdr.fromdata(header_data)
+
+    # Write out the ELF Header.
+    outf.seek(0, 0)
+    hdr.todata().tofile(outf)
+
+    # Setup section processing.
+    sh_class       = ElfShClasses[wordsize]
+    shentsize      = hdr.get_shentsize()
+    shoff          = hdr.get_shoff()
+    string_section = None # The string table section.
+    sections       = [] # List of sections
+
+    # If there are sections...
+    if shoff != 0:
+        for sh_idx in range(0, hdr.get_shnum()):
+            # Copy each section header.  Remember each section for
+            # later string processing.
+            sh = sh_class(endianess)
+            sh.fromdata(inpf.get_data(shoff + shentsize * sh_idx,
+                                      shentsize),
+                        hdr)
+            sections.append(sh)
+            
+            outf.seek(shoff + shentsize * sh_idx)
+            sh.todata().tofile(outf)
+
+            # Note the string table section as we copy.
+            if sh_idx == hdr.get_shstrndx():
+                string_section = sh
+
+    def get_string_ofs(strings, offset):
+        """Return the string at a given offset. None if it there is no
+        string."""
+        cur_off = 0
+        for s in strings:
+            if offset >= cur_off and offset < cur_off + len(s):
+                return s[offset - cur_off:-1]
+            cur_off += len(s)
+
+    # The string table contains the names of the sections, symbol
+    # names and other debugging data.  We want to preserve the section
+    # names but remove everything else.
+    if string_section is not None:
+        # Read in the raw section data
+        data = inpf.get_data(string_section.get_offset(),
+                             string_section.get_size())
+
+        # Split out each string.
+        strings = [x + '\x00' for x in
+                   data.tostring().split('\x00')[:-1]]
+        
+        # Create a zeroed string section.
+        out_data = ByteArray('\0' * string_section.get_size())
+
+        # Copy over the section name strings.
+        for s in sections:
+            offset = s.get_name()
+            name   = get_string_ofs(strings, offset)
+            # Randomise the characters in the section name to hide any
+            # important details.
+            new_name = ''
+            for c in name:
+                new_name += random.choice(string.ascii_letters)
+
+            out_data[offset:offset + len(new_name)] = ByteArray(new_name)
+
+        # Write out the edited string table.
+        outf.seek(string_section.get_offset())
+        out_data.tofile(outf)
+        
+    # Setup Program Header processing.
+    phentsize = hdr.get_phentsize()
+    phoff     = hdr.get_phoff()
+
+    # If there are program headers...
+    if phoff != 0:
+        for ph_idx in range(hdr.get_phnum()):
+            # Copy the raw program header data.
+            ph_data = inpf.get_data(phoff + phentsize * ph_idx, phentsize)
+            outf.seek(phoff + phentsize * ph_idx)
+            ph_data.tofile(outf)
+
+    # At this point the output ELF file should have valid sections,
+    # program headers, ELF header and truncated strings.  Everything
+    # else should be NUL and the file should be the same size as the
+    # input file.
+
+    return None
+
+# Main part of the program
+# ------------------------
+
+# Hide the Python stack trace unless --traceback is specified.
+if "--traceback" in sys.argv:
+    traceback = sys.argv.index("--traceback")
+    del sys.argv[traceback]
+else:
+    traceback = 0
+
+try:
+    if len(sys.argv) != 3:
+        print "Usage: %s [--traceback] <input> <output>" % sys.argv[0]
+        print "Copies an ELF file, zeroing out all of the data."
+        sys.exit(1)
+
+    inp = File(sys.argv[1], "rb")
+    out = File(sys.argv[2], "wb")
+
+    copy_elf(inp, out)
+
+    out.close()
+    inp.close()
+except KeyboardInterrupt:
+    pass
+except SystemExit, exit_code:
+    sys.exit(exit_code)
+except:
+    import sys
+    print "An error occurred:", sys.exc_info()[1]
+    if traceback:
+        print "Now printing a traceback."
+        print
+        print_exc(file=sys.stdout)
+        print

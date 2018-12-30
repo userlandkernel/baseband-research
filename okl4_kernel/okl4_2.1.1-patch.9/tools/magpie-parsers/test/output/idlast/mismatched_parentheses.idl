@@ -1,0 +1,2 @@
+* Parser error *
+test/input/idlast/mismatched_parentheses.idl:2:Unexpected token ";"

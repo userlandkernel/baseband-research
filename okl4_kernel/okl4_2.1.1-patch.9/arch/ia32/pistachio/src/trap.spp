@@ -1,0 +1,465 @@
+/*
+ * Copyright (c) 2002-2004, Karlsruhe University
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+/*
+ * Copyright (c) 2007 Open Kernel Labs, Inc. (Copyright Holder).
+ * All rights reserved.
+ *
+ * 1. Redistribution and use of OKL4 (Software) in source and binary
+ * forms, with or without modification, are permitted provided that the
+ * following conditions are met:
+ *
+ *     (a) Redistributions of source code must retain this clause 1
+ *         (including paragraphs (a), (b) and (c)), clause 2 and clause 3
+ *         (Licence Terms) and the above copyright notice.
+ *
+ *     (b) Redistributions in binary form must reproduce the above
+ *         copyright notice and the Licence Terms in the documentation and/or
+ *         other materials provided with the distribution.
+ *
+ *     (c) Redistributions in any form must be accompanied by information on
+ *         how to obtain complete source code for:
+ *        (i) the Software; and
+ *        (ii) all accompanying software that uses (or is intended to
+ *        use) the Software whether directly or indirectly.  Such source
+ *        code must:
+ *        (iii) either be included in the distribution or be available
+ *        for no more than the cost of distribution plus a nominal fee;
+ *        and
+ *        (iv) be licensed by each relevant holder of copyright under
+ *        either the Licence Terms (with an appropriate copyright notice)
+ *        or the terms of a licence which is approved by the Open Source
+ *        Initative.  For an executable file, "complete source code"
+ *        means the source code for all modules it contains and includes
+ *        associated build and other files reasonably required to produce
+ *        the executable.
+ *
+ * 2. THIS SOFTWARE IS PROVIDED ``AS IS'' AND, TO THE EXTENT PERMITTED BY
+ * LAW, ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE, OR NON-INFRINGEMENT, ARE DISCLAIMED.  WHERE ANY WARRANTY IS
+ * IMPLIED AND IS PREVENTED BY LAW FROM BEING DISCLAIMED THEN TO THE
+ * EXTENT PERMISSIBLE BY LAW: (A) THE WARRANTY IS READ DOWN IN FAVOUR OF
+ * THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+ * PARTICIPANT) AND (B) ANY LIMITATIONS PERMITTED BY LAW (INCLUDING AS TO
+ * THE EXTENT OF THE WARRANTY AND THE REMEDIES AVAILABLE IN THE EVENT OF
+ * BREACH) ARE DEEMED PART OF THIS LICENCE IN A FORM MOST FAVOURABLE TO
+ * THE COPYRIGHT HOLDER (AND, IN THE CASE OF A PARTICIPANT, THAT
+ * PARTICIPANT). IN THE LICENCE TERMS, "PARTICIPANT" INCLUDES EVERY
+ * PERSON WHO HAS CONTRIBUTED TO THE SOFTWARE OR WHO HAS BEEN INVOLVED IN
+ * THE DISTRIBUTION OR DISSEMINATION OF THE SOFTWARE.
+ *
+ * 3. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR ANY OTHER PARTICIPANT BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+/*
+ * Description:  Trap handlers
+ */
+#include <l4.h>
+#include <arch/asm.h>
+#include <arch/context.h>
+#include <tcb_layout.h>
+#include <ktcb_layout.h>
+#include <asmsyms.h>
+
+#include <arch/profile_asm.h>
+
+#define JTE(entry, num)  .align 128
+
+#define __L4_TCR_BYTES_SYSCALL_ARGS (__L4_TCR_SYSCALL_ARGS * 4)
+#define __SYSCALL_ARG0          0x0
+#define __SYSCALL_ARG1          0x4
+#define __SYSCALL_ARG2          0x8
+
+START_MACRO SYSENTER_SAVE_REGS
+        /* Saving eflags */
+        pushf
+        /* push %ebp to use it as temp register */
+        pushl   %ebp
+
+        /* come back to the stack_top to get tcb address */
+        movl    (0x8)(%esp), %ebp
+        addl    $(OFS_TCB_ARCH), %ebp
+
+        /* swap gs and save %edx and %ecx for sysexit */
+        mov     %ds,  CXT_DS(%ebp)
+        mov     %es,  CXT_ES(%ebp)
+        mov     %fs,  CXT_FS(%ebp)
+        mov     %gs,  CXT_GS(%ebp)
+        /* %edi has the value %edx should have before we call sysexit */
+        movl    %edi, CXT_EIP(%ebp)
+        /*
+         * the stack has the old value of %ebp, which is the value
+         * %ecx should have before we call sysenter, so... pop it!
+         */
+        popl    %edi
+        movl    %edi, CXT_ESP(%ebp)
+
+        /* Get the EFLAGS previous saved */
+        popl    %edi
+        /* Save the EFLAGS with interrupt enabled */
+        orl     $(IA32_EFL_IF), %edi
+        movl    %edi, CXT_EFLAGS(%ebp)
+
+        mov     $IA32_KDS, %edi
+        mov     %edi, %ds
+        mov     %edi, %es
+        mov     %edi, %fs
+        mov     %edi, %gs
+
+        /* And we are done saving stuff... now let's trash everything! */
+END_MACRO
+
+START_MACRO SYSENTER_RESTORE_REGS
+
+        PROFILE_KERNEL_TIME_STOP
+
+        orl     $STACK_TOP, %esp
+        movl    (%esp), %edx
+        addl    $(OFS_TCB_ARCH), %edx
+
+        /* Restoring EFLAGS, but with interrupts disabled */
+        pushl   CXT_EFLAGS(%edx)
+        andl    $(~IA32_EFL_IF), (%esp)
+        popf
+
+        movl    %edx, %esp
+
+        mov     CXT_DS(%esp), %ds
+        mov     CXT_ES(%esp), %es
+        mov     CXT_FS(%esp), %fs
+        mov     CXT_GS(%esp), %gs
+
+        /* sysexit reads UIP and USP from edx and ecx, respectively */
+        movl    CXT_EIP(%esp), %edx
+        movl    CXT_ESP(%esp), %ecx
+
+END_MACRO
+
+START_MACRO STI_SYSEXIT
+        sti
+        sysexit
+END_MACRO
+
+START_MACRO IA32_GET_CURRENT_TCB DEC_ARG0
+        movl    %esp, ARG0
+        orl     $STACK_TOP, ARG0
+        movl    (ARG0), ARG0
+END_MACRO
+
+START_MACRO IA32_GET_UTCB DEC_ARG0
+        IA32_GET_CURRENT_TCB  ARG0
+        movl    OFS_TCB_UTCB_LOCATION(ARG0), ARG0
+END_MACRO
+
+START_MACRO IA32_GET_SYSCALL_ARGS DEC_ARG0
+        IA32_GET_UTCB  ARG0
+        addl    $__L4_TCR_BYTES_SYSCALL_ARGS, ARG0
+END_MACRO
+
+BEGIN_PROC(sysenter_entry)
+        SYSENTER_SAVE_REGS
+
+        PROFILE_KERNEL_TIME_START
+        PROFILE_ASM_START SYSCALL_ASM
+
+        /* test if it is an L4 syscall */
+        subl    $0x80000001, %eax
+        cmpl    $0x11, %eax
+        /* If not, jumps to the trampoline */
+        ja      sysenter_trampoline
+        /* Otherwise, jumps to the right syscall */
+        shl     $7, %eax
+        addl    $__sysenter_table_start, %eax
+        jmp     *%eax
+JTE(cache_control, 0)
+__sysenter_table_start:
+        .local  __sysenter_table_start	
+        movl    %esi, %eax
+        PROFILE_ASM_STOP SYSCALL_ASM
+        call    sys_cache_control
+        SYSENTER_RESTORE_REGS
+        STI_SYSEXIT
+JTE(map_control, 1)
+        movl    %esi, %eax
+        PROFILE_ASM_STOP SYSCALL_ASM
+        call    sys_map_control
+        SYSENTER_RESTORE_REGS
+        STI_SYSEXIT
+JTE(security_control, 2)
+        movl    %esi, %eax
+        PROFILE_ASM_STOP SYSCALL_ASM
+        call    sys_security_control
+        SYSENTER_RESTORE_REGS
+        STI_SYSEXIT
+JTE(thread_switch, 3)
+        movl    %esi, %eax
+        PROFILE_ASM_STOP SYSCALL_ASM
+        call    sys_thread_switch
+        SYSENTER_RESTORE_REGS
+        STI_SYSEXIT
+JTE(space_control, 4)
+        IA32_GET_SYSCALL_ARGS  %eax
+        pushl   (__SYSCALL_ARG0)(%eax)
+        pushl   %ebx
+        movl    %esi, %eax
+        PROFILE_ASM_STOP SYSCALL_ASM
+        call    sys_space_control
+        SYSENTER_RESTORE_REGS
+        STI_SYSEXIT
+JTE(thread_control, 5)
+        IA32_GET_SYSCALL_ARGS  %eax
+        pushl   (__SYSCALL_ARG2)(%eax)
+        pushl   (__SYSCALL_ARG1)(%eax)
+        pushl   (__SYSCALL_ARG0)(%eax)
+        pushl   %ebx
+        movl    %esi, %eax
+        PROFILE_ASM_STOP SYSCALL_ASM
+        call    sys_thread_control
+        SYSENTER_RESTORE_REGS
+        STI_SYSEXIT
+JTE(platform_control, 6)
+        pushl   %ebx
+        movl    %esi, %eax
+        PROFILE_ASM_STOP SYSCALL_ASM
+        call    sys_platform_control
+        SYSENTER_RESTORE_REGS
+        STI_SYSEXIT
+JTE(space_switch, 7)
+        movl    %esi, %eax
+        PROFILE_ASM_STOP SYSCALL_ASM
+        call    sys_space_switch
+        SYSENTER_RESTORE_REGS
+        STI_SYSEXIT
+JTE(schedule, 8)
+        IA32_GET_SYSCALL_ARGS  %eax
+        pushl   (__SYSCALL_ARG1)(%eax)
+        pushl   (__SYSCALL_ARG0)(%eax)
+        pushl   %ebx
+        movl    %esi, %eax
+        PROFILE_ASM_STOP SYSCALL_ASM
+        call    sys_schedule
+        SYSENTER_RESTORE_REGS
+        STI_SYSEXIT
+JTE(exchange_registers, 9)
+        IA32_GET_SYSCALL_ARGS  %eax
+        pushl   (__SYSCALL_ARG1)(%eax)
+        pushl   (__SYSCALL_ARG0)(%eax)
+        pushl   %ebx
+        movl    %esi, %eax
+        PROFILE_ASM_STOP SYSCALL_ASM
+        call    sys_exchange_registers
+        SYSENTER_RESTORE_REGS
+        STI_SYSEXIT
+JTE(ipc, 10)
+        IA32_GET_UTCB  %eax
+        movl    %ecx, (0x0)(%eax)
+
+        movl    %esi, %eax
+        PROFILE_ASM_STOP SYSCALL_ASM
+#ifdef CONFIG_IPC_C_FASTPATH
+        call    sys_ipc_c_fastpath
+#else
+        call    sys_ipc
+#endif
+
+.globl ia32_ipc_return
+ia32_ipc_return:
+        IA32_GET_CURRENT_TCB  %ebp
+        movl    OFS_TCB_SENT_FROM(%ebp), %eax
+
+        movl    OFS_TCB_UTCB_LOCATION(%ebp), %ebp
+        movl    (0x0)(%ebp), %esi
+
+        SYSENTER_RESTORE_REGS
+        STI_SYSEXIT
+JTE(unused_11, 11)
+	/* This slot is unused raise debug exception. */
+	int $3
+JTE(usused_12, 12)
+	/* This slot is unused raise debug exception. */
+	int $3
+JTE(mutex, 13)
+        movl    %esi, %eax
+        PROFILE_ASM_STOP SYSCALL_ASM
+        call    sys_mutex
+        SYSENTER_RESTORE_REGS
+        STI_SYSEXIT
+JTE(mutex_control, 14)
+        movl    %esi, %eax
+        PROFILE_ASM_STOP SYSCALL_ASM
+        call    sys_mutex_control
+        SYSENTER_RESTORE_REGS
+        STI_SYSEXIT
+JTE(interrupt_control, 15)
+        movl    %esi, %eax
+        PROFILE_ASM_STOP SYSCALL_ASM
+        call    sys_interrupt_control
+        SYSENTER_RESTORE_REGS
+        STI_SYSEXIT
+JTE(cap_control, 16)
+        movl    %esi, %eax
+        PROFILE_ASM_STOP SYSCALL_ASM
+        call    sys_cap_control
+        SYSENTER_RESTORE_REGS
+        STI_SYSEXIT
+JTE(memory_copy, 17)
+        push    %ebx
+        movl    %esi, %eax
+        PROFILE_ASM_STOP SYSCALL_ASM
+        call    sys_memory_copy
+        SYSENTER_RESTORE_REGS
+        STI_SYSEXIT
+END_PROC(sysenter_entry)
+
+BEGIN_PROC(sysenter_trampoline)
+        /* Fabricate a hardware exception frame */
+
+        /* Get back our old edi, which save regs
+         * has stored in eip in trapframe.
+         * Save it in trapframe. */
+        movl    CXT_EIP(%ebp), %edi
+        movl    %edi, CXT_EDI(%ebp)
+
+        /* Save CS and SS in trapframe */
+        movl     $IA32_UCS, CXT_CS(%ebp)
+        movl     $IA32_UDS, CXT_SS(%ebp)
+
+        /* Save GPRs in exception frame.
+         * 0x80000001 was subtracted from eax on SAVE_REGS,
+         * so add it back first */
+        addl    $0x80000001, %eax
+        movl    %eax, CXT_EAX(%ebp)
+        movl    %ebx, CXT_EBX(%ebp)
+        movl    %ecx, CXT_ECX(%ebp)
+        movl    %edx, CXT_EDX(%ebp)
+        movl    %esi, CXT_ESI(%ebp)
+
+        /* Save ebp, which is in ESP in trapframe */
+        movl    CXT_ESP(%ebp), %edi
+        movl    %edi, CXT_EBP(%ebp)
+
+        /* Call sysenter_exception_ipc, passing
+        * the exception frame as an argument via eax */
+        movl    %ebp, %eax
+        call    sysenter_exception_ipc
+
+        /* sysexit path */
+        SYSENTER_RESTORE_REGS
+
+        /* Restore GPRs.
+         * esp points to trapframe. */
+        movl    CXT_EAX(%esp), %eax
+        movl    CXT_EBX(%esp), %ebx
+        movl    CXT_ESI(%esp), %esi
+        movl    CXT_EDI(%esp), %edi
+        movl    CXT_EBP(%esp), %ebp
+
+        STI_SYSEXIT
+END_PROC(sysenter_trampoline)
+
+
+#ifdef CONFIG_L4_PROFILING
+
+BEGIN_PROC(__profile_asm_start)
+        pushl   %ecx
+        pushl   %edx
+        pushl   %eax
+        call    profile_start
+        popl    %eax
+        popl    %edx
+        popl    %ecx
+        ret
+END_PROC(__profile_asm_start)
+
+BEGIN_PROC(__profile_asm_stop)
+        pushl   %ecx
+        pushl   %edx
+        pushl   %eax
+        call    profile_stop
+        popl    %eax
+        popl    %edx
+        popl    %ecx
+        ret
+END_PROC(__profile_asm_stop)
+
+BEGIN_PROC(__profile_kernel_time_start)
+        pushl  %eax
+        pushl  %edx
+        pushl  %ecx
+        movl   $profile_kernel_time, %ecx
+        movl   (0x0)(%ecx), %eax
+        movl   (0x4)(%ecx), %edx
+        or     %eax, %edx
+        rdtsc
+        jne    7f
+        addl   $1, (0x10)(%ecx)
+        movl   %eax, (0x0)(%ecx)
+        movl   %edx, (0x4)(%ecx)
+        7:
+        popl   %ecx
+        popl   %edx
+        popl   %eax
+        ret
+END_PROC(__profile_kernel_time_start)
+
+BEGIN_PROC(__profile_kernel_time_stop)
+        pushl  %eax
+        pushl  %ebx
+        pushl  %edx
+        pushl  %ecx
+        pushl  %ebp
+        movl   $profile_kernel_time, %ebp
+        movl   (0x0)(%ebp), %ebx
+        movl   (0x4)(%ebp), %ecx
+        /* if profiling is disabled, return */
+        cmpl   $0xffffffff, %ecx
+        je     7f
+        movl   %ebx, %eax
+        orl    %ecx, %eax
+        je     7f
+        rdtsc
+        subl   %ebx, %eax
+        sbbl   %ecx, %edx
+        addl   %eax, (0x8)(%ebp)
+        adcl   %edx, (0xc)(%ebp)
+        xorl   %eax, %eax
+        movl   %eax, (0x0)(%ebp)
+        movl   %eax, (0x4)(%ebp)
+        7:
+        popl   %ebp
+        popl   %ecx
+        popl   %edx
+        popl   %ebx
+        popl   %eax
+        ret
+END_PROC(__profile_kernel_time_stop)
+
+#endif

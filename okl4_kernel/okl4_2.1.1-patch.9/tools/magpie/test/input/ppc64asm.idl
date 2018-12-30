@@ -1,0 +1,6 @@
+import "ppc64asm.h";
+
+[uuid(37)]
+interface test {
+};
+

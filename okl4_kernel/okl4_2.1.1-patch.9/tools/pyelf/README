@@ -1,0 +1,150 @@
+PyElf contains two python packages: elf and weaver, and a script
+elfweaver.
+
+The elfweaver script is used in the Kenge build system to perform
+a number of tasks:
+
+ 1/ Merge multiple ELF files into a single ELF file, which can then
+ be loaded by a standard bootloader.
+
+ 2/ Update the Pistachio kernel configuration page, with specific
+ data values such as the memory map, and rootserver values.
+
+ 3/ Fill out bootinfo information.
+
+
+Elfweaver tool
+--------------
+The elfweaver script can be run directly in the source directly as:
+
+$ ./elfweaver.py
+
+Alternatively it can be built and installed using
+
+$ python setup.py install.
+
+It can also be created as a windows executable. See below.
+
+Elfweaver currently supports two commands:
+
+1/ print
+
+ This provides a way of displaying an ELF file. It supports most of the
+ commands that the UNIX readelf tool has, and is also able to print out
+ L4 specific data strcutures such as the kip.
+
+ 2/ merge
+
+ Merge command takes a spec file as input and generates an ELF file. An
+ example spec file can be found in example/spec.xml The spec file may be
+ generated from a build system automatically, or manually written by to
+ suit a specific board.
+
+ Note that the XML format allows us to have a flexible format that can be
+ easily extended in the future.
+
+ The tags used are:
+
+ <image /> This should be the top-level element. This supports two
+  attributes:
+    loader_offset: This is used to support broken ELF loaders found on 
+      some platforms, this value is added to the physical addresses found
+      in the output file. It defaults to zero, and for almost all platforms
+      it can be simply ommitted.
+    physical_entry: This boolean attributes specifies whether the entry
+      point to the ELF file should be converted to a physical address instead
+      of a virtual address. This is often used when the bootloader starts the 
+      kernel executing in 1:1 physical rather than in virtual addresses.
+
+ <virtualmemory /> This element describes the layout of virtual memory. It
+      should contain 1 or more region elements.
+
+ <physicalmemory /> This element describes the physical memory on the board. 
+      It should contain at least one region element.
+
+ <region /> Describes a region of memory. It contains a base and end attribute
+      to describe the memory. It should be a sub-element of virtualmemory, 
+      physicalmemory and heap elements.
+
+ <kernel /> Is used to describe the kernel. It contains a file attribute which
+      says where the file is located on the filesystem. The kernel element 
+      has a required heap sub element.
+
+ <heap /> This element is a subelement of the kernel element and is used to
+      specify where in physical memory the kernel should use as its heap. This
+      allows a single kernel binary to support different initial heap sizes.
+
+ <rootserver /> This element specifies the systems rootserver.
+
+ <program /> Specifies a program to be merged.
+
+ <data /> Specifies a data file to be merged.
+
+ 
+
+
+Code layout
+-----------
+elf/__init__.py        -- Package file
+
+elf/util.py            -- A set of utilities used internally by the elf library
+elf/ByteArray.py       -- An implementation of a ByteArray() class that 
+                          provides effecient binary data usage.
+elf/File.py            -- An implementation of a File() class that
+                          extends on the python builtin file type.
+
+elf/constants.py       -- This contains a set of constants used in describing ELF 
+                          files.
+elf/strucutes.py       -- Provides classes for reading and writing lowlevel ELF
+                          data structures such as the elf header, elf segments, 
+                          elf sections and so on.
+elf/core.py            -- This contains most of the useful functions that would be
+                          needed by a user of the library included ElfFile, ElfSegment
+                          and ElfSection classes.
+
+
+weaver/__init__.py     -- Package file
+
+weaver/l4_kip.py       -- File with functions used to manipulate the L4 KIP.
+weaver/parser_spec.py  -- Handle parsing of the specification file.
+
+weaver/display.py      -- Implements the "print" command.
+weaver/merge.py        -- Implements the "merge" command.
+weaver/main.py         -- Handles command line parsing for the ELF file.
+
+Programming and testing
+-----------------------
+Every source file should have an accompanying test file in the tests/
+directory. The tests can be run like so:
+
+$ python tests/run.py
+
+It will only output when a test fails. It also runs a coverage
+analysis on the tested file, and will output coverage information if
+all lines in the file are not tested. Currently all files in the elf
+package have complete test coverage, however there are not complete
+coverage for the weaver package at this stage.
+
+Some tests rely on having readelf installed so that the output can be
+compared. This is not required and if readelf is not detected on the
+systems these tests will not be run.
+
+
+To ensure high coding standards are upheld pylint is being used to
+find potential errors and badly formatted code. It can be run with the
+command:
+
+$ pylint elf weaver
+
+Generating windows executables
+------------------------------
+
+By using the py2exe (http://www.py2exe.org) it is possible to create a
+single windows binary that can be used generate images from binaries
+without the rest of the build system being required.
+
+It can be generated using the command:
+
+python setup.py py2exe --bundle 1
+
+This will create an elfweaver.exe in the dist directory.

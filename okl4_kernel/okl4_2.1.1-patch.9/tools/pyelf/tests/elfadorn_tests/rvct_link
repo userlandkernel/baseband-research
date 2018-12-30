@@ -1,0 +1,8 @@
+#!/bin/sh
+# this is just a convenenience wrapper for the arm linker
+# without it the linker needlessly has a different number of 
+# command line arguments to gnu-ld
+# it is only used by the test_elfadorn.py unittests
+# --hala
+
+../../rvds/wrapper.py rvct armlink $@

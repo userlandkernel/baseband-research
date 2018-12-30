@@ -1,0 +1,6 @@
+typedef enum color { 
+    red,
+    green,
+    blue
+  } color;
+ 

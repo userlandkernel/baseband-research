@@ -1,0 +1,2 @@
+#!/bin/sh
+tools/rvds/wrapper.py ads armld "$@"

@@ -1,0 +1,4 @@
+[uuid(32)]
+interface foo {
+	typedef bogus mytype;
+};

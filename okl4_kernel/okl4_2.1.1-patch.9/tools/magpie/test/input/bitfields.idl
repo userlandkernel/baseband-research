@@ -1,0 +1,7 @@
+import "bitfields.h";
+
+[uuid(1)]
+interface bitfield_1
+{
+	int bftest1(in foo h);
+};

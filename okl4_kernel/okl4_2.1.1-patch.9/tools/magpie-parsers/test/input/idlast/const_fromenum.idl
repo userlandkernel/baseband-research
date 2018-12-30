@@ -1,0 +1,4 @@
+   interface test {
+     enum color { red, green, blue };
+     const color c = red;
+   };

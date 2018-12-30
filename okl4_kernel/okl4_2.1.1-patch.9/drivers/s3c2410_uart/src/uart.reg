@@ -1,0 +1,58 @@
+ULCON 32 @ 0x0:
+ word_len <0:1>        # Data word size
+ stop_bits <2>         # Number of stop bits
+ parity    <3:5>       # Parity Type
+ ir_mode   <6>
+ 
+UCON 32 @ 0x4:
+ rx_mode   <0:1>
+ tx_mode   <2:3>
+ loopback  <5>
+ rx_err_irqen  <6>
+ rx_to_irqen   <7>   # Timeout
+ rx_irq_type   <8>   # 0 - edge, 1 -level
+ tx_irq_type   <9>
+ clock_sel     <10>
+
+UFCON 32 @ 0x8:
+ fifo_en       <0>
+ rx_fifo_rst   <1>
+ tx_fifo_rst   <2>
+ rx_fifo_level <4:5>
+ tx_fifo_level <6:7>
+
+UMCON 32 @ 0xc:
+ rts           <0>
+ afc           <4>
+
+UTRSTAT 32 @ 0x10 { RO }:
+ rxbuf_drdy    <0>
+ txbuf_empt    <1>
+ tx_empt       <2>
+
+UERSTAT 32 @ 0x14 { RO }:
+ e_overun      <0>
+ e_frame       <2>
+
+UFSTAT 32 @ 0x18 { RO }:
+ rx_fifo_cnt      <0:3>
+ tx_fifo_cnt      <4:7>
+ rx_fifo_full     <8>
+ tx_fifo_full     <9>
+
+
+UMSTAT 32 @ 0x1c { RO }:
+ cts           <0>
+ delta_cts     <4>
+
+
+UTXH 8 @ 0x20 { WO }:
+ thr           <0:7>
+
+
+URXHH 8 @ 0x24 { RO }:
+ rbr           <0:7>
+
+UBRDIV 16 @ 0x24:
+ ubrdiv        <0:15>
+

@@ -1,0 +1,12 @@
+/*
+ * Iguana IDL for dealing with userland
+ * eg. pagefaults, exceptions, syscalls.
+ *
+ */
+
+[uuid(22)]
+interface iguana_pd
+{
+	int create_memsection(in char *somestr, out int result);
+};
+

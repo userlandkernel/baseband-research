@@ -1,0 +1,10 @@
+
+import "void_ptr.h";
+import "stdint.h";
+import "stddef.h";
+
+[uuid(INTERFACE_QUBE_QTHREAD_UUID)]
+interface qube_qthread
+{
+        int  start(in thread_t thr, in void *startfn, in void *arg, in void *stub);
+}; 

@@ -1,0 +1,31 @@
+connector IguanaRPC {
+	from Interface user_inf;
+	to Interface provider_inf;
+}
+
+connector IguanaCall {
+	from Interface user_inf;
+	to Interface provider_inf;
+}
+
+connector IguanaExportRPC {
+	from Interface implemented_inf;
+	to Interface exported_inf;
+}
+
+connector IguanaExportCall {
+	from Interface implemented_inf;
+	to Interface exported_inf;
+}
+
+connector IguanaSharedData {
+	from DataPort fromdata;
+	to DataPort todata;
+}
+
+
+connector IguanaExportData {
+	from DataPort implemented_data;
+	to DataPort exported_data;
+}
+

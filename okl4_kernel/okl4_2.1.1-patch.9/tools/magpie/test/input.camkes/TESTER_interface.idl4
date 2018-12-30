@@ -1,0 +1,5 @@
+[uuid(42)]
+interface TESTER {
+    int ping(in char* src, in char* dest);
+    char pong(in int count);
+};

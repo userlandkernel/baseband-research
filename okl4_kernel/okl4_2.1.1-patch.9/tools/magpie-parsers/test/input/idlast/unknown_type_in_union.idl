@@ -1,0 +1,5 @@
+interface test {
+	union foo switch (bogus) {
+		case 1: short x;
+	};
+};

@@ -1,0 +1,6 @@
+interface test {
+     union short_optional switch (boolean) {
+       case TRUE: short value;
+     };
+     void op(in short_optional arg);
+   };

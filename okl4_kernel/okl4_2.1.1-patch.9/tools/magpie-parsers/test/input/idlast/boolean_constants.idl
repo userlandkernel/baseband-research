@@ -1,0 +1,4 @@
+interface test { 
+	const boolean yes = TRUE; 
+	const boolean no = FALSE;
+};

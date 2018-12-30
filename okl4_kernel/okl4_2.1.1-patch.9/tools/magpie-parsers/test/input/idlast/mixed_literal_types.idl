@@ -1,0 +1,3 @@
+interface test {
+    const float VALUE = 4.6 * 5;
+  };

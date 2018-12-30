@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE image SYSTEM "tools/pyelf/weaver-1.0.dtd">
+<image loader_offset="0" physical_entry="true">
+    <virtualmemory>
+         <region base="0x00000000" size="0xd0000000" />
+    </virtualmemory>
+            
+    <physicalmemory> 
+        <region base="0xa0000000" size="0x02000000" />
+    </physicalmemory> 
+            
+    <kernel file="data/eg_weave/l4kernel" />
+            
+    <rootserver file="data/eg_weave/ig_server" phys_base="0xa0130000" />
+    <program file="data/eg_weave/ig_naming" phys_base="0xa0148000" />
+</image>

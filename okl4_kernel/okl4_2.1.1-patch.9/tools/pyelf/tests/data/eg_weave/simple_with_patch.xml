@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!DOCTYPE image SYSTEM "weaver-1.0.dtd">
+<image>
+	<machine>
+		<word_size size="0x20" />
+		<virtual_memory name="virtual">
+			<region base="0x1000" size="0xcffff000" />
+		</virtual_memory>
+		<physical_memory name="physical">
+			<region base="0xa0000000" size="0x3800000" />
+		</physical_memory>
+		<page_size size="0x1000" />
+	</machine>
+	<virtual_pool name="virtual">
+		<memory base="0x1000" size="0xcffff000"/>
+	</virtual_pool>
+
+	<physical_pool name="physical">
+		<memory base="0xa0000000" size="0x3800000"/>
+	</physical_pool>
+
+	<kernel file="data/eg_weave/l4kernel">
+	</kernel>
+
+	<rootprogram file="data/eg_weave/ig_server" virtpool="virtual" physpool="physical">
+            <!-- Pick a symbol that starts like a hex number -->
+            <patch address="bss" value="0xdeadbeef" bytes="4" />
+            <patch address="0x00106510" value="0xdeadbeef" bytes="4" />
+            <!-- Kernel addresses (fxxxxxxxx) are longs to python, and so get an L suffix in the string-->
+            <patch address="0x00106510L" value="0xdeadbeef" bytes="4" />
+	</rootprogram>
+</image>

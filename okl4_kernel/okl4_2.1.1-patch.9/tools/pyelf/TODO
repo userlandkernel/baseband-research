@@ -1,0 +1,42 @@
+1/ Handle merging of symbol tables.
+
+ Currently during the merge any loadable segments, and
+ their related section header information are merged into the
+ new ELF file. It is also possible we would want to have all 
+ the symbols available in the ELF file too. The steps to achieve
+ this are:
+   a/ Add support for parsing symbol tables, but subclassing 
+      ElfSection
+   b/ Update weaver.merge:merge_elf_files() functions to merge
+      all symbol information into the new elf file.
+
+ It is not clear at this stage of whether multiple symbol table
+ should go into the final ELF file, or rather merge all symbol
+ data into one symbol section.
+
+ Another design point to consider is if the symbol names are 
+ manged to be unique by prefixing a name to each symbol.
+
+ It is not clear how symbols would work if some of the ELF files
+ had overlapping virtual memory areas. Although this isn't too 
+ much of a problem in the current setup.
+
+
+2/ Handle merging of DWARF debug data.
+
+ Currently there isn't support for merging DWARF debugging information
+ into the final ELF file. This should be easy to add following the 
+ process described for handling symbol tables.
+
+3/ Add bootinfo. (Or more advanced alternative.)
+
+ Currently this doesn't add a bootinfo section. This isn't too
+ difficult to do, and there is some commented out, untested code for
+ this in the source tree, that should provide the basic overview of
+ how it is done.
+
+ I am currently exploring an alternative that would provide a more
+ effecient way for bootstrapping the system that would do away with
+ the need for an init process entirely, by having the startup objects
+ specified in the spec file. This would then be encoded in binary and
+ Iguana can create them at startup.

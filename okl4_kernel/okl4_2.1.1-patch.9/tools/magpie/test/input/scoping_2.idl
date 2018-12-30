@@ -1,0 +1,7 @@
+module A { 
+	enum testenum{item1, item2};
+};
+
+interface B { 
+	void op(in A::testenum arg); 
+};

@@ -1,0 +1,106 @@
+include "FS_interface.idl4";
+include "FSUTIL_interface.idl4";
+include "TESTER_interface.idl4";
+include "BlockDevice_interface.idl4";
+
+import "std_connector.camkes";
+
+
+component FATFS {
+	provides FS fs;
+	provides TESTER test;
+	uses BlockDevice dev;
+	dataport Buf buf[];
+	dataport Buf devbuf;
+}
+
+component FSUtil {
+	provides FSUtil util;
+	uses FS fs;
+	uses TESTER test;
+	dataport Buf buf;
+}
+
+component FAT {
+	provides FS fs;
+	dataport Buf buf[];
+	provides FSUtil util;
+	uses BlockDevice dev;
+	dataport Buf devbuf;
+
+	composition {
+		component FATFS fatfs;
+		component FSUtil util;
+
+		connection IguanaExportRPC fatExportRPC (from fatfs.fs, to fs);
+		connection IguanaExportData fatd (from fatfs.buf, to buf);
+
+		connection IguanaExportRPC utilExport (from util.util, to util);
+
+		connection IguanaExportRPC devExport (from fatfs.dev, to dev);
+		connection IguanaExportData devd (from fatfs.devbuf, to devbuf);
+
+		connection IguanaRPC fsutil (from util.fs, to fatfs.fs);
+		connection IguanaRPC testerutil (from util.test, to fatfs.test);
+		connection IguanaSharedData fsutild (from util.buf, to fatfs.buf);
+	}
+
+}
+
+component BootinfoBlockDevice {
+	provides BlockDevice dev;
+	dataport Buf buf;
+
+	attribute string image_name;
+}
+
+component Client1 {
+	active;
+	uses FS fs;
+	uses FSUtil util;
+	dataport Buf buf;
+}
+
+component Client2 {
+	active;
+	uses FS fs;
+	dataport Buf buf;
+}
+
+
+assembly {
+	composition {
+		component FAT fat;
+		component BootinfoBlockDevice dev;
+		component Client1 c1;
+		component Client2 c2;
+		
+	
+		connection IguanaRPC c1fat (from c1.fs, to fat.fs);
+		connection IguanaRPC c1util (from c1.util, to fat.util);
+		connection IguanaSharedData c1buf (from c1.buf, to fat.buf);
+	
+		connection IguanaRPC c2fat (from c2.fs, to fat.fs);
+		connection IguanaSharedData c2buf (from c2.buf, to fat.buf);
+
+		connection IguanaRPC fatdev (from fat.dev, to dev.dev);
+		connection IguanaSharedData fatdevbuf (from fat.devbuf, to dev.buf); 
+	};
+	
+	/*
+	configuration {
+		dev.image_name = "fatfs.image";
+		fat.buf.size = 2;
+
+		capabilityList {
+				c2.fs.create = -;
+				c2.fs.del = -;
+				c2.fs.mkdir = -;
+				c2.fs.write* = -;
+				c2.fs.ren = -;
+				c2.fs.setattribs = -;
+		};
+
+	};
+	*/
+}

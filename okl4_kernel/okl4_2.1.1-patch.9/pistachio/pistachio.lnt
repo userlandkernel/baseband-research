@@ -1,0 +1,100 @@
+/* We want pistachio to pick up warnings as well as errors */
+-w2
+-u
+
+/*
+ * Pistachio has supports a wide array of intersting printf
+ * flags, so we specify them here 
+ */
+-printf_code(t,tcb_t *)
+-printf_code(wt,tcb_t *)
+-printf_code(w.wt,tcb_t *)
+
+-printf_code(T,word_t)
+-printf_code(wT,word_t)
+-printf_code(w.wT,word_t)
+
+-printf_code(m,s64_t)
+
+-printf_code(wx,word_t)
+-printf_code(ws,char *)
+
+-printf_code(S,space_t *)
+
+/* We enable anonymous structures and unions when processing pistachio */
++fas
++fan
+
+-d__attribute__()=                      // Ignore GNU attribute extension
+
+/*****************************************************************************
+ * Lint Level 1 exclusions
+ ****************************************************************************/
+// We allow bitfields on non integer size. This idiom is used extensively through
+// the code base at the moment. In the future this might change, however that will
+// be quite an extensive change.
+-e46                                 
+
+// The stack bitmap can sometimes be zero-size, which we are happy with 
+-esym(85,stack_bitmap)
+
+/*****************************************************************************
+ * Lint Level 2 exclusions
+ ****************************************************************************/
+
+
+/* 
+These are the warnings that are thrown when we move from -w1 -> -w2, we 
+manually exclude all to start with, and then work through them one at a time
+to help resolve them all. 
+*/
+
+
+// The macros we use to define bitfields set off a lint warning about their
+// arguments not being parenthesized within the macro definition.  Lint is
+// fooled into thinking that these macros expand into expressions, not
+// declarations, and this warning is inappropriate in this case.
+-esym(665,BITFIELD2,BITFIELD3,BITFIELD4,BITFIELD5,BITFIELD7)
+-esym(665,L4_BITFIELD2,L4_BITFIELD3,L4_BITFIELD4,L4_BITFIELD5,L4_BITFIELD7)
+
+// FlexeLint is unable to understand the operator+ and operator- 
+// used in linear_ptab.h, so we ignore it here.
+-esym(1023,operator+)
+-esym(1023,operator-)
+
+/* We are happy with these classes not having any data. */
+-esym(1502,spinlock_t,timer_t)
+
+// These are zero-size arrays on purpose.
+-esym(1501,kernel_descriptor_t::version_parts,tcb_t::kernel_stack)
+
+// Ignoring the return value of these functions is okay.
+-esym(534,printf,memset,memcpy)
+
+// *Temporary* exclusions to suppress unresolved errors while resolving
+// others.
+-esym(1511,generic_thread_resources_t::*,generic_periodic_timer_t::*)
+
+-esym(644,r_tpg,r_tnum,r_pg,r_num,sub_addr,sub_pg)
+
+// These symbols are used in functions that only touch them in asm blocks
+-esym(550,stack_top)    // It is accessed in a macro that expands to an asm block
+
+// Suppress "repeated include" warnings. We constinently use repeated includes
+// and avoid problems by using include guards.
+-e537                                
+
+// This is perfectly legal in ANSI C, so we allow it
+-e545
+
+-e557   /* printf */
+-e558   /* printf */
+-e559   /* printf */
+-e560   /* printf */
+-e578   /* hiding */
+-e606   /* printf */
+-e626   /* printf */
+
+/*****************************************************************************
+ * Lint Level 3 exclusions
+ ****************************************************************************/

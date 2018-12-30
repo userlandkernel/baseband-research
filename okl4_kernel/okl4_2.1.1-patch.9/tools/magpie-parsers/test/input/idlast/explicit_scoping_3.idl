@@ -1,0 +1,5 @@
+typedef long number; 
+
+interface A { 
+	void op(in ::number value);
+};

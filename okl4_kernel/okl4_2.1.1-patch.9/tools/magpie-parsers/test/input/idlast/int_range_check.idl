@@ -1,0 +1,3 @@
+  interface test {
+    const unsigned short VALUE = -1;
+  };

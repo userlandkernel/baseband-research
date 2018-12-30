@@ -1,0 +1,11 @@
+ MagpieAST  (0, ?:?)
+  type test  (1, test/input/idlast/interface_self_ref.idl:1)
+   (meta_type) = ['interface']
+   function clone  (2, test/input/idlast/interface_self_ref.idl:2)
+    return_type  (3, test/input/idlast/interface_self_ref.idl:2)
+     target  (4, <builtin>:?)
+      type void (backref)
+    parameter c  (3, test/input/idlast/interface_self_ref.idl:2)
+     (direction) = ['out']
+     target  (4, test/input/idlast/interface_self_ref.idl:1)
+      type test (backref)

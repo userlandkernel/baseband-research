@@ -1,0 +1,9 @@
+cpu: arm920t
+mach: s3c2410x
+# pxa_lubbock is the only xscale 'machine' definition
+# listed in in sim/arm/skyeye_options.c:85
+
+mem_bank: map=M, type=RW, addr=0x30000000, size=0x07FFFFFF
+mem_bank: map=I, type=RW, addr=0x40000000, size=0x4BFFFFFF
+
+log: logon=1, logfile=/tmp/sk1.log, start=0, end=20000000000

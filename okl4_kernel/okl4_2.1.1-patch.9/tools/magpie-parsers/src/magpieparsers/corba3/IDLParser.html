@@ -1,0 +1,1079 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD>
+<TITLE>Grammar idl.g</TITLE>
+</HEAD>
+<BODY>
+<table summary="" border="1" cellpadding="5">
+<tr>
+<td>
+<font size="+2">Grammar IDLParser</font><br>
+<a href="http://www.ANTLR.org">ANTLR</a>-generated HTML file from idl.g
+<p>
+Terence Parr, <a href="http://www.magelang.com">MageLang Institute</a>
+<br>ANTLR Version 2.7.5 (20050403); 1989-2005
+</td>
+</tr>
+</table>
+<PRE>
+
+Definition of parser IDLParser, which is a subclass of LLkParser.
+
+
+<a name="specification">specification</a>
+	:	( <a href="IDLParser.html#import_dcl">import_dcl</a> )* ( <a href="IDLParser.html#decorated_definition">decorated_definition</a> )+ 
+	;
+
+
+<a name="import_dcl">import_dcl</a>
+	:	&quot;import&quot; 
+		(	<a href="IDLParser.html#anglequoted_scope">anglequoted_scope</a> 
+		|	<a href="IDLParser.html#imported_scope">imported_scope</a> 
+		) 
+		SEMI 
+	;
+
+
+<a name="decorated_definition">decorated_definition</a>
+	:	( ( <a href="IDLParser.html#decorator">decorator</a> )* <a href="IDLParser.html#definition">definition</a> ) 
+	;
+
+
+<a name="decorator">decorator</a>
+	:	( LBRACK ( <a href="IDLParser.html#decorator_element">decorator_element</a> ) ( COMMA <a href="IDLParser.html#decorator_element">decorator_element</a> )* RBRACK ) 
+	;
+
+
+<a name="definition">definition</a>
+	:	(	<a href="IDLParser.html#type_dcl">type_dcl</a> SEMI 
+		|	<a href="IDLParser.html#const_dcl">const_dcl</a> SEMI 
+		|	<a href="IDLParser.html#except_dcl">except_dcl</a> SEMI 
+		|	<a href="IDLParser.html#interf">interf</a> SEMI 
+		|	<a href="IDLParser.html#module">module</a> SEMI 
+		|	<a href="IDLParser.html#value">value</a> SEMI 
+		|	<a href="IDLParser.html#type_id_dcl">type_id_dcl</a> SEMI 
+		|	<a href="IDLParser.html#type_prefix_dcl">type_prefix_dcl</a> SEMI 
+		|	<a href="IDLParser.html#event">event</a> SEMI 
+		|	<a href="IDLParser.html#component">component</a> SEMI 
+		|	<a href="IDLParser.html#home_dcl">home_dcl</a> SEMI 
+		) 
+	;
+
+
+<a name="type_dcl">type_dcl</a>
+	:	&quot;typedef&quot; <a href="IDLParser.html#type_declarator">type_declarator</a> 
+	|	<a href="IDLParser.html#struct_type">struct_type</a> 
+	|	<a href="IDLParser.html#union_type">union_type</a> 
+	|	<a href="IDLParser.html#enum_type">enum_type</a> 
+	|	&quot;native&quot; <a href="IDLParser.html#simple_declarator">simple_declarator</a> 
+	|	<a href="IDLParser.html#constr_forward_decl">constr_forward_decl</a> 
+	;
+
+
+<a name="const_dcl">const_dcl</a>
+	:	&quot;const&quot; <a href="IDLParser.html#const_type">const_type</a> <a href="IDLParser.html#identifier">identifier</a> ASSIGN <a href="IDLParser.html#const_exp">const_exp</a> 
+	;
+
+
+<a name="except_dcl">except_dcl</a>
+	:	&quot;exception&quot; <a href="IDLParser.html#identifier">identifier</a> LCURLY <a href="IDLParser.html#opt_member_list">opt_member_list</a> RCURLY 
+	;
+
+
+<a name="interf">interf</a>
+	:	(	&quot;abstract&quot; 
+		|	&quot;local&quot; 
+		|	
+		) 
+		&quot;interface&quot; <a href="IDLParser.html#identifier">identifier</a> 
+		(	<a href="IDLParser.html#interface_dcl">interface_dcl</a> 
+		|	
+		) 
+	;
+
+
+<a name="module">module</a>
+	:	&quot;module&quot; <a href="IDLParser.html#identifier">identifier</a> LCURLY <a href="IDLParser.html#definition_list">definition_list</a> RCURLY 
+	;
+
+
+<a name="value">value</a>
+	:	(	<a href="IDLParser.html#value_dcl">value_dcl</a> 
+		|	<a href="IDLParser.html#value_abs_dcl">value_abs_dcl</a> 
+		|	<a href="IDLParser.html#value_box_dcl">value_box_dcl</a> 
+		|	<a href="IDLParser.html#value_custom_dcl">value_custom_dcl</a> 
+		|	<a href="IDLParser.html#value_forward_dcl">value_forward_dcl</a> 
+		) 
+	;
+
+
+<a name="type_id_dcl">type_id_dcl</a>
+	:	&quot;typeid&quot; <a href="IDLParser.html#scoped_name">scoped_name</a> <a href="IDLParser.html#string_literal">string_literal</a> 
+	;
+
+
+<a name="type_prefix_dcl">type_prefix_dcl</a>
+	:	&quot;typeprefix&quot; <a href="IDLParser.html#scoped_name">scoped_name</a> <a href="IDLParser.html#string_literal">string_literal</a> 
+	;
+
+
+<a name="event">event</a>
+	:	(	<a href="IDLParser.html#event_abs">event_abs</a> 
+		|	<a href="IDLParser.html#event_custom">event_custom</a> 
+		|	<a href="IDLParser.html#event_dcl">event_dcl</a> 
+		) 
+	;
+
+
+<a name="component">component</a>
+	:	&quot;component&quot; <a href="IDLParser.html#identifier">identifier</a> 
+		(	<a href="IDLParser.html#component_dcl">component_dcl</a> 
+		|	
+		) 
+	;
+
+
+<a name="home_dcl">home_dcl</a>
+	:	<a href="IDLParser.html#home_header">home_header</a> <a href="IDLParser.html#home_body">home_body</a> 
+	;
+
+
+<a name="decorator_element">decorator_element</a>
+	:	( <a href="IDLParser.html#identifier">identifier</a> 
+			(	LPAREN 
+				(	<a href="IDLParser.html#expr_list">expr_list</a> 
+				|	
+				) 
+				RPAREN 
+			|	
+			) ) 
+	;
+
+
+<a name="identifier">identifier</a>
+	:	IDENT 
+	;
+
+
+<a name="expr_list">expr_list</a>
+	:	( ( <a href="IDLParser.html#const_exp">const_exp</a> ) ( COMMA ( <a href="IDLParser.html#const_exp">const_exp</a> ) )* ) 
+	;
+
+
+<a name="const_exp">const_exp</a>
+	:	<a href="IDLParser.html#or_expr">or_expr</a> 
+	;
+
+
+<a name="definition_list">definition_list</a>
+	:	( <a href="IDLParser.html#decorated_definition">decorated_definition</a> )+ 
+	;
+
+
+<a name="interface_dcl">interface_dcl</a>
+	:	<a href="IDLParser.html#interface_header">interface_header</a> LCURLY <a href="IDLParser.html#interface_body">interface_body</a> RCURLY 
+	;
+
+
+<a name="interface_header">interface_header</a>
+	:	(	<a href="IDLParser.html#interface_inheritance_spec">interface_inheritance_spec</a> 
+		|	
+		) 
+	;
+
+
+<a name="interface_body">interface_body</a>
+	:	( <a href="IDLParser.html#export">export</a> )* 
+	;
+
+
+<a name="interface_inheritance_spec">interface_inheritance_spec</a>
+	:	COLON <a href="IDLParser.html#scoped_name_list">scoped_name_list</a> 
+	;
+
+
+<a name="export">export</a>
+	:	(	<a href="IDLParser.html#type_dcl">type_dcl</a> SEMI 
+		|	<a href="IDLParser.html#const_dcl">const_dcl</a> SEMI 
+		|	<a href="IDLParser.html#except_dcl">except_dcl</a> SEMI 
+		|	<a href="IDLParser.html#attr_dcl">attr_dcl</a> SEMI 
+		|	<a href="IDLParser.html#op_dcl">op_dcl</a> SEMI 
+		|	<a href="IDLParser.html#type_id_dcl">type_id_dcl</a> SEMI 
+		|	<a href="IDLParser.html#type_prefix_dcl">type_prefix_dcl</a> SEMI 
+		) 
+	;
+
+
+<a name="attr_dcl">attr_dcl</a>
+	:	<a href="IDLParser.html#readonly_attr_spec">readonly_attr_spec</a> 
+	|	<a href="IDLParser.html#attr_spec">attr_spec</a> 
+	;
+
+
+<a name="op_dcl">op_dcl</a>
+	:	(	<a href="IDLParser.html#decorator">decorator</a> 
+		|	
+		) 
+		(	<a href="IDLParser.html#op_attribute">op_attribute</a> 
+		|	
+		) 
+		<a href="IDLParser.html#op_type_spec">op_type_spec</a> IDENT <a href="IDLParser.html#parameter_dcls">parameter_dcls</a> 
+		(	<a href="IDLParser.html#raises_expr">raises_expr</a> 
+		|	
+		) 
+		(	<a href="IDLParser.html#context_expr">context_expr</a> 
+		|	
+		) 
+	;
+
+
+<a name="scoped_name_list">scoped_name_list</a>
+	:	<a href="IDLParser.html#scoped_name">scoped_name</a> ( COMMA <a href="IDLParser.html#scoped_name">scoped_name</a> )* 
+	;
+
+
+<a name="interface_name">interface_name</a>
+	:	<a href="IDLParser.html#scoped_name">scoped_name</a> 
+	;
+
+
+<a name="scoped_name">scoped_name</a>
+	:	(	SCOPEOP 
+		|	
+		) 
+		IDENT ( SCOPEOP <a href="IDLParser.html#identifier">identifier</a> )* 
+	;
+
+
+<a name="value_dcl">value_dcl</a>
+	:	<a href="IDLParser.html#value_header">value_header</a> LCURLY ( <a href="IDLParser.html#value_element">value_element</a> )* RCURLY 
+	;
+
+
+<a name="value_abs_dcl">value_abs_dcl</a>
+	:	&quot;abstract&quot; &quot;valuetype&quot; <a href="IDLParser.html#identifier">identifier</a> 
+		(	<a href="IDLParser.html#value_abs_full_dcl">value_abs_full_dcl</a> 
+		|	
+		) 
+	;
+
+
+<a name="value_box_dcl">value_box_dcl</a>
+	:	&quot;valuetype&quot; <a href="IDLParser.html#identifier">identifier</a> <a href="IDLParser.html#type_spec">type_spec</a> 
+	;
+
+
+<a name="value_custom_dcl">value_custom_dcl</a>
+	:	&quot;custom&quot; <a href="IDLParser.html#value_dcl">value_dcl</a> 
+	;
+
+
+<a name="value_forward_dcl">value_forward_dcl</a>
+	:	&quot;valuetype&quot; <a href="IDLParser.html#identifier">identifier</a> 
+	;
+
+
+<a name="type_spec">type_spec</a>
+	:	<a href="IDLParser.html#simple_type_spec">simple_type_spec</a> 
+	|	<a href="IDLParser.html#constr_type_spec">constr_type_spec</a> 
+	;
+
+
+<a name="value_abs_full_dcl">value_abs_full_dcl</a>
+	:	<a href="IDLParser.html#value_inheritance_spec">value_inheritance_spec</a> LCURLY ( <a href="IDLParser.html#export">export</a> )* RCURLY 
+	;
+
+
+<a name="value_inheritance_spec">value_inheritance_spec</a>
+	:	(	<a href="IDLParser.html#value_value_inheritance_spec">value_value_inheritance_spec</a> 
+		|	
+		) 
+		(	<a href="IDLParser.html#value_interface_inheritance_spec">value_interface_inheritance_spec</a> 
+		|	
+		) 
+	;
+
+
+<a name="value_header">value_header</a>
+	:	&quot;valuetype&quot; <a href="IDLParser.html#identifier">identifier</a> <a href="IDLParser.html#value_inheritance_spec">value_inheritance_spec</a> 
+	;
+
+
+<a name="value_element">value_element</a>
+	:	(	<a href="IDLParser.html#export">export</a> 
+		|	<a href="IDLParser.html#state_member">state_member</a> 
+		|	<a href="IDLParser.html#init_dcl">init_dcl</a> 
+		) 
+	;
+
+
+<a name="value_value_inheritance_spec">value_value_inheritance_spec</a>
+	:	COLON 
+		(	&quot;truncatable&quot; 
+		|	
+		) 
+		<a href="IDLParser.html#value_name">value_name</a> ( COMMA <a href="IDLParser.html#value_name">value_name</a> )* 
+	;
+
+
+<a name="value_interface_inheritance_spec">value_interface_inheritance_spec</a>
+	:	&quot;supports&quot; <a href="IDLParser.html#interface_name">interface_name</a> ( COMMA <a href="IDLParser.html#interface_name">interface_name</a> )* 
+	;
+
+
+<a name="value_name">value_name</a>
+	:	<a href="IDLParser.html#scoped_name">scoped_name</a> 
+	;
+
+
+<a name="state_member">state_member</a>
+	:	(	&quot;public&quot; 
+		|	&quot;private&quot; 
+		) 
+		<a href="IDLParser.html#type_spec">type_spec</a> <a href="IDLParser.html#declarators">declarators</a> SEMI 
+	;
+
+
+<a name="init_dcl">init_dcl</a>
+	:	&quot;factory&quot; <a href="IDLParser.html#identifier">identifier</a> LPAREN 
+		(	<a href="IDLParser.html#init_param_decls">init_param_decls</a> 
+		|	
+		) 
+		RPAREN 
+		(	<a href="IDLParser.html#raises_expr">raises_expr</a> 
+		|	
+		) 
+		SEMI 
+	;
+
+
+<a name="declarators">declarators</a>
+	:	<a href="IDLParser.html#declarator">declarator</a> ( COMMA <a href="IDLParser.html#declarator">declarator</a> )* 
+	;
+
+
+<a name="init_param_decls">init_param_decls</a>
+	:	<a href="IDLParser.html#init_param_decl">init_param_decl</a> ( COMMA <a href="IDLParser.html#init_param_decl">init_param_decl</a> )* 
+	;
+
+
+<a name="raises_expr">raises_expr</a>
+	:	&quot;raises&quot; LPAREN <a href="IDLParser.html#scoped_name_list">scoped_name_list</a> RPAREN 
+	;
+
+
+<a name="init_param_decl">init_param_decl</a>
+	:	<a href="IDLParser.html#init_param_attribute">init_param_attribute</a> <a href="IDLParser.html#param_type_spec">param_type_spec</a> <a href="IDLParser.html#simple_declarator">simple_declarator</a> 
+	;
+
+
+<a name="init_param_attribute">init_param_attribute</a>
+	:	&quot;in&quot; 
+	;
+
+
+<a name="param_type_spec">param_type_spec</a>
+	:	<a href="IDLParser.html#base_type_spec">base_type_spec</a> 
+	|	<a href="IDLParser.html#string_type">string_type</a> 
+	|	<a href="IDLParser.html#wide_string_type">wide_string_type</a> 
+	|	<a href="IDLParser.html#scoped_name">scoped_name</a> 
+	;
+
+
+<a name="simple_declarator">simple_declarator</a>
+	:	<a href="IDLParser.html#identifier">identifier</a> 
+	;
+
+
+<a name="const_type">const_type</a>
+	:	<a href="IDLParser.html#integer_type">integer_type</a> 
+	|	<a href="IDLParser.html#char_type">char_type</a> 
+	|	<a href="IDLParser.html#wide_char_type">wide_char_type</a> 
+	|	<a href="IDLParser.html#boolean_type">boolean_type</a> 
+	|	<a href="IDLParser.html#floating_pt_type">floating_pt_type</a> 
+	|	<a href="IDLParser.html#string_type">string_type</a> 
+	|	<a href="IDLParser.html#wide_string_type">wide_string_type</a> 
+	|	<a href="IDLParser.html#fixed_pt_const_type">fixed_pt_const_type</a> 
+	|	<a href="IDLParser.html#scoped_name">scoped_name</a> 
+	|	<a href="IDLParser.html#octet_type">octet_type</a> 
+	;
+
+
+<a name="integer_type">integer_type</a>
+	:	<a href="IDLParser.html#signed_int">signed_int</a> 
+	|	<a href="IDLParser.html#unsigned_int">unsigned_int</a> 
+	;
+
+
+<a name="char_type">char_type</a>
+	:	&quot;char&quot; 
+	;
+
+
+<a name="wide_char_type">wide_char_type</a>
+	:	&quot;wchar&quot; 
+	;
+
+
+<a name="boolean_type">boolean_type</a>
+	:	&quot;boolean&quot; 
+	;
+
+
+<a name="floating_pt_type">floating_pt_type</a>
+	:	&quot;float&quot; 
+	|	&quot;double&quot; 
+	|	&quot;long&quot; &quot;double&quot; 
+	;
+
+
+<a name="string_type">string_type</a>
+	:	&quot;string&quot; 
+		(	LT <a href="IDLParser.html#positive_int_const">positive_int_const</a> GT 
+		|	
+		) 
+	;
+
+
+<a name="wide_string_type">wide_string_type</a>
+	:	&quot;wstring&quot; 
+		(	LT <a href="IDLParser.html#positive_int_const">positive_int_const</a> GT 
+		|	
+		) 
+	;
+
+
+<a name="fixed_pt_const_type">fixed_pt_const_type</a>
+	:	&quot;fixed&quot; 
+	;
+
+
+<a name="octet_type">octet_type</a>
+	:	&quot;octet&quot; 
+	;
+
+
+<a name="or_expr">or_expr</a>
+	:	<a href="IDLParser.html#xor_expr">xor_expr</a> ( OR <a href="IDLParser.html#xor_expr">xor_expr</a> )* 
+	;
+
+
+<a name="xor_expr">xor_expr</a>
+	:	<a href="IDLParser.html#and_expr">and_expr</a> ( XOR <a href="IDLParser.html#and_expr">and_expr</a> )* 
+	;
+
+
+<a name="and_expr">and_expr</a>
+	:	<a href="IDLParser.html#shift_expr">shift_expr</a> ( AND <a href="IDLParser.html#shift_expr">shift_expr</a> )* 
+	;
+
+
+<a name="shift_expr">shift_expr</a>
+	:	<a href="IDLParser.html#add_expr">add_expr</a> ( (	LSHIFT 
+			|	RSHIFT 
+			) 
+			<a href="IDLParser.html#add_expr">add_expr</a> )* 
+	;
+
+
+<a name="add_expr">add_expr</a>
+	:	<a href="IDLParser.html#mult_expr">mult_expr</a> ( (	PLUS 
+			|	MINUS 
+			) 
+			<a href="IDLParser.html#mult_expr">mult_expr</a> )* 
+	;
+
+
+<a name="mult_expr">mult_expr</a>
+	:	<a href="IDLParser.html#unary_expr">unary_expr</a> ( (	STAR 
+			|	DIV 
+			|	MOD 
+			) 
+			<a href="IDLParser.html#unary_expr">unary_expr</a> )* 
+	;
+
+
+<a name="unary_expr">unary_expr</a>
+	:	(	MINUS 
+		|	PLUS 
+		|	TILDE 
+		) 
+		<a href="IDLParser.html#primary_expr">primary_expr</a> 
+	|	<a href="IDLParser.html#primary_expr">primary_expr</a> 
+	;
+
+
+<a name="primary_expr">primary_expr</a>
+	:	<a href="IDLParser.html#scoped_name">scoped_name</a> 
+	|	<a href="IDLParser.html#literal">literal</a> 
+	|	LPAREN <a href="IDLParser.html#const_exp">const_exp</a> RPAREN 
+	;
+
+
+<a name="literal">literal</a>
+	:	<a href="IDLParser.html#integer_literal">integer_literal</a> 
+	|	<a href="IDLParser.html#string_literal">string_literal</a> 
+	|	<a href="IDLParser.html#wide_string_literal">wide_string_literal</a> 
+	|	<a href="IDLParser.html#character_literal">character_literal</a> 
+	|	<a href="IDLParser.html#wide_character_literal">wide_character_literal</a> 
+	|	<a href="IDLParser.html#fixed_pt_literal">fixed_pt_literal</a> 
+	|	<a href="IDLParser.html#floating_pt_literal">floating_pt_literal</a> 
+	|	<a href="IDLParser.html#boolean_literal">boolean_literal</a> 
+	;
+
+
+<a name="integer_literal">integer_literal</a>
+	:	INT 
+	|	OCTAL 
+	|	HEX 
+	;
+
+
+<a name="string_literal">string_literal</a>
+	:	( STRING_LITERAL )+ 
+	;
+
+
+<a name="wide_string_literal">wide_string_literal</a>
+	:	( WIDE_STRING_LITERAL )+ 
+	;
+
+
+<a name="character_literal">character_literal</a>
+	:	CHAR_LITERAL 
+	;
+
+
+<a name="wide_character_literal">wide_character_literal</a>
+	:	WIDE_CHAR_LITERAL 
+	;
+
+
+<a name="fixed_pt_literal">fixed_pt_literal</a>
+	:	FIXED 
+	;
+
+
+<a name="floating_pt_literal">floating_pt_literal</a>
+	:	FLOAT 
+	;
+
+
+<a name="boolean_literal">boolean_literal</a>
+	:	&quot;TRUE&quot; 
+	|	&quot;FALSE&quot; 
+	;
+
+
+<a name="positive_int_const">positive_int_const</a>
+	:	<a href="IDLParser.html#const_exp">const_exp</a> 
+	;
+
+
+<a name="type_declarator">type_declarator</a>
+	:	<a href="IDLParser.html#type_spec">type_spec</a> <a href="IDLParser.html#declarators">declarators</a> 
+	;
+
+
+<a name="struct_type">struct_type</a>
+	:	&quot;struct&quot; <a href="IDLParser.html#identifier">identifier</a> LCURLY <a href="IDLParser.html#member_list">member_list</a> RCURLY 
+	;
+
+
+<a name="union_type">union_type</a>
+	:	&quot;union&quot; <a href="IDLParser.html#identifier">identifier</a> &quot;switch&quot; LPAREN <a href="IDLParser.html#switch_type_spec">switch_type_spec</a> RPAREN LCURLY <a href="IDLParser.html#switch_body">switch_body</a> RCURLY 
+	;
+
+
+<a name="enum_type">enum_type</a>
+	:	&quot;enum&quot; <a href="IDLParser.html#identifier">identifier</a> LCURLY <a href="IDLParser.html#enumerator_list">enumerator_list</a> RCURLY 
+	;
+
+
+<a name="constr_forward_decl">constr_forward_decl</a>
+	:	&quot;struct&quot; <a href="IDLParser.html#identifier">identifier</a> 
+	|	&quot;union&quot; <a href="IDLParser.html#identifier">identifier</a> 
+	;
+
+
+<a name="simple_type_spec">simple_type_spec</a>
+	:	<a href="IDLParser.html#base_type_spec">base_type_spec</a> 
+	|	<a href="IDLParser.html#template_type_spec">template_type_spec</a> 
+	|	<a href="IDLParser.html#scoped_name">scoped_name</a> 
+	;
+
+
+<a name="constr_type_spec">constr_type_spec</a>
+	:	<a href="IDLParser.html#struct_type">struct_type</a> 
+	|	<a href="IDLParser.html#union_type">union_type</a> 
+	|	<a href="IDLParser.html#enum_type">enum_type</a> 
+	;
+
+
+<a name="base_type_spec">base_type_spec</a>
+	:	<a href="IDLParser.html#floating_pt_type">floating_pt_type</a> 
+	|	<a href="IDLParser.html#integer_type">integer_type</a> 
+	|	<a href="IDLParser.html#char_type">char_type</a> 
+	|	<a href="IDLParser.html#wide_char_type">wide_char_type</a> 
+	|	<a href="IDLParser.html#boolean_type">boolean_type</a> 
+	|	<a href="IDLParser.html#octet_type">octet_type</a> 
+	|	<a href="IDLParser.html#any_type">any_type</a> 
+	|	<a href="IDLParser.html#object_type">object_type</a> 
+	|	<a href="IDLParser.html#value_base_type">value_base_type</a> 
+	;
+
+
+<a name="template_type_spec">template_type_spec</a>
+	:	<a href="IDLParser.html#sequence_type">sequence_type</a> 
+	|	<a href="IDLParser.html#string_type">string_type</a> 
+	|	<a href="IDLParser.html#wide_string_type">wide_string_type</a> 
+	|	<a href="IDLParser.html#fixed_pt_type">fixed_pt_type</a> 
+	;
+
+
+<a name="any_type">any_type</a>
+	:	&quot;any&quot; 
+	;
+
+
+<a name="object_type">object_type</a>
+	:	&quot;Object&quot; 
+	;
+
+
+<a name="value_base_type">value_base_type</a>
+	:	&quot;ValueBase&quot; 
+	;
+
+
+<a name="sequence_type">sequence_type</a>
+	:	&quot;sequence&quot; LT <a href="IDLParser.html#simple_type_spec">simple_type_spec</a> <a href="IDLParser.html#opt_pos_int">opt_pos_int</a> GT 
+	;
+
+
+<a name="fixed_pt_type">fixed_pt_type</a>
+	:	&quot;fixed&quot; LT <a href="IDLParser.html#positive_int_const">positive_int_const</a> COMMA <a href="IDLParser.html#positive_int_const">positive_int_const</a> GT 
+	;
+
+
+<a name="declarator">declarator</a>
+	:	<a href="IDLParser.html#simple_declarator">simple_declarator</a> 
+	|	<a href="IDLParser.html#complex_declarator">complex_declarator</a> 
+	;
+
+
+<a name="complex_declarator">complex_declarator</a>
+	:	<a href="IDLParser.html#array_declarator">array_declarator</a> 
+	;
+
+
+<a name="array_declarator">array_declarator</a>
+	:	IDENT ( <a href="IDLParser.html#fixed_array_size">fixed_array_size</a> )+ 
+	;
+
+
+<a name="signed_int">signed_int</a>
+	:	<a href="IDLParser.html#signed_short_int">signed_short_int</a> 
+	|	<a href="IDLParser.html#signed_long_int">signed_long_int</a> 
+	|	<a href="IDLParser.html#signed_longlong_int">signed_longlong_int</a> 
+	;
+
+
+<a name="unsigned_int">unsigned_int</a>
+	:	<a href="IDLParser.html#unsigned_short_int">unsigned_short_int</a> 
+	|	<a href="IDLParser.html#unsigned_long_int">unsigned_long_int</a> 
+	|	<a href="IDLParser.html#unsigned_longlong_int">unsigned_longlong_int</a> 
+	;
+
+
+<a name="signed_short_int">signed_short_int</a>
+	:	&quot;short&quot; 
+	;
+
+
+<a name="signed_long_int">signed_long_int</a>
+	:	&quot;long&quot; 
+	;
+
+
+<a name="signed_longlong_int">signed_longlong_int</a>
+	:	&quot;long&quot; &quot;long&quot; 
+	;
+
+
+<a name="unsigned_short_int">unsigned_short_int</a>
+	:	&quot;unsigned&quot; &quot;short&quot; 
+	;
+
+
+<a name="unsigned_long_int">unsigned_long_int</a>
+	:	&quot;unsigned&quot; &quot;long&quot; 
+	;
+
+
+<a name="unsigned_longlong_int">unsigned_longlong_int</a>
+	:	&quot;unsigned&quot; &quot;long&quot; &quot;long&quot; 
+	;
+
+
+<a name="member_list">member_list</a>
+	:	( <a href="IDLParser.html#member">member</a> )+ 
+	;
+
+
+<a name="member">member</a>
+	:	<a href="IDLParser.html#type_spec">type_spec</a> <a href="IDLParser.html#declarators">declarators</a> SEMI 
+	;
+
+
+<a name="switch_type_spec">switch_type_spec</a>
+	:	<a href="IDLParser.html#integer_type">integer_type</a> 
+	|	<a href="IDLParser.html#char_type">char_type</a> 
+	|	<a href="IDLParser.html#boolean_type">boolean_type</a> 
+	|	<a href="IDLParser.html#enum_type">enum_type</a> 
+	|	<a href="IDLParser.html#scoped_name">scoped_name</a> 
+	;
+
+
+<a name="switch_body">switch_body</a>
+	:	<a href="IDLParser.html#case_stmt_list">case_stmt_list</a> 
+	;
+
+
+<a name="case_stmt_list">case_stmt_list</a>
+	:	( <a href="IDLParser.html#case_stmt">case_stmt</a> )+ 
+	;
+
+
+<a name="case_stmt">case_stmt</a>
+	:	(	&quot;case&quot; <a href="IDLParser.html#const_exp">const_exp</a> COLON 
+		|	&quot;default&quot; COLON 
+		)+ 
+		<a href="IDLParser.html#element_spec">element_spec</a> SEMI 
+	;
+
+
+<a name="element_spec">element_spec</a>
+	:	<a href="IDLParser.html#type_spec">type_spec</a> <a href="IDLParser.html#declarator">declarator</a> 
+	;
+
+
+<a name="enumerator_list">enumerator_list</a>
+	:	<a href="IDLParser.html#enumerator">enumerator</a> ( COMMA <a href="IDLParser.html#enumerator">enumerator</a> )* 
+	;
+
+
+<a name="enumerator">enumerator</a>
+	:	<a href="IDLParser.html#identifier">identifier</a> 
+	;
+
+
+<a name="opt_pos_int">opt_pos_int</a>
+	:	(	COMMA <a href="IDLParser.html#positive_int_const">positive_int_const</a> 
+		|	
+		) 
+	;
+
+
+<a name="fixed_array_size">fixed_array_size</a>
+	:	LBRACK <a href="IDLParser.html#positive_int_const">positive_int_const</a> RBRACK 
+	;
+
+
+<a name="readonly_attr_spec">readonly_attr_spec</a>
+	:	&quot;readonly&quot; &quot;attribute&quot; <a href="IDLParser.html#param_type_spec">param_type_spec</a> <a href="IDLParser.html#readonly_attr_declarator">readonly_attr_declarator</a> 
+	;
+
+
+<a name="attr_spec">attr_spec</a>
+	:	&quot;attribute&quot; <a href="IDLParser.html#param_type_spec">param_type_spec</a> <a href="IDLParser.html#attr_declarator">attr_declarator</a> 
+	;
+
+
+<a name="opt_member_list">opt_member_list</a>
+	:	( <a href="IDLParser.html#member">member</a> )* 
+	;
+
+
+<a name="op_attribute">op_attribute</a>
+	:	&quot;oneway&quot; 
+	;
+
+
+<a name="op_type_spec">op_type_spec</a>
+	:	<a href="IDLParser.html#param_type_spec">param_type_spec</a> 
+	|	&quot;void&quot; 
+	;
+
+
+<a name="parameter_dcls">parameter_dcls</a>
+	:	LPAREN 
+		(	<a href="IDLParser.html#param_dcl_list">param_dcl_list</a> 
+		|	
+		) 
+		RPAREN 
+	;
+
+
+<a name="context_expr">context_expr</a>
+	:	&quot;context&quot; LPAREN <a href="IDLParser.html#string_literal_list">string_literal_list</a> RPAREN 
+	;
+
+
+<a name="param_dcl_list">param_dcl_list</a>
+	:	(	<a href="IDLParser.html#decorator">decorator</a> 
+		|	
+		) 
+		<a href="IDLParser.html#param_dcl">param_dcl</a> ( COMMA 
+			(	<a href="IDLParser.html#decorator">decorator</a> 
+			|	
+			) 
+			<a href="IDLParser.html#param_dcl">param_dcl</a> )* 
+	;
+
+
+<a name="param_dcl">param_dcl</a>
+	:	(	&quot;in&quot; 
+		|	&quot;out&quot; 
+		|	&quot;inout&quot; 
+		) 
+		<a href="IDLParser.html#param_type_spec">param_type_spec</a> 
+		(	<a href="IDLParser.html#allow_indirection">allow_indirection</a> 
+		|	
+		) 
+		<a href="IDLParser.html#simple_declarator">simple_declarator</a> 
+	;
+
+
+<a name="allow_indirection">allow_indirection</a>
+	:	( STAR )+ 
+	;
+
+
+<a name="string_literal_list">string_literal_list</a>
+	:	<a href="IDLParser.html#string_literal">string_literal</a> ( COMMA <a href="IDLParser.html#string_literal">string_literal</a> )* 
+	;
+
+
+<a name="anglequoted_scope">anglequoted_scope</a>
+	:	<a href="IDLParser.html#anglequoted_string_literal">anglequoted_string_literal</a> 
+	;
+
+
+<a name="imported_scope">imported_scope</a>
+	:	<a href="IDLParser.html#scoped_name">scoped_name</a> 
+	|	<a href="IDLParser.html#string_literal">string_literal</a> 
+	;
+
+
+<a name="anglequoted_string_literal">anglequoted_string_literal</a>
+	:	LT <a href="IDLParser.html#identifier">identifier</a> GT 
+	;
+
+
+<a name="readonly_attr_declarator">readonly_attr_declarator</a>
+	:	<a href="IDLParser.html#simple_declarator">simple_declarator</a> 
+		(	<a href="IDLParser.html#raises_expr">raises_expr</a> 
+		|	( COMMA <a href="IDLParser.html#simple_declarator">simple_declarator</a> )* 
+		) 
+	;
+
+
+<a name="attr_declarator">attr_declarator</a>
+	:	<a href="IDLParser.html#simple_declarator">simple_declarator</a> 
+		(	<a href="IDLParser.html#attr_raises_expr">attr_raises_expr</a> 
+		|	( COMMA <a href="IDLParser.html#simple_declarator">simple_declarator</a> )* 
+		) 
+	;
+
+
+<a name="attr_raises_expr">attr_raises_expr</a>
+	:	(	<a href="IDLParser.html#get_excep_expr">get_excep_expr</a> 
+		|	
+		) 
+		(	<a href="IDLParser.html#set_excep_expr">set_excep_expr</a> 
+		|	
+		) 
+	;
+
+
+<a name="get_excep_expr">get_excep_expr</a>
+	:	&quot;getraises&quot; <a href="IDLParser.html#exception_list">exception_list</a> 
+	;
+
+
+<a name="set_excep_expr">set_excep_expr</a>
+	:	&quot;setraises&quot; <a href="IDLParser.html#exception_list">exception_list</a> 
+	;
+
+
+<a name="exception_list">exception_list</a>
+	:	LPAREN <a href="IDLParser.html#scoped_name">scoped_name</a> ( COMMA <a href="IDLParser.html#scoped_name">scoped_name</a> )* RPAREN 
+	;
+
+
+<a name="component_dcl">component_dcl</a>
+	:	(	<a href="IDLParser.html#component_inheritance_spec">component_inheritance_spec</a> 
+		|	
+		) 
+		(	<a href="IDLParser.html#supported_interface_spec">supported_interface_spec</a> 
+		|	
+		) 
+		LCURLY <a href="IDLParser.html#component_body">component_body</a> RCURLY 
+	;
+
+
+<a name="component_inheritance_spec">component_inheritance_spec</a>
+	:	COLON <a href="IDLParser.html#scoped_name">scoped_name</a> 
+	;
+
+
+<a name="supported_interface_spec">supported_interface_spec</a>
+	:	&quot;supports&quot; <a href="IDLParser.html#scoped_name">scoped_name</a> ( COMMA <a href="IDLParser.html#scoped_name">scoped_name</a> )* 
+	;
+
+
+<a name="component_body">component_body</a>
+	:	( <a href="IDLParser.html#component_export">component_export</a> )* 
+	;
+
+
+<a name="component_export">component_export</a>
+	:	(	<a href="IDLParser.html#provides_dcl">provides_dcl</a> SEMI 
+		|	<a href="IDLParser.html#uses_dcl">uses_dcl</a> SEMI 
+		|	<a href="IDLParser.html#emits_dcl">emits_dcl</a> SEMI 
+		|	<a href="IDLParser.html#publishes_dcl">publishes_dcl</a> SEMI 
+		|	<a href="IDLParser.html#consumes_dcl">consumes_dcl</a> SEMI 
+		|	<a href="IDLParser.html#attr_dcl">attr_dcl</a> SEMI 
+		) 
+	;
+
+
+<a name="provides_dcl">provides_dcl</a>
+	:	&quot;provides&quot; <a href="IDLParser.html#interface_type">interface_type</a> <a href="IDLParser.html#identifier">identifier</a> 
+	;
+
+
+<a name="uses_dcl">uses_dcl</a>
+	:	&quot;uses&quot; 
+		(	&quot;multiple&quot; 
+		|	
+		) 
+		<a href="IDLParser.html#interface_type">interface_type</a> <a href="IDLParser.html#identifier">identifier</a> 
+	;
+
+
+<a name="emits_dcl">emits_dcl</a>
+	:	&quot;emits&quot; <a href="IDLParser.html#scoped_name">scoped_name</a> <a href="IDLParser.html#identifier">identifier</a> 
+	;
+
+
+<a name="publishes_dcl">publishes_dcl</a>
+	:	&quot;publishes&quot; <a href="IDLParser.html#scoped_name">scoped_name</a> <a href="IDLParser.html#identifier">identifier</a> 
+	;
+
+
+<a name="consumes_dcl">consumes_dcl</a>
+	:	&quot;consumes&quot; <a href="IDLParser.html#scoped_name">scoped_name</a> <a href="IDLParser.html#identifier">identifier</a> 
+	;
+
+
+<a name="interface_type">interface_type</a>
+	:	(	<a href="IDLParser.html#scoped_name">scoped_name</a> 
+		|	&quot;Object&quot; 
+		) 
+	;
+
+
+<a name="home_header">home_header</a>
+	:	&quot;home&quot; <a href="IDLParser.html#identifier">identifier</a> 
+		(	<a href="IDLParser.html#home_inheritance_spec">home_inheritance_spec</a> 
+		|	
+		) 
+		(	<a href="IDLParser.html#supported_interface_spec">supported_interface_spec</a> 
+		|	
+		) 
+		&quot;manages&quot; <a href="IDLParser.html#scoped_name">scoped_name</a> 
+		(	<a href="IDLParser.html#primary_key_spec">primary_key_spec</a> 
+		|	
+		) 
+	;
+
+
+<a name="home_body">home_body</a>
+	:	LCURLY ( <a href="IDLParser.html#home_export">home_export</a> )* RCURLY 
+	;
+
+
+<a name="home_inheritance_spec">home_inheritance_spec</a>
+	:	COLON <a href="IDLParser.html#scoped_name">scoped_name</a> 
+	;
+
+
+<a name="primary_key_spec">primary_key_spec</a>
+	:	&quot;primarykey&quot; <a href="IDLParser.html#scoped_name">scoped_name</a> 
+	;
+
+
+<a name="home_export">home_export</a>
+	:	(	<a href="IDLParser.html#export">export</a> 
+		|	<a href="IDLParser.html#factory_dcl">factory_dcl</a> SEMI 
+		|	<a href="IDLParser.html#finder_dcl">finder_dcl</a> SEMI 
+		) 
+	;
+
+
+<a name="factory_dcl">factory_dcl</a>
+	:	&quot;factory&quot; <a href="IDLParser.html#identifier">identifier</a> LPAREN <a href="IDLParser.html#init_param_decls">init_param_decls</a> RPAREN 
+		(	<a href="IDLParser.html#raises_expr">raises_expr</a> 
+		|	
+		) 
+	;
+
+
+<a name="finder_dcl">finder_dcl</a>
+	:	&quot;finder&quot; <a href="IDLParser.html#identifier">identifier</a> LPAREN <a href="IDLParser.html#init_param_decls">init_param_decls</a> RPAREN 
+		(	<a href="IDLParser.html#raises_expr">raises_expr</a> 
+		|	
+		) 
+	;
+
+
+<a name="event_abs">event_abs</a>
+	:	&quot;abstract&quot; <a href="IDLParser.html#event_header">event_header</a> 
+		(	<a href="IDLParser.html#event_abs_dcl">event_abs_dcl</a> 
+		|	
+		) 
+	;
+
+
+<a name="event_custom">event_custom</a>
+	:	&quot;custom&quot; <a href="IDLParser.html#event_header">event_header</a> <a href="IDLParser.html#event_elem_dcl">event_elem_dcl</a> 
+	;
+
+
+<a name="event_dcl">event_dcl</a>
+	:	<a href="IDLParser.html#event_header">event_header</a> 
+		(	<a href="IDLParser.html#event_elem_dcl">event_elem_dcl</a> 
+		|	
+		) 
+	;
+
+
+<a name="event_header">event_header</a>
+	:	&quot;eventtype&quot; <a href="IDLParser.html#identifier">identifier</a> 
+	;
+
+
+<a name="event_abs_dcl">event_abs_dcl</a>
+	:	<a href="IDLParser.html#value_inheritance_spec">value_inheritance_spec</a> LCURLY ( <a href="IDLParser.html#export">export</a> )* RCURLY 
+	;
+
+
+<a name="event_elem_dcl">event_elem_dcl</a>
+	:	<a href="IDLParser.html#value_inheritance_spec">value_inheritance_spec</a> LCURLY ( <a href="IDLParser.html#export">export</a> )* RCURLY 
+	;
+
+</PRE>
+</BODY>
+</HTML>

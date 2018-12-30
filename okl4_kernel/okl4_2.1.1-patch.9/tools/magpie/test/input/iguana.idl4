@@ -1,0 +1,82 @@
+/*
+ * Iguana IDL for dealing with userland
+ * eg. pagefaults, exceptions, syscalls.
+ *
+ */
+
+/* Import L4 and standard types */
+import "l4/types.h";
+import "iguana/types.h";
+import "stdint.h";
+import "stddef.h";
+
+/* FIXME: define these numbers some place sane for manageability */
+[uuid(21)]
+interface iguana_ex
+{
+	/* a pagefault (from iguana userland) */
+	[kernelmsg(idl4::pagefault)]
+	void pagefault(in uintptr_t addr, in uintptr_t ip, in uintptr_t priv,
+		       out fpage fp);
+	
+	/* FIXME: add thread exceptions */
+};
+
+[uuid(22)]
+interface iguana_pd
+{
+	/* This method is kind of magic */
+	objref_t mypd();
+
+	cap_t create_memsection(in pd_ref_t pd, in uintptr_t size, out uintptr_t base);
+	cap_t create_pd(in pd_ref_t pd);
+	cap_t create_thread(in pd_ref_t pd, out L4_ThreadId_t l4_id);
+	cap_t create_eas(in pd_ref_t pd, in L4_Fpage_t kip, in L4_Fpage_t utcb);
+	cap_t create_session(in pd_ref_t pd, in thread_ref_t client, in thread_ref_t server);
+
+	void set_callback(in pd_ref_t pd, in memsection_ref_t callback_buffer);
+
+	void delete(in pd_ref_t pd);
+};
+
+[uuid(23)]
+interface iguana_eas
+{
+	cap_t create_thread(in eas_ref_t eas, in L4_ThreadId_t start, 
+				in L4_ThreadId_t pager, in L4_ThreadId_t scheduler, 
+				in uintptr_t utcb, out L4_ThreadId_t l4_id);
+	void delete(in eas_ref_t eas);
+};
+
+[uuid(24)]
+interface iguana_thread
+{
+	/* This is another `magic' method */
+	thread_ref_t id(in L4_ThreadId_t thread);
+	L4_ThreadId_t l4id(in thread_ref_t thread);
+
+	void start(in thread_ref_t thread, in uintptr_t ip, in uintptr_t sp);
+	void delete(in thread_ref_t thread);
+};
+
+[uuid(25)]
+interface iguana_hardware
+{
+	int register_interrupt(in hw_ref_t hardware, in L4_ThreadId_t handler, in int interrupt);
+	int back_memsection(in hw_ref_t hardware, in memsection_ref_t memsection, in uintptr_t paddr, in uintptr_t attributes);
+};
+
+[uuid(26)]
+interface iguana_memsection
+{
+	int register_server(in memsection_ref_t memsection, in thread_ref_t thread);
+	memsection_ref_t lookup(in uintptr_t address, out thread_ref_t server);
+	void delete(in memsection_ref_t thread);
+};
+
+[uuid(27)]
+interface iguana_session
+{
+	void delete(in session_ref_t session);
+	void add_buffer(in session_ref_t session, in objref_t call_buf, in objref_t return_buf);
+};

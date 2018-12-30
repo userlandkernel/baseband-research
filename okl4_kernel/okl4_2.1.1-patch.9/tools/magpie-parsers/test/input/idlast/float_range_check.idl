@@ -1,0 +1,4 @@
+interface test {
+    const double VALUE1 = 1.79e308 * 2.0;
+    const double VALUE2 = 2.23e-308 / 1e20;
+  };

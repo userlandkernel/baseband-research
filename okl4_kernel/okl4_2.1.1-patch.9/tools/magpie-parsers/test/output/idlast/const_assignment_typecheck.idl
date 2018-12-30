@@ -1,0 +1,2 @@
+* Semantic error *
+test/input/idlast/const_assignment_typecheck.idl:4:Cannot coerce "wchar" to "char"
